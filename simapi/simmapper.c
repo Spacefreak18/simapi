@@ -14,8 +14,8 @@
 #include "../helper/confighelper.h"
 #include "../slog/slog.h"
 
-#include "simapi/acdata.h"
-#include "simapi/rf2data.h"
+#include "../c/acdata.h"
+#include "../c/rf2data.h"
 
 
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
