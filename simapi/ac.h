@@ -2,7 +2,7 @@
 #define _AC_H
 
 #include <stdbool.h>
-#include "simapi/acdata.h"
+#include "../c/acdata.h"
 
 #define AC_PHYSICS_FILE "acpmf_physics"
 #define AC_STATIC_FILE "acpmf_static"
