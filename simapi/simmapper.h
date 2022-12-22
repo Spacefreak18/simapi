@@ -5,7 +5,6 @@
 #include "rf2.h"
 
 #include "simdata.h"
-#include "../helper/confighelper.h"
 
 #include "../c/acdata.h"
 

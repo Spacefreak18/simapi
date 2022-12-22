@@ -1,235 +1,248 @@
-/*
-rfSharedStruct.hpp
-by Dan Allongo (daniel.s.allongo@gmail.com)
-https://github.com/dallongo/rFactorSharedMemoryMap/blob/master/Include/rfSharedStruct.hpp
-This is the structure of the shared memory map
-It's nearly identical to the original structures specified in InternalsPlugin.hpp,
-but with pragma pack 1 specified to get the most compact representation.
-This means that you need to watch your types very closely!
-*/
-
+// mostly lifted from rF2SharedMemoryMapPlugin by TheIronWolfModding
+// https://github.com/TheIronWolfModding/rF2SharedMemoryMapPlugin/blob/master/Include/InternalsPlugin.hpp
 #pragma once
 
-#define RF_SHARED_MEMORY_NAME "$rFactorShared$"
-#define RF_SHARED_MEMORY_VERSION "3.0.0.0"
-#define RF_SHARED_MEMORY_MAX_VSI_SIZE 64
-#define RF_SHARED_MEMORY_ACC_SMOOTH_FACTOR 0.02f
-#define RF_SHARED_MEMORY_ROT_SMOOTH_FACTOR 0.65f
+#ifndef _RF2DATA_H
+#define _RF2DATA_H
 
-typedef enum {
-  garage = 0,
-  warmUp = 1,
-  gridWalk = 2,
-  formation = 3,
-  countdown = 4,
-  greenFlag = 5,
-  fullCourseYellow = 6,
-  sessionStopped = 7,
-  sessionOver = 8
-} rfGamePhase;
+#include <stdbool.h>
+#include <uchar.h>
 
-typedef enum {
-  invalid = -1,
-  noFlag = 0,
-  pending = 1,
-  pitClosed = 2,
-  pitLeadLap = 3,
-  pitOpen = 4,
-  lastLap = 5,
-  resume = 6,
-  raceHalt = 7
-} rfYellowFlagState;
+#pragma pack(push)
+#pragma pack(4)
 
-typedef enum {
-  dry = 0,
-  wet = 1,
-  grass = 2,
-  dirt = 3,
-  gravel = 4,
-  kerb = 5
-} rfSurfaceType;
+typedef struct
+{
+  double x, y, z;
+}
+TelemVect3;
 
-typedef enum {
-  sector3 = 0,
-  sector1 = 1,
-  sector2 = 2
-} rfSector;
+typedef struct
+{
+  double mSuspensionDeflection;  // meters
+  double mRideHeight;            // meters
+  double mSuspForce;             // pushrod load in Newtons
+  double mBrakeTemp;             // Celsius
+  double mBrakePressure;         // currently 0.0-1.0, depending on driver input and brake balance; will convert to true brake pressure (kPa) in future
 
-typedef enum {
-  none = 0,
-  finished = 1,
-  dnf = 2,
-  dq = 3
-} rfFinishStatus;
+  double mRotation;              // radians/sec
+  double mLateralPatchVel;       // lateral velocity at contact patch
+  double mLongitudinalPatchVel;  // longitudinal velocity at contact patch
+  double mLateralGroundVel;      // lateral velocity at contact patch
+  double mLongitudinalGroundVel; // longitudinal velocity at contact patch
+  double mCamber;                // radians (positive is left for left-side wheels, right for right-side wheels)
+  double mLateralForce;          // Newtons
+  double mLongitudinalForce;     // Newtons
+  double mTireLoad;              // Newtons
 
-typedef enum {
-  nobody = -1,
-  player = 0,
-  ai = 1,
-  remote = 2,
-  replay = 3
-} rfControl;
+  double mGripFract;             // an approximation of what fraction of the contact patch is sliding
+  double mPressure;              // kPa (tire pressure)
+  double mTemperature[3];        // Kelvin (subtract 273.15 to get Celsius), left/center/right (not to be confused with inside/center/outside!)
+  double mWear;                  // wear (0.0-1.0, fraction of maximum) ... this is not necessarily proportional with grip loss
+  char mTerrainName[16];         // the material prefixes from the TDF file
+  unsigned char mSurfaceType;    // 0=dry, 1=wet, 2=grass, 3=dirt, 4=gravel, 5=rumblestrip, 6=special
+  bool mFlat;                    // whether tire is flat
+  bool mDetached;                // whether wheel is detached
+  unsigned char mStaticUndeflectedRadius; // tire radius in centimeters
 
-typedef enum {
-  frontLeft = 0,
-  frontRight = 1,
-  rearLeft = 2,
-  rearRight = 3
-} rfWheelIndex;
+  double mVerticalTireDeflection;// how much is tire deflected from its (speed-sensitive) radius
+  double mWheelYLocation;        // wheel's y location relative to vehicle y location
+  double mToe;                   // current toe angle w.r.t. the vehicle
 
-#pragma pack(push, 1)
+  double mTireCarcassTemperature;       // rough average of temperature samples from carcass (Kelvin)
+  double mTireInnerLayerTemperature[3]; // rough average of temperature samples from innermost layer of rubber (before carcass) (Kelvin)
 
-// Our world coordinate system is left-handed, with +y pointing up.
-// The local vehicle coordinate system is as follows:
-//   +x points out the left side of the car (from the driver's perspective)
-//   +y points out the roof
-//   +z points out the back of the car
-// Rotations are as follows:
-//   +x pitches up
-//   +y yaws to the right
-//   +z rolls to the right
+  unsigned char mExpansion[ 24 ];// for future use
+}
+TelemWheelV01;
 
-struct rfVec3 {
-  float x, y, z;
-};
-
-struct rfWheel {
-  float rotation;               // radians/sec
-  float suspensionDeflection;   // meters
-  float rideHeight;             // meters
-  float tireLoad;               // Newtons
-  float lateralForce;           // Newtons
-  float gripFract;              // an approximation of what fraction of the contact patch is sliding
-  float brakeTemp;              // Celsius
-  float pressure;               // kPa
-  float temperature[3];         // Celsius, left/center/right (not to be confused with inside/center/outside!)
-  float wear;                   // wear (0.0-1.0, fraction of maximum) ... this is not necessarily proportional with grip loss
-  char  terrainName[16];        // the material prefixes from the TDF file
-  unsigned char surfaceType;    // 0=dry, 1=wet, 2=grass, 3=dirt, 4=gravel, 5=rumblestrip
-  bool flat;                    // whether tire is flat
-  bool detached;                // whether wheel is detached
-};
-
-// scoring info only updates twice per second (values interpolated when deltaTime > 0)!
-struct rfVehicleInfo {
-  char driverName[32];          // driver name
-  short totalLaps;              // laps completed
-  signed char sector;           // 0=sector3, 1=sector1, 2=sector2 (don't ask why)
-  signed char finishStatus;     // 0=none, 1=finished, 2=dnf, 3=dq
-  float lapDist;                // current distance around track
-  float pathLateral;            // lateral position with respect to *very approximate* "center" path
-  float trackEdge;              // track edge (w.r.t. "center" path) on same side of track as vehicle
-
-  float bestSector1;            // best sector 1
-  float bestSector2;            // best sector 2 (plus sector 1)
-  float bestLapTime;            // best lap time
-  float lastSector1;            // last sector 1
-  float lastSector2;            // last sector 2 (plus sector 1)
-  float lastLapTime;            // last lap time
-  float curSector1;             // current sector 1 if valid
-  float curSector2;             // current sector 2 (plus sector 1) if valid
-  // no current laptime because it instantly becomes "last"
-
-  short numPitstops;            // number of pitstops made
-  short numPenalties;           // number of outstanding penalties
-  bool isPlayer;                // is this the player's vehicle
-  signed char control;          // who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
-  bool inPits;                  // between pit entrance and pit exit (not always accurate for remote vehicles)
-  unsigned char place;          // 1-based position
-  char vehicleClass[32];        // vehicle class
-
-  // Dash Indicators
-  float timeBehindNext;         // time behind vehicle in next higher place
-  long lapsBehindNext;          // laps behind vehicle in next higher place
-  float timeBehindLeader;       // time behind leader
-  long lapsBehindLeader;        // laps behind leader
-  float lapStartET;             // time this lap was started
+typedef struct
+{
+  int mID;                      // slot ID (note that it can be re-used in multiplayer after someone leaves)
+  double mDeltaTime;             // time since last update (seconds)
+  double mElapsedTime;           // game session time
+  int mLapNumber;               // current lap number
+  double mLapStartET;            // time this lap was started
+  char mVehicleName[64];         // current vehicle name
+  char mTrackName[64];           // current track name
 
   // Position and derivatives
-  rfVec3 pos;					// world position in meters
-
-  float yaw;					// rad, use (360-yaw*57.2978)%360 for heading in degrees
-  float pitch;					// rad
-  float roll;					// rad
-
-  float speed;					// meters/sec
-};
-
-struct rfShared {
-  char version[8];				// API version
-  // Time
-  float deltaTime;              // time since last scoring update (seconds)
-  long lapNumber;               // current lap number
-  float lapStartET;             // time this lap was started
-  char trackName[64];           // current track name
-
-  // Position and derivatives
-  rfVec3 pos;               // world position in meters
-  rfVec3 localVel;          // velocity (meters/sec) in local vehicle coordinates
-  rfVec3 localAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
+  TelemVect3 mPos;               // world position in meters
+  TelemVect3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
+  TelemVect3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
 
   // Orientation and derivatives
-  rfVec3 oriX;              // top row of orientation matrix (also converts local vehicle vectors into world X using dot product)
-  rfVec3 oriY;              // mid row of orientation matrix (also converts local vehicle vectors into world Y using dot product)
-  rfVec3 oriZ;              // bot row of orientation matrix (also converts local vehicle vectors into world Z using dot product)
-  rfVec3 localRot;          // rotation (radians/sec) in local vehicle coordinates
-  rfVec3 localRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
-
-  float speed;				// meters/sec
+  TelemVect3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
+                                 // vehicle vectors into world X, Y, or Z using dot product of rows 0, 1, or 2 respectively
+  TelemVect3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
+  TelemVect3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
 
   // Vehicle status
-  long gear;                    // -1=reverse, 0=neutral, 1+=forward gears
-  float engineRPM;              // engine RPM
-  float engineWaterTemp;        // Celsius
-  float engineOilTemp;          // Celsius
-  float clutchRPM;              // clutch RPM
+  int mGear;                    // -1=reverse, 0=neutral, 1+=forward gears
+  double mEngineRPM;             // engine RPM
+  double mEngineWaterTemp;       // Celsius
+  double mEngineOilTemp;         // Celsius
+  double mClutchRPM;             // clutch RPM
 
   // Driver input
-  float unfilteredThrottle;     // ranges  0.0-1.0
-  float unfilteredBrake;        // ranges  0.0-1.0
-  float unfilteredSteering;     // ranges -1.0-1.0 (left to right)
-  float unfilteredClutch;       // ranges  0.0-1.0
+  double mUnfilteredThrottle;    // ranges  0.0-1.0
+  double mUnfilteredBrake;       // ranges  0.0-1.0
+  double mUnfilteredSteering;    // ranges -1.0-1.0 (left to right)
+  double mUnfilteredClutch;      // ranges  0.0-1.0
+
+  // Filtered input (various adjustments for rev or speed limiting, TC, ABS?, speed sensitive steering, clutch work for semi-automatic shifting, etc.)
+  double mFilteredThrottle;      // ranges  0.0-1.0
+  double mFilteredBrake;         // ranges  0.0-1.0
+  double mFilteredSteering;      // ranges -1.0-1.0 (left to right)
+  double mFilteredClutch;        // ranges  0.0-1.0
 
   // Misc
-  float steeringArmForce;       // force on steering arms
-  // state/damage info
-  float fuel;                   // amount of fuel (liters)
-  float engineMaxRPM;           // rev limit
-  unsigned char scheduledStops; // number of scheduled pitstops
-  bool  overheating;            // whether overheating icon is shown
-  bool  detached;               // whether any parts (besides wheels) have been detached
-  unsigned char dentSeverity[8];// dent severity at 8 locations around the car (0=none, 1=some, 2=more)
-  float lastImpactET;           // time of last impact
-  float lastImpactMagnitude;    // magnitude of last impact
-  rfVec3 lastImpactPos;     // location of last impact
+  double mSteeringShaftTorque;   // torque around steering shaft (used to be mSteeringArmForce, but that is not necessarily accurate for feedback purposes)
+  double mFront3rdDeflection;    // deflection at front 3rd spring
+  double mRear3rdDeflection;     // deflection at rear 3rd spring
 
-  rfWheel wheel[4];        // wheel info (front left, front right, rear left, rear right)
+  // Aerodynamics
+  double mFrontWingHeight;       // front wing height
+  double mFrontRideHeight;       // front ride height
+  double mRearRideHeight;        // rear ride height
+  double mDrag;                  // drag
+  double mFrontDownforce;        // front downforce
+  double mRearDownforce;         // rear downforce
 
-  // scoring info only updates twice per second (values interpolated when deltaTime > 0)!
-  long session;                 // current session
-  float currentET;              // current time
-  float endET;                  // ending time
-  long  maxLaps;                // maximum laps
-  float lapDist;                // distance around track
+  // State/damage info
+  double mFuel;                  // amount of fuel (liters)
+  double mEngineMaxRPM;          // rev limit
+  unsigned char mScheduledStops; // number of scheduled pitstops
+  bool  mOverheating;            // whether overheating icon is shown
+  bool  mDetached;               // whether any parts (besides wheels) have been detached
+  bool  mHeadlights;             // whether headlights are on
+  unsigned char mDentSeverity[8];// dent severity at 8 locations around the car (0=none, 1=some, 2=more)
+  double mLastImpactET;          // time of last impact
+  double mLastImpactMagnitude;   // magnitude of last impact
+  TelemVect3 mLastImpactPos;     // location of last impact
 
-  long numVehicles;             // current number of vehicles
+  // Expanded
+  double mEngineTorque;          // current engine torque (including additive torque) (used to be mEngineTq, but there's little reason to abbreviate it)
+  int mCurrentSector;           // the current sector (zero-based) with the pitlane stored in the sign bit (example: entering pits from third sector gives 0x80000002)
+  unsigned char mSpeedLimiter;   // whether speed limiter is on
+  unsigned char mMaxGears;       // maximum forward gears
+  unsigned char mFrontTireCompoundIndex;   // index within brand
+  unsigned char mRearTireCompoundIndex;    // index within brand
+  double mFuelCapacity;          // capacity in liters
+  unsigned char mFrontFlapActivated;       // whether front flap is activated
+  unsigned char mRearFlapActivated;        // whether rear flap is activated
+  unsigned char mRearFlapLegalStatus;      // 0=disallowed, 1=criteria detected but not allowed quite yet, 2=allowed
+  unsigned char mIgnitionStarter;          // 0=off 1=ignition 2=ignition+starter
 
-  unsigned char gamePhase;
+  char mFrontTireCompoundName[18];         // name of front tire compound
+  char mRearTireCompoundName[18];          // name of rear tire compound
 
-  signed char yellowFlagState;
+  unsigned char mSpeedLimiterAvailable;    // whether speed limiter is available
+  unsigned char mAntiStallActivated;       // whether (hard) anti-stall is activated
+  unsigned char mUnused[2];                //
+  float mVisualSteeringWheelRange;         // the *visual* steering wheel range
 
-  signed char sectorFlag[3];      // whether there are any local yellows at the moment in each sector (not sure if sector 0 is first or last, so test)
-  unsigned char startLight;       // start light frame (number depends on track)
-  unsigned char numRedLights;     // number of red lights in start sequence
-  bool inRealtime;                // in realtime as opposed to at the monitor
-  char playerName[32];            // player name (including possible multiplayer override)
+  double mRearBrakeBias;                   // fraction of brakes on rear
+  double mTurboBoostPressure;              // current turbo boost pressure if available
+  float mPhysicsToGraphicsOffset[3];       // offset from static CG to graphical center
+  float mPhysicalSteeringWheelRange;       // the *physical* steering wheel range
 
-  // weather
-  float ambientTemp;              // temperature (Celsius)
-  float trackTemp;                // temperature (Celsius)
-  rfVec3 wind;                // wind speed
+  // Future use
+  unsigned char mExpansion[152]; // for future use (note that the slot ID has been moved to mID above)
 
-  rfVehicleInfo vehicle[RF_SHARED_MEMORY_MAX_VSI_SIZE];  // array of vehicle scoring info's
+  // keeping this at the end of the structure to make it easier to replace in future versions
+  TelemWheelV01 mWheel[4];       // wheel info (front left, front right, rear left, rear right)
+}
+rF2VehicleTelemetry;
+
+typedef struct
+{
+  int mID;                      // slot ID (note that it can be re-used in multiplayer after someone leaves)
+  char mDriverName[32];          // driver name
+  char mVehicleName[64];         // vehicle name
+  short mTotalLaps;              // laps completed
+  signed char mSector;           // 0=sector3, 1=sector1, 2=sector2 (don't ask why)
+  signed char mFinishStatus;     // 0=none, 1=finished, 2=dnf, 3=dq
+  double mLapDist;               // current distance around track
+  double mPathLateral;           // lateral position with respect to *very approximate* "center" path
+  double mTrackEdge;             // track edge (w.r.t. "center" path) on same side of track as vehicle
+
+  double mBestSector1;           // best sector 1
+  double mBestSector2;           // best sector 2 (plus sector 1)
+  double mBestLapTime;           // best lap time
+  double mLastSector1;           // last sector 1
+  double mLastSector2;           // last sector 2 (plus sector 1)
+  double mLastLapTime;           // last lap time
+  double mCurSector1;            // current sector 1 if valid
+  double mCurSector2;            // current sector 2 (plus sector 1) if valid
+  // no current laptime because it instantly becomes "last"
+
+  short mNumPitstops;            // number of pitstops made
+  short mNumPenalties;           // number of outstanding penalties
+  bool mIsPlayer;                // is this the player's vehicle
+
+  signed char mControl;          // who's in control: -1=nobody (shouldn't get this), 0=local player, 1=local AI, 2=remote, 3=replay (shouldn't get this)
+  bool mInPits;                  // between pit entrance and pit exit (not always accurate for remote vehicles)
+  unsigned char mPlace;          // 1-based position
+  char mVehicleClass[32];        // vehicle class
+
+  // Dash Indicators
+  double mTimeBehindNext;        // time behind vehicle in next higher place
+  int mLapsBehindNext;          // laps behind vehicle in next higher place
+  double mTimeBehindLeader;      // time behind leader
+  int mLapsBehindLeader;        // laps behind leader
+  double mLapStartET;            // time this lap was started
+
+  // Position and derivatives
+  TelemVect3 mPos;               // world position in meters
+  TelemVect3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
+  TelemVect3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
+
+  // Orientation and derivatives
+  TelemVect3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
+                                 // vehicle vectors into world X, Y, or Z using dot product of rows 0, 1, or 2 respectively
+  TelemVect3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
+  TelemVect3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
+
+  // tag.2012.03.01 - stopped casting some of these so variables now have names and mExpansion has shrunk, overall size and old data locations should be same
+  unsigned char mHeadlights;     // status of headlights
+  unsigned char mPitState;       // 0=none, 1=request, 2=entering, 3=stopped, 4=exiting
+  unsigned char mServerScored;   // whether this vehicle is being scored by server (could be off in qualifying or racing heats)
+  unsigned char mIndividualPhase;// game phases (described below) plus 9=after formation, 10=under yellow, 11=under blue (not used)
+
+  int mQualification;           // 1-based, can be -1 when invalid
+
+  double mTimeIntoLap;           // estimated time into lap
+  double mEstimatedLapTime;      // estimated laptime used for 'time behind' and 'time into lap' (note: this may changed based on vehicle and setup!?)
+
+  char mPitGroup[24];            // pit group (same as team name unless pit is shared)
+  unsigned char mFlag;           // primary flag being shown to vehicle (currently only 0=green or 6=blue)
+  bool mUnderYellow;             // whether this car has taken a full-course caution flag at the start/finish line
+  unsigned char mCountLapFlag;   // 0 = do not count lap or time, 1 = count lap but not time, 2 = count lap and time
+  bool mInGarageStall;           // appears to be within the correct garage stall
+
+  unsigned char mUpgradePack[16];  // Coded upgrades
+  float mPitLapDist;             // location of pit in terms of lap distance
+
+  float mBestLapSector1;         // sector 1 time from best lap (not necessarily the best sector 1 time)
+  float mBestLapSector2;         // sector 2 time from best lap (not necessarily the best sector 2 time)
+
+  // Future use
+  // tag.2012.04.06 - SEE ABOVE!
+  unsigned char mExpansion[48];  // for future use
+}
+rF2VehicleScoring;
+
+struct rF2Telemetry
+{
+  int mVersionUpdateBegin;
+  int mVersionUpdateEnd;
+  int mBytesUpdatedHint;
+
+  int mNumVehicles;
+
+  rF2VehicleTelemetry mVehicles[64];
 };
 
 #pragma pack(pop)
+#endif
