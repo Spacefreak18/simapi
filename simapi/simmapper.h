@@ -6,8 +6,6 @@
 
 #include "simdata.h"
 
-#include "../c/acdata.h"
-
 typedef struct
 {
     void* addr;

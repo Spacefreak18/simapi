@@ -2,7 +2,7 @@
 #define _RF2_H
 
 #include <stdbool.h>
-#include "../c/rf2data.h"
+#include "../include/rf2data.h"
 
 #define RF2_TELEMETRY_FILE "rFactor2SMMP_Telemetry"
 #define RF2_SCORING_FILE "rFactor2SMMP_Scoring"

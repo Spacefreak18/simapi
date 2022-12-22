@@ -14,8 +14,8 @@
 #include "rf2.h"
 
 
-#include "../c/acdata.h"
-#include "../c/rf2data.h"
+#include "../include/acdata.h"
+#include "../include/rf2data.h"
 
 
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
