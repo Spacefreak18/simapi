@@ -1,4 +1,4 @@
-#include "../include/acdata.h"
+#include "../simapi/ac.h"
 #include "basicmap.h"
 
-int CreateACMap(struct Map* map, struct SPageFilePhysics *spfp);
+int CreateACMap(struct Map* map, ACMap *acmap);
