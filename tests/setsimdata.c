@@ -157,6 +157,7 @@ int main(int argc, char* argv[])
     struct SPageFilePhysics* spfp = malloc(sizeof(struct SPageFilePhysics));
     struct SPageFileGraphic* spfg = malloc(sizeof(struct SPageFileGraphic));
     struct SPageFileStatic* spfs = malloc(sizeof(struct SPageFileStatic));
+    struct SPageFileCrewChief* spfc = malloc(sizeof(struct SPageFileCrewChief));
 
 
     if (strcmp(mem_file,"acpmf_physics") == 0)
@@ -174,6 +175,11 @@ int main(int argc, char* argv[])
         struct1 = spfs;
         datasize1 = sizeof(struct SPageFileStatic);
     }
+    else if (strcmp(mem_file,"acpmf_crewchief") == 0)
+    {
+        struct1 = spfc;
+        datasize1 = sizeof(struct SPageFileCrewChief);
+    }
     else
     {
         printf("Unknown memory mapped file name");
@@ -183,10 +189,11 @@ int main(int argc, char* argv[])
     acmap->ac_physics = *spfp;
     acmap->ac_graphic = *spfg;
     acmap->ac_static = *spfs;
+    acmap->ac_crewchief = *spfc;
     acmap->physics_map_addr = spfp;
     acmap->graphic_map_addr = spfg;
     acmap->static_map_addr = spfs;
-
+    acmap->crewchief_map_addr = spfc;
 
     ac_init(map, acmap);
 
