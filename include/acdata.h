@@ -220,7 +220,7 @@ struct SPageFileCrewChief
     char acInstallPath[512];
     int isInternalMemoryModuleLoaded;
     char pluginVersion[32];
-}
+};
 
 
 #pragma pack(pop)

@@ -6,7 +6,7 @@
 
 #define AC_PHYSICS_FILE "acpmf_physics"
 #define AC_STATIC_FILE "acpmf_static"
-#define AC_GRAPHIC_FILE "acpmf_graphic"
+#define AC_GRAPHIC_FILE "acpmf_graphics"
 #define AC_CREWCHIEF_FILE "acpmf_crewchief"
 
 typedef struct
