@@ -14,7 +14,7 @@ typedef struct
     void* telemetry_map_addr;
     void* scoring_map_addr;
     struct rF2Telemetry rf2_telemetry;
-    //struct rF2Scoring rf2_scoring;
+    struct rF2Scoring rf2_scoring;
 }
 RF2Map;
 

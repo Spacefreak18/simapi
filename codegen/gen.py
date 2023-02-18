@@ -2,7 +2,8 @@
 import re
 import cfile.src.cfile as C
 
-game="Assetto Corsa"
+#game="Assetto Corsa"
+game="RFactor2"
 includefilename=""
 mapperfilename=""
 mapperheaderfilename=""
@@ -12,6 +13,11 @@ if (game == "Assetto Corsa"):
     mapperfilename="mapacdata.c"
     mapperheaderfilename="mapacdata.h"
     mapsizevariablename="#define ACMAP_SIZE"
+if (game == "RFactor2"):
+    includefilename="rf2data.h"
+    mapperfilename="maprf2data.c"
+    mapperheaderfilename="maprf2data.h"
+    mapsizevariablename="#define RF2MAP_SIZE"
 
 simmap = C.cfile('simmap.c')
 simmap.code.append(C.sysinclude('stdio.h'))
@@ -39,8 +45,13 @@ typedefdict={}
 body.append(C.blank())
 
 if (game == "RFactor2"):
-    body.append(C.statement("char* rf2t = rf2map->telemetry_map_addr"))
-    body.append(C.statement("char* rf2s = rf2map->scoring_map_addr"))
+    body.append(C.statement("char* rf2t = NULL"))
+    body.append(C.statement("char* rf2s = NULL"))
+    body.append("    if (mapdata == 1)") # not sure how to do this cleaner with this api
+    iff = C.block(innerIndent=4)
+    iff.append(C.statement("char* rf2t = rf2map->telemetry_map_addr"))
+    iff.append(C.statement("char* rf2s = rf2map->scoring_map_addr"))
+    body.append(iff)
 if (game == "Assetto Corsa"):
     body.append(C.statement("char* spfp = NULL"))
     body.append(C.statement("char* spfg = NULL"))
@@ -170,7 +181,11 @@ with open(includefilename) as topo_file:
             elif (intypedef == True):
                 if(line.lstrip()):
                     typename=line.split()[0]
-                    typedefdict.update({typedefname + ":" + line.split()[1][0:-1] : typename})
+                    varname=line.split()[1][0:-1]
+                    if ("signed" in typename):
+                        typename=line.split()[1]
+                        varname=line.split()[2][0:-1]
+                    typedefdict.update({typedefname + ":" + varname : typename})
 
             elif (line.isspace()):
                 continue

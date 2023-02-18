@@ -271,7 +271,7 @@ typedef struct //rF2VehicleScoring
   unsigned char mHeadlights;     // status of headlights
   unsigned char mPitState;       // 0=none, 1=request, 2=entering, 3=stopped, 4=exiting
   unsigned char mServerScored;   // whether this vehicle is being scored by server (could be off in qualifying or racing heats)
-  unsigned char mIndividualPhase;// game phases (described below) plus 9=after formation, 10=under yellow, 11=under blue (not used)
+  unsigned char mIndividualPhase; // game phases (described below) plus 9=after formation, 10=under yellow, 11=under blue (not used)
 
   int mQualification;           // 1-based, can be -1 when invalid
 

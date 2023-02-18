@@ -6,10 +6,13 @@
 #include <unistd.h>
 
 #include "../simmap/mapacdata.h"
+#include "../simmap/maprf2data.h"
 
 #include "../simapi/ac.h"
 #include "../include/acdata.h"
 
+#include "../simapi/rf2.h"
+#include "../include/rf2data.h"
 
 const char* mem_file;
 const char* variable_name;
@@ -139,9 +142,15 @@ void parse_args(int argc, char* argv[])
     }
 }
 
+int rf2_init(struct Map* map, RF2Map* rf2map)
+{
+    CreateRF2Map(map, rf2map, 1);
+    return 0;
+}
+
 int ac_init(struct Map* map, ACMap* acmap)
 {
-    CreateACMap(map, acmap);
+    CreateACMap(map, acmap, 1);
     return 0;
 }
 
@@ -150,6 +159,7 @@ int main(int argc, char* argv[])
     /* Parse command line arguments */
     parse_args(argc,argv);
 
+#ifdef ASSETTOCORSA
     struct Map* map = (struct Map*) malloc((ACMAP_SIZE) * sizeof(struct Map));
     void* struct1;
     int datasize1;
@@ -196,9 +206,37 @@ int main(int argc, char* argv[])
     acmap->crewchief_map_addr = spfc;
 
     ac_init(map, acmap);
+#endif
+#ifdef RFACTOR2
+    struct Map* map = (struct Map*) malloc((RF2MAP_SIZE) * sizeof(struct Map));
+    void* struct1;
+    int datasize1;
+    struct rF2Telemetry* rf2t = malloc(sizeof(struct rF2Telemetry));
+    struct rF2Scoring* rf2s = malloc(sizeof(struct rF2Scoring));
 
+    if (strcmp(mem_file,"rFactor2SMMP_Telemetry") == 0)
+    {
+        struct1 = rf2t;
+        datasize1 = sizeof(struct rF2Telemetry);
+    }
+    else if (strcmp(mem_file,"rFactor2SMMP_Scoring") == 0)
+    {
+        struct1 = rf2s;
+        datasize1 = sizeof(struct rF2Scoring);
+    }
+    else
+    {
+        printf("Unknown memory mapped file name");
+    }
 
+    RF2Map* rf2map = malloc(sizeof(RF2Map));
+    rf2map->rf2_telemetry = *rf2t;
+    rf2map->rf2_scoring = *rf2s;
+    rf2map->telemetry_map_addr = rf2t;
+    rf2map->scoring_map_addr = rf2s;
 
+    rf2_init(map, rf2map);
+#endif
 
     int fd = shm_open(mem_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1)
