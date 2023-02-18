@@ -29,7 +29,7 @@ typedef int AC_SESSION_TYPE;
 
 typedef struct
 {
-  double x, y, z;
+  float x, y, z;
 }
 acsVec3;
 
