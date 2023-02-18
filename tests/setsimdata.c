@@ -10,7 +10,6 @@
 #include "../simapi/ac.h"
 #include "../include/acdata.h"
 
-#define TEST_MEM_FILE_LOCATION "acpmf_physics"
 
 const char* mem_file;
 const char* variable_name;
@@ -160,7 +159,6 @@ int main(int argc, char* argv[])
     struct SPageFileStatic* spfs = malloc(sizeof(struct SPageFileStatic));
 
 
-
     if (strcmp(mem_file,"acpmf_physics") == 0)
     {
         struct1 = spfp;
@@ -180,8 +178,6 @@ int main(int argc, char* argv[])
     {
         printf("Unknown memory mapped file name");
     }
-
-
 
     ACMap* acmap = malloc(sizeof(ACMap));
     acmap->ac_physics = *spfp;
@@ -215,10 +211,7 @@ int main(int argc, char* argv[])
         return 30;
     }
 
-
-
     memcpy(struct1, addr, datasize1);
-
 
     if (strcmp(action,"loadfile") == 0)
     {
@@ -277,7 +270,7 @@ int main(int argc, char* argv[])
     memcpy(addr, struct1, datasize1);
     //printf("set to value %f\n", *(float*) (char*) addr2);
 cleanup:
-    //free(struct1);
+    free(struct1);
 
     return 0;
 }
