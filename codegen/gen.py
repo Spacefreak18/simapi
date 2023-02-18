@@ -104,7 +104,7 @@ def addvarsfromtypedef(t, textstring):
                 else:
                     newtextstring[0] = "map["+str(mapnum)+"]"
                     newtextstring[1] = type2;
-                    newtextstring[2] = textstring[2] + "." + key.split(':')[1]
+                    newtextstring[2] = textstring[2] + "_" + key.split(':')[1]
                     newtextstring[3] = textstring[3] + " + offsetof(" + key.split(':')[0] + ", " + key.split(':')[1] + ")"
                     if addvarsfromtypedef(type2, newtextstring):
                         continue
