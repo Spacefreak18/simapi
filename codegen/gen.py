@@ -20,6 +20,7 @@ body.append(C.blank())
 body.append(C.statement("char* spfp = acmap->physics_map_addr"))
 body.append(C.statement("char* spfg = acmap->graphic_map_addr"))
 body.append(C.statement("char* spfs = acmap->static_map_addr"))
+body.append(C.statement("char* spfc = acmap->crewchief_map_addr"))
 
 body.append(C.blank())
 
@@ -33,10 +34,16 @@ with open('acdata.h') as topo_file:
                     structvar = "spfs"
                 elif ( structname == "SPageFileGraphic" ):
                     structvar = "spfg"
+                elif ( structname == "SPageFileCrewChief" ):
+                    structvar = "spfc"
+                elif ( structname == "SPageFilePhysics" ):
+                    structname = "spfp"
                 else:
-                    structvar = "spfp"
+                    structname = ""
 
             elif (line.isspace()):
+                continue
+            elif (structname == ""):
                 continue
             else:
                 rawline=line.split()
