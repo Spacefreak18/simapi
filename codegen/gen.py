@@ -21,11 +21,11 @@ simmap.code.append(C.include('basicmap.h'))
 if (game == "RFactor2"):
     simmap.code.append(C.include('../simapi/rf2.h'))
     simmap.code.append(C.blank())
-    simmap.code.append(C.function('CreateRF2Map', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('rf2map', 'RF2Map', pointer=1)))
+    simmap.code.append(C.function('CreateRF2Map', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('rf2map', 'RF2Map', pointer=1)).add_param(C.variable('mapdata', 'int', pointer=0)))
 if (game == "Assetto Corsa"):
     simmap.code.append(C.include('../simapi/ac.h'))
     simmap.code.append(C.blank())
-    simmap.code.append(C.function('CreateACMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('acmap', 'ACMap', pointer=1)))
+    simmap.code.append(C.function('CreateACMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('acmap', 'ACMap', pointer=1)).add_param(C.variable('mapdata', 'int', pointer=0)))
 
 body = C.block(innerIndent=4)
 
@@ -42,10 +42,17 @@ if (game == "RFactor2"):
     body.append(C.statement("char* rf2t = rf2map->telemetry_map_addr"))
     body.append(C.statement("char* rf2s = rf2map->scoring_map_addr"))
 if (game == "Assetto Corsa"):
-    body.append(C.statement("char* spfp = acmap->physics_map_addr"))
-    body.append(C.statement("char* spfg = acmap->graphic_map_addr"))
-    body.append(C.statement("char* spfs = acmap->static_map_addr"))
-    body.append(C.statement("char* spfc = acmap->crewchief_map_addr"))
+    body.append(C.statement("char* spfp = NULL"))
+    body.append(C.statement("char* spfg = NULL"))
+    body.append(C.statement("char* spfs = NULL"))
+    body.append(C.statement("char* spfc = NULL"))
+    body.append("    if (mapdata == 1)") # not sure how to do this cleaner with this api
+    iff = C.block(innerIndent=4)
+    iff.append(C.statement("spfp = acmap->physics_map_addr"))
+    iff.append(C.statement("spfg = acmap->graphic_map_addr"))
+    iff.append(C.statement("spfs = acmap->static_map_addr"))
+    iff.append(C.statement("spfc = acmap->crewchief_map_addr"))
+    body.append(iff)
 
 body.append(C.blank())
 
