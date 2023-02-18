@@ -11,13 +11,14 @@
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct
+typedef struct //TelemVect3
 {
-  double x, y, z;
-}
-TelemVect3;
+  double x;
+  double y;
+  double z;
+} TelemVect3;
 
-typedef struct
+typedef struct //TelemWheelV01
 {
   double mSuspensionDeflection;  // meters
   double mRideHeight;            // meters
@@ -53,10 +54,9 @@ typedef struct
   double mTireInnerLayerTemperature[3]; // rough average of temperature samples from innermost layer of rubber (before carcass) (Kelvin)
 
   unsigned char mExpansion[ 24 ];// for future use
-}
-TelemWheelV01;
+} TelemWheelV01;
 
-typedef struct
+typedef struct //rF2VehicleTelemetry
 {
   int mID;                      // slot ID (note that it can be re-used in multiplayer after someone leaves)
   double mDeltaTime;             // time since last update (seconds)
@@ -152,10 +152,73 @@ typedef struct
 
   // keeping this at the end of the structure to make it easier to replace in future versions
   TelemWheelV01 mWheel[4];       // wheel info (front left, front right, rear left, rear right)
-}
-rF2VehicleTelemetry;
+} rF2VehicleTelemetry;
 
-typedef struct
+
+typedef struct //rF2ScoringInfo
+{
+  unsigned char[64] mTrackName;
+  int mSession;
+  double mCurrentET;
+  int mMAxLaps;
+  double mLapDist;
+  unsigned char[8] pointer1;
+
+  int mNumVehicles;
+
+  // Game phases:
+  // 0 Before session has begun
+  // 1 Reconnaissance laps (race only)
+  // 2 Grid walk-through (race only)
+  // 3 Formation lap (race only)
+  // 4 Starting-light countdown has begun (race only)
+  // 5 Green flag
+  // 6 Full course yellow / safety car
+  // 7 Session stopped
+  // 8 Session over
+  char mGamePhase;
+
+  // Yellow flag states (applies to full-course only)
+  // -1 Invalid
+  //  0 None
+  //  1 Pending
+  //  2 Pits closed
+  //  3 Pit lead lap
+  //  4 Pits open
+  //  5 Last lap
+  //  6 Resume
+  //  7 Race halt (not currently used)
+  public sbyte mYellowFlagState;
+
+  char mSectorFlag[3];      // whether there are any local yellows at the moment in each sector (not sure if sector 0 is first or last, so test)
+  char mStartLight;       // start light frame (number depends on track)
+  char mNumRedLights;     // number of red lights in start sequence
+  char mInRealtime;                // in realtime as opposed to at the monitor
+
+  char mPlayerName[32];            // player name (including possible multiplayer override)
+
+  char mPlrFileName[64];           // may be encoded to be a legal filename
+
+  // weather
+  double mDarkCloud;               // cloud darkness? 0.0-1.0
+  double mRaining;                 // raining severity 0.0-1.0
+  double mAmbientTemp;             // temperature (Celsius)
+  double mTrackTemp;               // temperature (Celsius)
+  rF2Vec3 mWind;                // wind speed
+  double mMinPathWetness;          // minimum wetness on main path 0.0-1.0
+  double mMaxPathWetness;          // maximum wetness on main path 0.0-1.0
+
+  // Future use
+  char mExpansion[256];
+
+  // MM_NOT_USED
+  // keeping this at the end of the structure to make it easier to replace in future versions
+  // VehicleScoringInfoV01 *mVehicle; // array of vehicle scoring info's
+  // MM_NEW
+  char pointer2[8];
+} rF2ScoringInfo;
+
+typedef struct //rF2VehicleScoring
 {
   int mID;                      // slot ID (note that it can be re-used in multiplayer after someone leaves)
   char mDriverName[32];          // driver name
@@ -230,8 +293,7 @@ typedef struct
   // Future use
   // tag.2012.04.06 - SEE ABOVE!
   unsigned char mExpansion[48];  // for future use
-}
-rF2VehicleScoring;
+} rF2VehicleScoring;
 
 struct rF2Telemetry
 {
@@ -242,6 +304,17 @@ struct rF2Telemetry
   int mNumVehicles;
 
   rF2VehicleTelemetry mVehicles[64];
+};
+
+struct rF2Scoring
+{
+  int mVersionUpdateBegin;
+  int mVersionUpdateEnd;
+  int mBytesUpdatedHint;
+
+  rF2ScoringInfo mScoringInfo;
+
+  rF2VehicleScoring mVehicles[64];
 };
 
 #pragma pack(pop)

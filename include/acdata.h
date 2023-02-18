@@ -27,13 +27,14 @@ typedef int AC_SESSION_TYPE;
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct
+typedef struct //acsVec3
 {
-  float x, y, z;
-}
-acsVec3;
+  float x;
+  float y;
+  float z;
+} acsVec3;
 
-typedef struct
+typedef struct //acsVehicleInfo
 {
     int carId;
     char driverName[64];
@@ -54,8 +55,7 @@ typedef struct
     float suspensionDamage[4];
     float engineLifeLeft;
     float tyreInflation[4];
-}
-acsVehicleInfo;
+} acsVehicleInfo;
 
 struct SPageFilePhysics
 {
