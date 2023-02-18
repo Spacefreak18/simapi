@@ -37,7 +37,7 @@ with open('acdata.h') as topo_file:
                 elif ( structname == "SPageFileCrewChief" ):
                     structvar = "spfc"
                 elif ( structname == "SPageFilePhysics" ):
-                    structname = "spfp"
+                    structvar = "spfp"
                 else:
                     structname = ""
 
