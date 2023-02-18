@@ -40,6 +40,7 @@ CarData;
 
 typedef struct
 {
+    char simstatus;
     uint32_t velocity;
     uint32_t rpms;
     uint32_t gear;
