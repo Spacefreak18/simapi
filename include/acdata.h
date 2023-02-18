@@ -27,6 +27,12 @@ typedef int AC_SESSION_TYPE;
 #pragma pack(push)
 #pragma pack(4)
 
+typedef struct
+{
+  double x, y, z;
+}
+acsVec3;
+
 struct SPageFilePhysics
 {
     int packetId;
@@ -58,6 +64,37 @@ struct SPageFilePhysics
     int numberOfTyresOut;
     int pitLimiterOn;
     float abs;
+    float kersCharge;
+    float kersInput;
+    int autoShifterOn;
+    float rideHeight[2];
+    float turboBoost;
+    float ballast;
+    float airDensity;
+    float airTemp;
+    float roadTemp;
+    float localAngularVel[3];
+    float finalFF;
+    float performanceMeter;
+    int engineBrake;
+    int ersRecoveryLevel;
+    int ersPowerLevel;
+    int ersHeatCharging;
+    int ersIsCharging;
+    float kersCurrentKJ;
+    int drsAvailable;
+    int drsEnabled;
+    float brakeTemp[4];
+    float clutch;
+    float tyreTempI[4];
+    float tyreTempM[4];
+    float tyreTempO[4];
+    int isAIControlled;
+    acsVec3 tyreContactPoint[4];
+    acsVec3 tyreContactNormal[4];
+    acsVec3 tyreContactHeading[4];
+    float brakeBias;
+    acsVec3 localVelocity;
 };
 
 
