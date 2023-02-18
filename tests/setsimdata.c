@@ -141,9 +141,9 @@ void parse_args(int argc, char* argv[])
     }
 }
 
-int ac_init(struct Map* map, struct SPageFilePhysics* spfp)
+int ac_init(struct Map* map, ACMap* acmap)
 {
-    CreateACMap(map, spfp);
+    CreateACMap(map, acmap);
     return 0;
 }
 
@@ -156,37 +156,75 @@ int main(int argc, char* argv[])
     void* struct1;
     int datasize1;
     struct SPageFilePhysics* spfp = malloc(sizeof(struct SPageFilePhysics));
-    struct1 = spfp;
-    datasize1 = sizeof(struct SPageFilePhysics);
+    struct SPageFileGraphic* spfg = malloc(sizeof(struct SPageFileGraphic));
+    struct SPageFileStatic* spfs = malloc(sizeof(struct SPageFileStatic));
 
-    ac_init(map, spfp);
 
-    int fd = shm_open(TEST_MEM_FILE_LOCATION, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+
+    if (strcmp(mem_file,"acpmf_physics") == 0)
+    {
+        struct1 = spfp;
+        datasize1 = sizeof(struct SPageFilePhysics);
+    }
+    else if (strcmp(mem_file,"acpmf_graphics") == 0)
+    {
+        struct1 = spfg;
+        datasize1 = sizeof(struct SPageFileGraphic);
+    }
+    else if (strcmp(mem_file,"acpmf_static") == 0)
+    {
+        struct1 = spfs;
+        datasize1 = sizeof(struct SPageFileStatic);
+    }
+    else
+    {
+        printf("Unknown memory mapped file name");
+    }
+
+
+
+    ACMap* acmap = malloc(sizeof(ACMap));
+    acmap->ac_physics = *spfp;
+    acmap->ac_graphic = *spfg;
+    acmap->ac_static = *spfs;
+    acmap->physics_map_addr = spfp;
+    acmap->graphic_map_addr = spfg;
+    acmap->static_map_addr = spfs;
+
+
+    ac_init(map, acmap);
+
+
+    int fd = shm_open(mem_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (fd == -1)
     {
         printf("open");
         return 10;
     }
-    int res = ftruncate(fd, sizeof(struct SPageFilePhysics));
+    int res = ftruncate(fd, datasize1);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    void* addr = mmap(NULL, sizeof(struct SPageFilePhysics), PROT_WRITE, MAP_SHARED, fd, 0);
+    void* addr = mmap(NULL, datasize1, PROT_WRITE, MAP_SHARED, fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
         return 30;
     }
 
-    memcpy(spfp, addr, sizeof(struct SPageFilePhysics));
+
+
+    memcpy(struct1, addr, datasize1);
+
+
     if (strcmp(action,"loadfile") == 0)
     {
-        FILE *fp;
+        FILE* fp;
         fp=fopen(save_file, "r");
-        fread(struct1, datasize1, 1, fp );
+        fread(struct1, datasize1, 1, fp);
         fclose(fp);
         memcpy(addr, struct1, datasize1);
         goto cleanup;
@@ -194,9 +232,9 @@ int main(int argc, char* argv[])
 
     if (strcmp(action,"dumpfile") == 0)
     {
-        FILE *fp;
+        FILE* fp;
         fp=fopen(save_file, "w+");
-        fwrite(struct1, datasize1, 1, fp );
+        fwrite(struct1, datasize1, 1, fp);
         fclose(fp);
         goto cleanup;
     }
@@ -239,7 +277,7 @@ int main(int argc, char* argv[])
     memcpy(addr, struct1, datasize1);
     //printf("set to value %f\n", *(float*) (char*) addr2);
 cleanup:
-    free(spfp);
+    //free(struct1);
 
     return 0;
 }
