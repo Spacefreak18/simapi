@@ -2,44 +2,168 @@
 import re
 import cfile.src.cfile as C
 
+game="Assetto Corsa"
+includefilename=""
+mapperfilename=""
+mapperheaderfilename=""
+mapsizevariablename=""
+if (game == "Assetto Corsa"):
+    includefilename="acdata.h"
+    mapperfilename="mapacdata.c"
+    mapperheaderfilename="mapacdata.h"
+    mapsizevariablename="#define ACMAP_SIZE"
+
 simmap = C.cfile('simmap.c')
 simmap.code.append(C.sysinclude('stdio.h'))
 simmap.code.append(C.sysinclude('stddef.h'))
 simmap.code.append(C.include('basicmap.h'))
-simmap.code.append(C.include('../simapi/ac.h'))
-simmap.code.append(C.blank())
-simmap.code.append(C.function('CreateACMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('acmap', 'ACMap', pointer=1)))
+
+if (game == "RFactor2"):
+    simmap.code.append(C.include('../simapi/rf2.h'))
+    simmap.code.append(C.blank())
+    simmap.code.append(C.function('CreateRF2Map', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('rf2map', 'RF2Map', pointer=1)))
+if (game == "Assetto Corsa"):
+    simmap.code.append(C.include('../simapi/ac.h'))
+    simmap.code.append(C.blank())
+    simmap.code.append(C.function('CreateACMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('acmap', 'ACMap', pointer=1)))
+
 body = C.block(innerIndent=4)
 
 structname=""
 structvar=""
-mapnum=0
+mapnum = 0
+
+typedeflist=[]
+typedefdict={}
 
 body.append(C.blank())
 
-body.append(C.statement("char* spfp = acmap->physics_map_addr"))
-body.append(C.statement("char* spfg = acmap->graphic_map_addr"))
-body.append(C.statement("char* spfs = acmap->static_map_addr"))
-body.append(C.statement("char* spfc = acmap->crewchief_map_addr"))
+if (game == "RFactor2"):
+    body.append(C.statement("char* rf2t = rf2map->telemetry_map_addr"))
+    body.append(C.statement("char* rf2s = rf2map->scoring_map_addr"))
+if (game == "Assetto Corsa"):
+    body.append(C.statement("char* spfp = acmap->physics_map_addr"))
+    body.append(C.statement("char* spfg = acmap->graphic_map_addr"))
+    body.append(C.statement("char* spfs = acmap->static_map_addr"))
+    body.append(C.statement("char* spfc = acmap->crewchief_map_addr"))
 
 body.append(C.blank())
 
-with open('acdata.h') as topo_file:
-    for line in topo_file:
-        if ("//" not in line and "#" not in line and "{" not in line and "}" not in line and "typedef" not in line):
-            if ("struct" in line):
-                structname = line.split()[1]
+instruct = False
+intypedef = False
 
-                if ( structname == "SPageFileStatic" ):
-                    structvar = "spfs"
-                elif ( structname == "SPageFileGraphic" ):
-                    structvar = "spfg"
-                elif ( structname == "SPageFileCrewChief" ):
-                    structvar = "spfc"
-                elif ( structname == "SPageFilePhysics" ):
-                    structvar = "spfp"
+def setstructname(g):
+    global structvar
+    global structname
+    match g:
+        case "Assetto Corsa":
+            if ( structname == "SPageFileStatic" ):
+                structvar = "spfs"
+            elif ( structname == "SPageFileGraphic" ):
+                structvar = "spfg"
+            elif ( structname == "SPageFileCrewChief" ):
+                structvar = "spfc"
+            elif ( structname == "SPageFilePhysics" ):
+                structvar = "spfp"
+            else:
+                structname = ""
+        case "RFactor2":
+            if ( structname == "rF2Scoring" ):
+                structvar = "rf2s"
+            elif ( structname == "rF2Telemetry" ):
+                structvar = "rf2t"
+            else:
+                structname = ""
+
+def formatdatatype(d):
+        if "int" in d:
+            return "INTEGER"
+        if "float" in d:
+            return "FLOAT"
+        if "double" in d:
+            return "DOUBLE"
+        return "CHAR"
+
+def addcodeline(textstring):
+    body.append(C.statement(textstring[0] + ".name = " + "\"" + textstring[2] + "\""))
+    body.append(C.statement(textstring[0] + ".value = " + textstring[3]))
+    body.append(C.statement(textstring[0] + ".dtype = " + formatdatatype(textstring[1])))
+
+def addvarsfromtypedef(t, textstring):
+    global mapnum
+    newtextstring = {}
+    if t in typedeflist:
+        for key in typedefdict:
+            if t in key:
+                type2=typedefdict[key]
+                if "[" in key.split(':')[1]:
+                    # hopefully this is all the recursion i will need
+                    # i could definitely tighten this up and implement further
+                    # but i think this will suffice
+                    continue
                 else:
-                    structname = ""
+                    newtextstring[0] = "map["+str(mapnum)+"]"
+                    newtextstring[1] = type2;
+                    newtextstring[2] = textstring[2] + "." + key.split(':')[1]
+                    newtextstring[3] = textstring[3] + " + offsetof(" + key.split(':')[0] + ", " + key.split(':')[1] + ")"
+                    if addvarsfromtypedef(type2, newtextstring):
+                        continue
+                    else:
+                        addcodeline(newtextstring)
+                        mapnum = mapnum + 1
+        return True
+    else:
+        return False
+
+def addline(v, t):
+    global mapnum
+    textstring = {}
+
+    textstring[0] = "map["+str(mapnum)+"]"
+    textstring[1] = t
+
+    if "]" in v:
+        array_length=v[v.find("[")+1:v.find("]")]
+        v=v[0:v.find("[")]
+        for i in range(int(array_length)):
+            textstring[0] = "map["+str(mapnum)+"]"
+            textstring[2] = structname+"_"+ v + str(i)
+            textstring[3] = "((char*) " + structvar + " + offsetof(struct " + structname + ", " + v + ")) + (sizeof(" + type + ") * " + str(i) + ")"
+            if addvarsfromtypedef(t, textstring):
+                continue
+            else:
+                addcodeline(textstring)
+                mapnum = mapnum + 1
+    else:
+        textstring[2] = structname + "_" + v
+        textstring[3] = "((char*) " + structvar + " + offsetof(struct " + structname + ", " + v + "))"
+        if not addvarsfromtypedef(t, textstring):
+            addcodeline(textstring)
+            mapnum = mapnum + 1
+
+with open(includefilename) as topo_file:
+    for line in topo_file:
+        if ("#" not in line and "{" not in line and "}" not in line and not line.lstrip().startswith("/") and line.lstrip() != '\r\n'):
+
+            if ("typedef struct" in line):
+                typedefname = line.split('//')[1]
+                typedefname = typedefname.strip()
+                typedeflist.append(typedefname)
+                intypedef = True
+                instruct = False
+                continue
+
+            elif ("struct" in line):
+                instruct = True
+                intypedef = False
+                structname = line.split()[1]
+                setstructname(game)
+
+
+            elif (intypedef == True):
+                if(line.lstrip()):
+                    typename=line.split()[0]
+                    typedefdict.update({typedefname + ":" + line.split()[1][0:-1] : typename})
 
             elif (line.isspace()):
                 continue
@@ -49,32 +173,30 @@ with open('acdata.h') as topo_file:
                 rawline=line.split()
                 variable=rawline[1][0:-1]
                 type=rawline[0]
-                if "]" in variable:
-                    array_length=variable[variable.find("[")+1:variable.find("]")]
-                    variable=variable[0:variable.find("[")]
-                    for i in range(int(array_length)):
-                        body.append(C.statement( "map["+str(mapnum)+"].name = \"" + structname+"_"+ variable + str(i) + "\"" ))
-                        body.append(C.statement( "map["+str(mapnum)+ "].value = ((char*) " + structvar + " + offsetof(struct " + structname + ", " + variable + ")) + sizeof(" + type + ") * " + str(i) ) )
-                        mapnum = mapnum + 1
-                else:
-                    body.append(C.statement( "map["+str(mapnum)+ "].name = \"" + structname + "_" + variable + "\"" ) )
-                    body.append(C.statement( "map["+str(mapnum)+ "].value = ((char*) " + structvar + " + offsetof(struct " + structname + ", " + variable + "))" ) )
-                    mapnum = mapnum + 1
+                addline(variable, type)
 
+
+
+#print(typedefdict)
+#print(typedeflist)
+
+body.append(C.blank())
 body.append(C.statement('return 0'))
 simmap.code.append(body)
 
-with open("mapacdata.c", "w") as f:
+with open(mapperfilename, "w") as f:
     f.write(str(simmap))
 
 filedata=""
-with open('../simmap/mapacdata.h') as topo_file:
+with open('../simmap/' + mapperheaderfilename) as topo_file:
 
 
-    with open('mapacdata.h', 'w') as topo_file2:
+    with open(mapperheaderfilename, 'w') as topo_file2:
 
         for line in topo_file:
-            if "#define ACMAP_SIZE" in line:
-                topo_file2.write("#define ACMAP_SIZE    " + str(mapnum) + "\n")
+            if mapsizevariablename in line:
+                topo_file2.write(mapsizevariablename + "    " + str(mapnum) + "\n")
             else:
                 topo_file2.write(line)
+
+
