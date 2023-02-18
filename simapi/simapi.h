@@ -18,4 +18,13 @@ typedef enum
 }
 SimAPIError;
 
+typedef enum
+{
+    INTEGER       = 0,
+    DOUBLE        = 1,
+    FLOAT         = 2,
+    CHAR          = 3,
+}
+SimDatatype;
+
 #endif
