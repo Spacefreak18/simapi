@@ -6,13 +6,13 @@
 #include <stddef.h>
 #include <math.h>
 
+#include "simapi.h"
 #include "simmapper.h"
 #include "simdata.h"
 #include "test.h"
 #include "ac.h"
 #include "rf2.h"
-#include "../helper/confighelper.h"
-#include "../slog/slog.h"
+
 
 #include "../c/acdata.h"
 #include "../c/rf2data.h"
@@ -25,7 +25,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
     char* c;
     switch ( simulator )
     {
-        case SIMULATOR_MONOCOQUE_TEST :
+        case SIMULATOR_SIMAPI_TEST :
             memcpy(simdata, simmap->addr, sizeof(SimData));
             break;
         case SIMULATOR_ASSETTO_CORSA :
@@ -60,13 +60,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
 int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
-    slogi("searching for simulator data...");
-    int error = RACEENGINEER_ERROR_NONE;
+    //slogi("searching for simulator data...");
+    int error = SIMAPI_ERROR_NONE;
 
     void* a;
     switch ( simulator )
     {
-        case SIMULATOR_MONOCOQUE_TEST :
+        case SIMULATOR_SIMAPI_TEST :
             simmap->fd = shm_open(TEST_MEM_FILE_LOCATION, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
@@ -78,7 +78,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             {
                 return 30;
             }
-            slogi("found data for monocoque test...");
+            //slogi("found data for monocoque test...");
             break;
         case SIMULATOR_ASSETTO_CORSA :
 
@@ -87,13 +87,13 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             simmap->fd = shm_open(AC_PHYSICS_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
-                slogd("could not open Assetto Corsa physics engine");
-                return RACEENGINEER_ERROR_NODATA;
+                //slogd("could not open Assetto Corsa physics engine");
+                return SIMAPI_ERROR_NODATA;
             }
             simmap->d.ac.physics_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_physics), PROT_READ, MAP_SHARED, simmap->fd, 0);
             if (simmap->d.ac.physics_map_addr == MAP_FAILED)
             {
-                slogd("could not retrieve Assetto Corsa physics data");
+                //slogd("could not retrieve Assetto Corsa physics data");
                 return 30;
             }
             simmap->d.ac.has_physics=true;
@@ -101,13 +101,13 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             simmap->fd = shm_open(AC_STATIC_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
-                slogd("could not open Assetto Corsa static data");
+                //slogd("could not open Assetto Corsa static data");
                 return 10;
             }
             simmap->d.ac.static_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_static), PROT_READ, MAP_SHARED, simmap->fd, 0);
             if (simmap->d.ac.static_map_addr == MAP_FAILED)
             {
-                slogd("could not retrieve Assetto Corsa static data");
+                //slogd("could not retrieve Assetto Corsa static data");
                 return 30;
             }
             simmap->d.ac.has_static=true;
@@ -115,17 +115,17 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             simmap->fd = shm_open(AC_GRAPHIC_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
-                slogd("could not open Assetto Corsa graphic data");
+                //slogd("could not open Assetto Corsa graphic data");
                 return 10;
             }
             simmap->d.ac.graphic_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_graphic), PROT_READ, MAP_SHARED, simmap->fd, 0);
             if (simmap->d.ac.graphic_map_addr == MAP_FAILED)
             {
-                slogd("could not retrieve Assetto Corsa static data");
+                //slogd("could not retrieve Assetto Corsa static data");
                 return 30;
             }
             simmap->d.ac.has_graphic=true;
-            slogi("found data for Assetto Corsa...");
+            //slogi("found data for Assetto Corsa...");
             break;
 
         case SIMULATOR_RFACTOR2 :
@@ -135,19 +135,19 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             simmap->fd = shm_open(RF2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
-                slogd("could not open RFactor2 Telemetry engine");
-                return RACEENGINEER_ERROR_NODATA;
+                //slogd("could not open RFactor2 Telemetry engine");
+                return SIMAPI_ERROR_NODATA;
             }
             simmap->d.rf2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.rf2.rf2_telemetry), PROT_READ, MAP_SHARED, simmap->fd, 0);
             if (simmap->d.rf2.telemetry_map_addr == MAP_FAILED)
             {
-                slogd("could not retrieve RFactor2 telemetry data");
+                //slogd("could not retrieve RFactor2 telemetry data");
                 return 30;
             }
             simmap->d.rf2.has_telemetry=true;
 
 
-            slogi("found data for RFactor2...");
+            //slogi("found data for RFactor2...");
             break;
     }
 
