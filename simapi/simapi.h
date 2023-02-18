@@ -25,6 +25,6 @@ typedef enum
     FLOAT         = 2,
     CHAR          = 3,
 }
-SimDatatype;
+SimDataType;
 
 #endif

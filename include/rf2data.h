@@ -11,12 +11,12 @@
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct //TelemVect3
+typedef struct //rF2Vec3
 {
   double x;
   double y;
   double z;
-} TelemVect3;
+} rF2Vec3;
 
 typedef struct //TelemWheelV01
 {
@@ -67,15 +67,15 @@ typedef struct //rF2VehicleTelemetry
   char mTrackName[64];           // current track name
 
   // Position and derivatives
-  TelemVect3 mPos;               // world position in meters
-  TelemVect3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
-  TelemVect3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
+  rF2Vec3 mPos;               // world position in meters
+  rF2Vec3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
+  rF2Vec3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
 
   // Orientation and derivatives
-  TelemVect3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
+  rF2Vec3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
                                  // vehicle vectors into world X, Y, or Z using dot product of rows 0, 1, or 2 respectively
-  TelemVect3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
-  TelemVect3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
+  rF2Vec3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
+  rF2Vec3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
 
   // Vehicle status
   int mGear;                    // -1=reverse, 0=neutral, 1+=forward gears
@@ -119,7 +119,7 @@ typedef struct //rF2VehicleTelemetry
   unsigned char mDentSeverity[8];// dent severity at 8 locations around the car (0=none, 1=some, 2=more)
   double mLastImpactET;          // time of last impact
   double mLastImpactMagnitude;   // magnitude of last impact
-  TelemVect3 mLastImpactPos;     // location of last impact
+  rF2Vec3 mLastImpactPos;     // location of last impact
 
   // Expanded
   double mEngineTorque;          // current engine torque (including additive torque) (used to be mEngineTq, but there's little reason to abbreviate it)
@@ -157,12 +157,12 @@ typedef struct //rF2VehicleTelemetry
 
 typedef struct //rF2ScoringInfo
 {
-  unsigned char[64] mTrackName;
+  unsigned char mTrackName[64];
   int mSession;
   double mCurrentET;
   int mMAxLaps;
   double mLapDist;
-  unsigned char[8] pointer1;
+  unsigned char pointer1[8];
 
   int mNumVehicles;
 
@@ -188,7 +188,7 @@ typedef struct //rF2ScoringInfo
   //  5 Last lap
   //  6 Resume
   //  7 Race halt (not currently used)
-  public sbyte mYellowFlagState;
+  char YellowFlagState;
 
   char mSectorFlag[3];      // whether there are any local yellows at the moment in each sector (not sure if sector 0 is first or last, so test)
   char mStartLight;       // start light frame (number depends on track)
@@ -257,15 +257,15 @@ typedef struct //rF2VehicleScoring
   double mLapStartET;            // time this lap was started
 
   // Position and derivatives
-  TelemVect3 mPos;               // world position in meters
-  TelemVect3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
-  TelemVect3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
+  rF2Vec3 mPos;               // world position in meters
+  rF2Vec3 mLocalVel;          // velocity (meters/sec) in local vehicle coordinates
+  rF2Vec3 mLocalAccel;        // acceleration (meters/sec^2) in local vehicle coordinates
 
   // Orientation and derivatives
-  TelemVect3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
+  rF2Vec3 mOri[3];            // rows of orientation matrix (use TelemQuat conversions if desired), also converts local
                                  // vehicle vectors into world X, Y, or Z using dot product of rows 0, 1, or 2 respectively
-  TelemVect3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
-  TelemVect3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
+  rF2Vec3 mLocalRot;          // rotation (radians/sec) in local vehicle coordinates
+  rF2Vec3 mLocalRotAccel;     // rotational acceleration (radians/sec^2) in local vehicle coordinates
 
   // tag.2012.03.01 - stopped casting some of these so variables now have names and mExpansion has shrunk, overall size and old data locations should be same
   unsigned char mHeadlights;     // status of headlights
