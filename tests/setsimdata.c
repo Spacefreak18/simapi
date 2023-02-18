@@ -79,7 +79,7 @@ void parse_args(int argc, char* argv[])
                     else
                         if (!strcmp(argv[i],"-a"))
                         {
-                            if (i<argc-1)
+                           if (i<argc-1)
                             {
                                 action = argv[++i];
                                 //spring_strength =atof(argv[++i]);
@@ -126,7 +126,6 @@ void parse_args(int argc, char* argv[])
         printf("  This program is for stress testing constant non-enveloped forces on\n");
         printf("  a force feedback device via the event interface. It simulates a\n");
         printf("  moving spring force by a frequently updated constant force effect.\n");
-        printf("  BE CAREFUL IN USAGE, YOUR DEVICE MAY GET DAMAGED BY THE STRESS TEST!\n");
         printf("Usage:\n");
         printf("  %s <option> [<option>...]\n",argv[0]);
         printf("Options:\n");
@@ -151,7 +150,7 @@ int main(int argc, char* argv[])
     /* Parse command line arguments */
     parse_args(argc,argv);
 
-    struct Map map[1024];
+    struct Map* map = (struct Map*) malloc((ACMAP_SIZE) * sizeof(struct Map));
     void* struct1;
     int datasize1;
     struct SPageFilePhysics* spfp = malloc(sizeof(struct SPageFilePhysics));
@@ -185,6 +184,7 @@ int main(int argc, char* argv[])
         printf("Unknown memory mapped file name");
     }
 
+
     ACMap* acmap = malloc(sizeof(ACMap));
     acmap->ac_physics = *spfp;
     acmap->ac_graphic = *spfg;
@@ -196,6 +196,8 @@ int main(int argc, char* argv[])
     acmap->crewchief_map_addr = spfc;
 
     ac_init(map, acmap);
+
+
 
 
     int fd = shm_open(mem_file, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
@@ -222,11 +224,11 @@ int main(int argc, char* argv[])
 
     if (strcmp(action,"loadfile") == 0)
     {
+
         FILE* fp;
         fp=fopen(save_file, "r");
-        fread(struct1, datasize1, 1, fp);
+        fread(addr, datasize1, 1, fp);
         fclose(fp);
-        memcpy(addr, struct1, datasize1);
         goto cleanup;
     }
 
@@ -240,7 +242,7 @@ int main(int argc, char* argv[])
     }
 
     void* addr2;
-    for (int k = 0; k < 402; k++)
+    for (int k = 0; k < 1633; k++)
     {
         if ( map[k].name == NULL )
         {
@@ -277,7 +279,7 @@ int main(int argc, char* argv[])
     memcpy(addr, struct1, datasize1);
     //printf("set to value %f\n", *(float*) (char*) addr2);
 cleanup:
+    free(map);
     free(struct1);
-
     return 0;
 }

@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-
+import re
 import cfile.src.cfile as C
 
 simmap = C.cfile('simmap.c')
@@ -66,3 +66,15 @@ simmap.code.append(body)
 
 with open("mapacdata.c", "w") as f:
     f.write(str(simmap))
+
+filedata=""
+with open('../simmap/mapacdata.h') as topo_file:
+
+
+    with open('mapacdata.h', 'w') as topo_file2:
+
+        for line in topo_file:
+            if "#define ACMAP_SIZE" in line:
+                topo_file2.write("#define ACMAP_SIZE    " + str(mapnum) + "\n")
+            else:
+                topo_file2.write(line)
