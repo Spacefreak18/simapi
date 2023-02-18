@@ -13,9 +13,11 @@
 #include "ac.h"
 #include "rf2.h"
 
+
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 
+#define SIMMAP_ALL 1
 
 #ifndef SIMMAP_ALL
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
@@ -67,6 +69,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
     char* a;
     char* b;
     char* c;
+    char* d;
+
     switch ( simulator )
     {
         case SIMULATOR_SIMAPI_TEST :
@@ -106,9 +110,59 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->lastlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iLastTime));
                 simdata->bestlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iBestTime));
                 simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
+                /* 
+                int strsize = 32;
+                int i = 0;
+                char* car = (char*) malloc(sizeof(char) * (strsize));
+                char* track = (char*) malloc(sizeof(char) * (strsize));
+                char* driver = (char*) malloc(sizeof(char) * (strsize));
+                while (i < strsize)
+                {
+                    car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, currentTime)) + (sizeof(char16_t) * i));
+                    track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, lastTime)) + (sizeof(char16_t) * i));
+                    driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, bestTime)) + (sizeof(char16_t) * i));
+                    i++;
+                }
+                
+                simdata->ctime = car;
+                simdata->ltime = track;
+                simdata->btime = driver;
+                */
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 
-                simdata->timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
+                float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
+                if (timeleft < 0)
+                    simdata->timeleft = 0;
+                else
+                    simdata->timeleft = ceil(timeleft);
+            }
+            if ( simmap->d.ac.has_crewchief == true )
+            {
+                d = simmap->d.ac.crewchief_map_addr;
+                int strsize = 32;
+
+                simdata->numcars = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, numVehicles));
+                for(int i=0; i<simdata->numcars; i++)
+                {
+                    simdata->cars[i].lap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lapCount)));
+                    simdata->cars[i].pos = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carLeaderboardPosition)));
+                    simdata->cars[i].lastlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lastLapTimeMS)));
+                    simdata->cars[i].bestlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, bestLapMS)));
+                    simdata->cars[i].inpitlane = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPitline)));
+                    simdata->cars[i].inpit = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPit)));
+
+                    char* driver = (char*) malloc(sizeof(char) * (strsize));
+                    char* car = (char*) malloc(sizeof(char) * (strsize));
+                    int j = 0;
+                    while (j < strsize)
+                    {
+                        driver[j] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)) + (sizeof(char) * j));
+                        car[j] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)) + (sizeof(char) * j));
+                        j++;
+                    }
+                    simdata->cars[i].driver = driver;
+                    simdata->cars[i].car = car;
+                }
             }
             
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
@@ -228,6 +282,20 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             simmap->d.ac.has_graphic=true;
             //slogi("found data for Assetto Corsa...");
+            simmap->fd = shm_open(AC_CREWCHIEF_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            if (simmap->fd == -1)
+            {
+                //slogd("could not open Assetto Corsa graphic data");
+                return 10;
+            }
+            simmap->d.ac.crewchief_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_crewchief), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            if (simmap->d.ac.crewchief_map_addr == MAP_FAILED)
+            {
+                //slogd("could not retrieve Assetto Corsa static data");
+                return 30;
+            }
+            simmap->d.ac.has_crewchief=true;
+
             break;
 
         case SIMULATOR_RFACTOR2 :

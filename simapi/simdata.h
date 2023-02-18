@@ -24,6 +24,22 @@ SimData;
 
 typedef struct
 {
+    uint32_t xpos;
+    uint32_t ypos;
+    uint32_t zpos;
+    uint32_t pos;
+    uint32_t lap;
+    uint32_t lastlap;
+    uint32_t bestlap;
+    uint32_t inpitlane;
+    uint32_t inpit;
+    char* driver;
+    char* car;
+}
+CarData;
+
+typedef struct
+{
     uint32_t velocity;
     uint32_t rpms;
     uint32_t gear;
@@ -33,6 +49,7 @@ typedef struct
     uint32_t lap;
     uint32_t position;
     uint32_t numlaps;
+    uint32_t numcars;
     double gas;
     double brake;
     double fuel;
@@ -49,11 +66,12 @@ typedef struct
     uint32_t lastlap;
     uint32_t bestlap;
     uint32_t time;
-    double timeleft;
+    uint32_t timeleft;
 
     char* car;
     char* track;
     char* driver;
+    CarData cars[10];
 }
 SimData;
 
