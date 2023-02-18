@@ -23,6 +23,9 @@ typedef struct
     struct SPageFileStatic ac_static;
     struct SPageFileGraphic ac_graphic;
     struct SPageFileCrewChief ac_crewchief;
+    char car[32];
+    char driver[32];
+    char track[32];
 }
 ACMap;
 

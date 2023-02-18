@@ -3,7 +3,8 @@
 
 #include <stdint.h>
 
-#define SIMMAP_ALL 1
+#define MAXCARS 24
+
 #ifndef SIMMAP_ALL
 
 typedef struct
@@ -19,8 +20,7 @@ typedef struct
 }
 SimData;
 
-#endif
-#ifdef SIMMAP_ALL
+#else
 
 typedef struct
 {
@@ -71,7 +71,7 @@ typedef struct
     char* car;
     char* track;
     char* driver;
-    CarData cars[10];
+    CarData cars[MAXCARS];
 }
 SimData;
 

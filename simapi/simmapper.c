@@ -8,7 +8,6 @@
 
 #include "simapi.h"
 #include "simmapper.h"
-#include "simdata.h"
 #include "test.h"
 #include "ac.h"
 #include "rf2.h"
@@ -17,7 +16,6 @@
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 
-#define SIMMAP_ALL 1
 
 #ifndef SIMMAP_ALL
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
@@ -85,21 +83,17 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
 
                 int strsize = 32;
-                int i = 0;
-                char* car = (char*) malloc(sizeof(char) * (strsize));
-                char* track = (char*) malloc(sizeof(char) * (strsize));
-                char* driver = (char*) malloc(sizeof(char) * (strsize));
-                while (i < strsize)
+                for(int i=0; i<strsize; i++)
                 {
-                    car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
-                    track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, track)) + (sizeof(char16_t) * i));
-                    driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, playerName)) + (sizeof(char16_t) * i));
-                    i++;
+                    simmap->d.ac.car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
+                    simmap->d.ac.track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, track)) + (sizeof(char16_t) * i));
+                    simmap->d.ac.driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, playerName)) + (sizeof(char16_t) * i));
                 }
-                
-                simdata->car = car;
-                simdata->track = track;
-                simdata->driver = driver;
+
+                simdata->car = simmap->d.ac.car;
+                simdata->track = simmap->d.ac.track;
+                simdata->driver = simmap->d.ac.driver;
+
             }
             
             if ( simmap->d.ac.has_graphic == true )
@@ -110,24 +104,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->lastlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iLastTime));
                 simdata->bestlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iBestTime));
                 simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
-                /* 
-                int strsize = 32;
-                int i = 0;
-                char* car = (char*) malloc(sizeof(char) * (strsize));
-                char* track = (char*) malloc(sizeof(char) * (strsize));
-                char* driver = (char*) malloc(sizeof(char) * (strsize));
-                while (i < strsize)
-                {
-                    car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, currentTime)) + (sizeof(char16_t) * i));
-                    track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, lastTime)) + (sizeof(char16_t) * i));
-                    driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, bestTime)) + (sizeof(char16_t) * i));
-                    i++;
-                }
-                
-                simdata->ctime = car;
-                simdata->ltime = track;
-                simdata->btime = driver;
-                */
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 
                 float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
@@ -141,8 +117,14 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 d = simmap->d.ac.crewchief_map_addr;
                 int strsize = 32;
 
+
                 simdata->numcars = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, numVehicles));
-                for(int i=0; i<simdata->numcars; i++)
+                int numcars = simdata->numcars;
+                if (numcars > MAXCARS)
+                {
+                    numcars = MAXCARS;
+                }
+                for(int i=0; i<numcars; i++)
                 {
                     simdata->cars[i].lap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lapCount)));
                     simdata->cars[i].pos = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carLeaderboardPosition)));
@@ -151,17 +133,9 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                     simdata->cars[i].inpitlane = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPitline)));
                     simdata->cars[i].inpit = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPit)));
 
-                    char* driver = (char*) malloc(sizeof(char) * (strsize));
-                    char* car = (char*) malloc(sizeof(char) * (strsize));
-                    int j = 0;
-                    while (j < strsize)
-                    {
-                        driver[j] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)) + (sizeof(char) * j));
-                        car[j] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)) + (sizeof(char) * j));
-                        j++;
-                    }
-                    simdata->cars[i].driver = driver;
-                    simdata->cars[i].car = car;
+
+                    simdata->cars[i].driver = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)));
+                    simdata->cars[i].car = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)));
                 }
             }
             

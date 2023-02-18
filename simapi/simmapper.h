@@ -1,5 +1,5 @@
 #ifndef _SIMMAPPER_H
-#define _SIMMAPPEE_H
+#define _SIMMAPPER_H
 
 #include "ac.h"
 #include "rf2.h"
