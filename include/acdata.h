@@ -33,6 +33,30 @@ typedef struct
 }
 acsVec3;
 
+typedef struct
+{
+    int carId;
+    char driverName[64];
+    char carModel[64];
+    float speedMS;
+    int bestLapMS;
+    int lapCount;
+    int currentLapInvalid;
+    int currentLapTimeMS;
+    int lastLapTimeMS;
+    acsVec3 worldPosition;
+    int isCarInPitline;
+    int isCarInPit;
+    int carLeaderboardPosition;
+    int carRealTimeLeaderboardPosition;
+    float spLineLength;
+    int isConnected;
+    float suspensionDamage[4];
+    float engineLifeLeft;
+    float tyreInflation[4];
+}
+acsVehicleInfo;
+
 struct SPageFilePhysics
 {
     int packetId;
@@ -185,6 +209,18 @@ struct SPageFileStatic
     int PitWindowEnd;
 
 };
+
+
+struct SPageFileCrewChief
+{
+    int numVehicles;
+    int focuseVehicle;
+    char serverName[512];
+    acsVehicleInfo vehicle[64];
+    char acInstallPath[512];
+    int isInternalMemoryModuleLoaded;
+    char pluginVersion[32];
+}
 
 
 #pragma pack(pop)
