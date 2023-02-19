@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include "../include/rf2data.h"
 
-#define RF2_TELEMETRY_FILE "rFactor2SMMP_Telemetry"
-#define RF2_SCORING_FILE "rFactor2SMMP_Scoring"
+#define RF2_TELEMETRY_FILE "$rFactor2SMMP_Telemetry$"
+#define RF2_SCORING_FILE "$rFactor2SMMP_Scoring$"
 
 typedef struct
 {
