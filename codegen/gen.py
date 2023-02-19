@@ -49,8 +49,8 @@ if (game == "RFactor2"):
     body.append(C.statement("char* rf2s = NULL"))
     body.append("    if (mapdata == 1)") # not sure how to do this cleaner with this api
     iff = C.block(innerIndent=4)
-    iff.append(C.statement("char* rf2t = rf2map->telemetry_map_addr"))
-    iff.append(C.statement("char* rf2s = rf2map->scoring_map_addr"))
+    iff.append(C.statement("rf2t = rf2map->telemetry_map_addr"))
+    iff.append(C.statement("rf2s = rf2map->scoring_map_addr"))
     body.append(iff)
 if (game == "Assetto Corsa"):
     body.append(C.statement("char* spfp = NULL"))

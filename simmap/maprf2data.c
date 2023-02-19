@@ -11,8 +11,8 @@ int CreateRF2Map(struct Map *map, RF2Map *rf2map, int mapdata)
     char* rf2s = NULL;
     if (mapdata == 1)
     {
-        char* rf2t = rf2map->telemetry_map_addr;
-        char* rf2s = rf2map->scoring_map_addr;
+        rf2t = rf2map->telemetry_map_addr;
+        rf2s = rf2map->scoring_map_addr;
     } 
 
 
