@@ -159,6 +159,8 @@ int main(int argc, char* argv[])
     /* Parse command line arguments */
     parse_args(argc,argv);
 
+    printf(variable_name);
+
 #ifdef ASSETTOCORSA
     struct Map* map = (struct Map*) malloc((ACMAP_SIZE) * sizeof(struct Map));
     void* struct1;
@@ -169,22 +171,22 @@ int main(int argc, char* argv[])
     struct SPageFileCrewChief* spfc = malloc(sizeof(struct SPageFileCrewChief));
 
 
-    if (strcmp(mem_file,"acpmf_physics") == 0)
+    if (strcmp(mem_file, AC_PHYSICS_FILE) == 0)
     {
         struct1 = spfp;
         datasize1 = sizeof(struct SPageFilePhysics);
     }
-    else if (strcmp(mem_file,"acpmf_graphics") == 0)
+    else if (strcmp(mem_file, AC_GRAPHIC_FILE) == 0)
     {
         struct1 = spfg;
         datasize1 = sizeof(struct SPageFileGraphic);
     }
-    else if (strcmp(mem_file,"acpmf_static") == 0)
+    else if (strcmp(mem_file, AC_STATIC_FILE) == 0)
     {
         struct1 = spfs;
         datasize1 = sizeof(struct SPageFileStatic);
     }
-    else if (strcmp(mem_file,"acpmf_crewchief") == 0)
+    else if (strcmp(mem_file, AC_CREWCHIEF_FILE) == 0)
     {
         struct1 = spfc;
         datasize1 = sizeof(struct SPageFileCrewChief);
@@ -214,12 +216,12 @@ int main(int argc, char* argv[])
     struct rF2Telemetry* rf2t = malloc(sizeof(struct rF2Telemetry));
     struct rF2Scoring* rf2s = malloc(sizeof(struct rF2Scoring));
 
-    if (strcmp(mem_file,"rFactor2SMMP_Telemetry") == 0)
+    if (strcmp(mem_file, RF2_TELEMETRY_FILE) == 0)
     {
         struct1 = rf2t;
         datasize1 = sizeof(struct rF2Telemetry);
     }
-    else if (strcmp(mem_file,"rFactor2SMMP_Scoring") == 0)
+    else if (strcmp(mem_file, RF2_SCORING_FILE) == 0)
     {
         struct1 = rf2s;
         datasize1 = sizeof(struct rF2Scoring);
@@ -299,6 +301,14 @@ int main(int argc, char* argv[])
         b = *(float*) (char*) addr2;
         float new = strtof( valuetoset, NULL );
         printf("current value as float %f\n", b);
+        memcpy(addr2, &new, sizeof(new));
+    }
+    else if(strcmp( data_type, "double" ) == 0 )
+    {
+        double b;
+        b = *(double*) (char*) addr2;
+        double new = strtod( valuetoset, NULL );
+        printf("current value as double %f\n", b);
         memcpy(addr2, &new, sizeof(new));
     }
     else if(strcmp( data_type, "integer" ) == 0 )
