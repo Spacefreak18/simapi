@@ -17,6 +17,16 @@
 #include "../include/rf2data.h"
 
 
+// if this becomes more necessary i will move it into it's own file
+float spLineLengthToDistanceRoundTrack(float trackLength, float spLine)
+{
+    if (spLine < 0.0)
+    {
+        spLine -= 1;
+    }
+    return spLine * trackLength;
+}
+
 #ifndef SIMMAP_ALL
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
@@ -138,13 +148,33 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                     simdata->cars[i].driver = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)));
                     simdata->cars[i].car = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)));
                 }
+
+                float player_spline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, spLineLength)));
+                float track_spline = *(float*) (char*) (b + offsetof(struct SPageFileStatic, TrackSPlineLength));
+                simdata->trackdistancearound = spLineLengthToDistanceRoundTrack(track_spline, player_spline);
+                simdata->playerlaps = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, lapCount)));
+
+                simdata->lapisvalid = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, currentLapInvalid)));
+                simdata->lapisvalid = !simdata->lapisvalid;
+
+                int currentlapinticks = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, currentLapTimeMS)));
+                int lastlapinticks = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, lastLapTimeMS)));
+                simdata->currentlapinseconds = currentlapinticks * 100000;
+                simdata->lastlapinseconds = lastlapinticks * 100000;
+
+                simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, x)));
+                simdata->worldposy = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
+                simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
             }
             
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
             simdata->gas = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, gas));
+            simdata->clutch = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, clutch));
+            simdata->steer = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, steerAngle));
             simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
+            simdata->handbrake = 0;
             simdata->fuel = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, fuel));
 
             simdata->tyrewear[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 0));

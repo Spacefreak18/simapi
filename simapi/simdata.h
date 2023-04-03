@@ -50,10 +50,18 @@ typedef struct
     uint32_t lap;
     uint32_t position;
     uint32_t numlaps;
+    uint32_t playerlaps;
     uint32_t numcars;
     double gas;
     double brake;
     double fuel;
+    double clutch;
+    double steer;
+    double handbrake;
+
+    double worldposx;
+    double worldposy;
+    double worldposz;
 
     double braketemp[4];
     double tyrewear[4];
@@ -64,10 +72,16 @@ typedef struct
     double airtemp;
     double tracktemp;
 
+    double trackdistancearound;
+
     uint32_t lastlap;
     uint32_t bestlap;
+    uint32_t currentlapinseconds;
+    uint32_t lastlapinseconds;
     uint32_t time;
     uint32_t timeleft;
+
+    bool lapisvalid;
 
     char* car;
     char* track;
