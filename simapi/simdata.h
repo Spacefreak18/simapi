@@ -80,7 +80,9 @@ typedef struct
     uint32_t lastlapinseconds;
     uint32_t time;
     uint32_t timeleft;
+    uint32_t session;
 
+    bool inpit;
     bool lapisvalid;
 
     char* car;
