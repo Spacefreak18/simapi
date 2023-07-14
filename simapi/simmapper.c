@@ -12,9 +12,61 @@
 #include "ac.h"
 #include "rf2.h"
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#if defined(OS_WIN)
+    #include <windows.h>
+#else
+    #include <dirent.h> // for *Nix directory access
+    #include <unistd.h>
+#endif
+
 
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
+
+bool does_sim_file_exist(const char* file)
+{
+    if (file == NULL) { return false; }
+    #if defined(OS_WIN)
+        #if defined(WIN_API)
+            // if you want the WinAPI, versus CRT
+            if (strnlen(file, MAX_PATH+1) > MAX_PATH) {
+                // ... throw error here or ...
+                return false;
+            }
+            DWORD res = GetFileAttributesA(file);
+            return (res != INVALID_FILE_ATTRIBUTES &&
+                !(res & FILE_ATTRIBUTE_DIRECTORY));
+        #else
+            // Use Win CRT
+            struct stat fi;
+            if (_stat(file, &fi) == 0) {
+                #if defined(S_ISSOCK)
+                    // sockets come back as a 'file' on some systems
+                    // so make sure it's not a socket or directory
+                    // (in other words, make sure it's an actual file)
+                    return !(S_ISDIR(fi.st_mode)) &&
+                        !(S_ISSOCK(fi.st_mode));
+                #else
+                    return !(S_ISDIR(fi.st_mode));
+                #endif
+            }
+            return false;
+        #endif
+    #else
+        struct stat fi;
+        if (stat(file, &fi) == 0) {
+            #if defined(S_ISSOCK)
+                return !(S_ISDIR(fi.st_mode)) &&
+                    !(S_ISSOCK(fi.st_mode));
+            #else
+                return !(S_ISDIR(fi.st_mode));
+            #endif
+        }
+        return false;
+    #endif
+}
 
 
 // if this becomes more necessary i will move it into it's own file
@@ -25,6 +77,25 @@ float spLineLengthToDistanceRoundTrack(float trackLength, float spLine)
         spLine -= 1;
     }
     return spLine * trackLength;
+}
+
+void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
+{
+
+    if (does_sim_file_exists("/dev/shm/acpmf_physics"))
+    {
+        if (does_sim_file_exists("/dev/shm/acpmf_static"))
+        {
+            *sim = SIMULATOR_ASSETTO_CORSA;
+            int error = siminit(simdata, simmap, 1);
+            simdatamap(simdata, simmap, 1);
+            if (error == 0 && simdata->simstatus > 1)
+            {
+                //slogi("found Assetto Corsa, starting application...");
+                *simstate = true;
+            }
+        }
+    }
 }
 
 #ifndef SIMMAP_ALL

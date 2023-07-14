@@ -18,6 +18,7 @@ typedef struct
 }
 SimMap;
 
+void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim);
 int siminit(SimData* simdata, SimMap* simmap, Simulator simulator);
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator);
 
