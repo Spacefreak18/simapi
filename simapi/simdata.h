@@ -73,6 +73,8 @@ typedef struct
     double tracktemp;
 
     double trackdistancearound;
+    double playerspline;
+    double trackspline;
 
     uint32_t lastlap;
     uint32_t bestlap;
