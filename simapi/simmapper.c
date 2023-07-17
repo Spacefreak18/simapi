@@ -120,6 +120,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             if (simmap->d.ac.has_graphic == true )
             {
                 c = simmap->d.ac.graphic_map_addr;
+                simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
                 simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
             }
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));

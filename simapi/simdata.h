@@ -9,6 +9,7 @@
 
 typedef struct
 {
+    uint32_t simstatus;
     uint32_t velocity;
     uint32_t rpms;
     uint32_t gear;
@@ -40,7 +41,7 @@ CarData;
 
 typedef struct
 {
-    char simstatus;
+    uint32_t simstatus;
     uint32_t velocity;
     uint32_t rpms;
     uint32_t gear;
