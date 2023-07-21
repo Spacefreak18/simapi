@@ -89,7 +89,7 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
             *sim = SIMULATOR_ASSETTO_CORSA;
             int error = siminit(simdata, simmap, 1);
             simdatamap(simdata, simmap, 1);
-            if (error == 0)
+            if (error == 0 && simdata->simstatus > 1)
             {
                 //slogi("found Assetto Corsa, starting application...");
                 *simstate = true;
