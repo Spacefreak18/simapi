@@ -84,6 +84,8 @@ typedef struct
     uint32_t time;
     uint32_t timeleft;
     uint32_t session;
+    uint32_t sectorindex;
+    uint32_t lastsectorinms;
 
     bool inpit;
     bool lapisvalid;

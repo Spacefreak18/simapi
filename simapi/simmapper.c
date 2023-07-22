@@ -190,6 +190,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 simdata->session = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));
                 simdata->inpit = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, isInPit));
+                simdata->sectorindex = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, currentSectorIndex));
+                simdata->lastsectorinms = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, lastSectorTime));
 
                 float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
                 if (timeleft < 0)
