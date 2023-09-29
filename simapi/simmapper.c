@@ -96,6 +96,17 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
             }
         }
     }
+    if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
+    {
+        *sim = SIMULATOR_RFACTOR2;
+        int error = siminit(simdata, simmap, 2);
+        simdatamap(simdata, simmap, 2);
+        if (error == 0)
+        {
+            //slogi("found Assetto Corsa, starting application...");
+            *simstate = true;
+        }
+    }
 }
 
 #ifndef SIMMAP_ALL
