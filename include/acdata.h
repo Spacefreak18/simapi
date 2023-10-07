@@ -6,14 +6,12 @@
 #include <uchar.h>
 
 typedef int AC_STATUS;
-
 #define AC_OFF 0
 #define AC_REPLAY 1
 #define AC_LIVE 2
 #define AC_PAUSE 3
 
 typedef int AC_SESSION_TYPE;
-
 #define AC_UNKNOWN -1
 #define AC_PRACTICE 0
 #define AC_QUALIFY 1
@@ -23,18 +21,69 @@ typedef int AC_SESSION_TYPE;
 #define AC_DRIFT 5
 #define AC_DRAG 6
 
+typedef int ACC_FLAG_TYPE;;
+#define ACC_NO_FLAG = 0,
+#define ACC_BLUE_FLAG = 1,
+#define ACC_YELLOW_FLAG = 2,
+#define ACC_BLACK_FLAG = 3,
+#define ACC_WHITE_FLAG = 4,
+#define ACC_CHECKERED_FLAG = 5,
+#define ACC_PENALTY_FLAG = 6,
+#define ACC_GREEN_FLAG = 7,
+#define ACC_ORANGE_FLAG = 8
+
+typedef int ACC_PENALTY_TYPE;
+#define ACC_NONE = 0,
+#define ACC_DRIVETHROUGH_CUTTING = 1,
+#define ACC_STOPANDGO_10_CUTTING = 2,
+#define ACC_STOPANDGO_20_CUTTING = 3,
+#define ACC_STOPANDGO_30_CUTTING = 4,
+#define ACC_DISQUALIFIED_CUTTING = 5,
+#define ACC_REMOVEBESTLAPTIME_CUTTING = 6,
+#define ACC_DRIVETHROUGH_PITSPEEDING = 7,
+#define ACC_STOPANDGO_10_PITSPEEDING = 8,
+#define ACC_STOPANDGO_20_PITSPEEDING = 9,
+#define ACC_STOPANDGO_30_PITSPEEDING = 10,
+#define ACC_DISQUALIFIED_PITSPEEDING = 11,
+#define ACC_REMOVEBESTLAPTIME_PITSPEEDING = 12,
+#define ACC_DISQUALIFIED_IGNOREDMANDATORYPIT = 13,
+#define ACC_POSTRACETIME = 14,
+#define ACC_DISQUALIFIED_TROLLING = 15,
+#define ACC_DISQUALIFIED_PITENTRY = 16,
+#define ACC_DISQUALIFIED_PITEXIT = 17,
+#define ACC_DISQUALIFIED_WRONGWAY = 18,
+#define ACC_DRIVETHROUGH_IGNOREDDRIVERSTINT = 19,
+#define ACC_DISQUALIFIED_IGNOREDDRIVERSTINT = 20,
+#define ACC_DISQUALIFIED_EXCEEDEDDRIVERSTINTLIMIT = 21
+
+typedef int ACC_TRACK_GRIP_STATUS;
+#define ACC_GREEN = 0,
+#define ACC_FAST = 1,
+#define ACC_OPTIMUM = 2,
+#define ACC_GREASY = 3,
+#define ACC_DAMP = 4,
+#define ACC_WET = 5,
+#define ACC_FLOODED = 6
+
+typedef int ACC_RAIN_INTENSITY;
+#define ACC_NO_RAIN = 0,
+#define ACC_DRIZZLE = 1,
+#define ACC_LIGHT_RAIN = 2,
+#define ACC_MEDIUM_RAIN = 3,
+#define ACC_HEAVY_RAIN = 4,
+#define ACC_THUNDERSTORM = 5
 
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct //acsVec3
+typedef struct //accVec3
 {
   float x;
   float y;
   float z;
-} acsVec3;
+} accVec3;
 
-typedef struct //acsVehicleInfo
+typedef struct //accVehicleInfo
 {
     int carId;
     char driverName[64];
@@ -45,7 +94,7 @@ typedef struct //acsVehicleInfo
     int currentLapInvalid;
     int currentLapTimeMS;
     int lastLapTimeMS;
-    acsVec3 worldPosition;
+    accVec3 worldPosition;
     int isCarInPitline;
     int isCarInPit;
     int carLeaderboardPosition;
@@ -114,11 +163,36 @@ struct SPageFilePhysics
     float tyreTempM[4];
     float tyreTempO[4];
     int isAIControlled;
-    acsVec3 tyreContactPoint[4];
-    acsVec3 tyreContactNormal[4];
-    acsVec3 tyreContactHeading[4];
+    accVec3 tyreContactPoint[4];
+    accVec3 tyreContactNormal[4];
+    accVec3 tyreContactHeading[4];
     float brakeBias;
-    acsVec3 localVelocity;
+    accVec3 localVelocity;
+    int P2PActivation; //Not used in ACC
+    int P2PStatus; //Not used in ACC
+    float CurrentMaxRPM; //Not used in ACC
+    float MZ[4];
+    float FX[4];
+    float FY[4];
+    float SlipRatio[4];
+    float SlipAngle[4];
+    int TCInAction; //Not used in ACC
+    int ABSInAction; //Not used in ACC
+    float SuspensionDamage[4];
+    float TyreTemp[4];
+    float WaterTemp;
+    float BrakePressure[4];
+    int frontBrakeCompound;
+    int rearBrakeCompound;
+    float padLife[4];
+    float discLife[4];
+    int ignitionOn;
+    int starterEngineOn;
+    int isEngineRunning;
+    float kerbVibration;
+    float slipVibration;
+    float gVibration;
+    float absbVibration;
 };
 
 
@@ -147,6 +221,78 @@ struct SPageFileGraphic
     float replayTimeMultiplier;
     float normalizedCarPosition;
     float carCoordinates[3];
+    int CarID[60];
+
+    int PlayerCarId;
+
+    float PenaltyTime;
+    ACC_FLAG_TYPE Flag;
+    ACC_PENALTY_TYPE Penalty;
+    int IdealLineOn;
+
+    int IsInPitLane;
+    float SurfaceGrip;
+
+    int MandatoryPitDone;
+    float WindSpeed;
+    float WindDirection;
+    int IsSetupMenuVisible;
+    int MainDisplayIndex;
+    int SecondaryDisplayIndex;
+    int TC;
+    int TCUT;
+    int EngineMap;
+    int ABS;
+    float FuelXLap;
+    int RainLights;
+    int FlashingLights;
+    int LightsStage;
+    float ExhaustTemperature;
+    int WiperLV;
+    int DriverStingTotalTimeLeft;
+    int DriverStingTimeLeft;
+    int RainTyres;
+    int SessionIndex;
+    float UsedFuel; //Since last refuel
+
+    char DeltaLapTime[15];
+    int IDeltaLapTime;
+    char EstimatedLapTime[15];
+    int IEstimatedLapTime;
+
+    int IsDeltaPositive;
+    int ISplit; //Last split time in ms
+    int IsValidLap;
+    float FuelEstimatedLaps;
+
+    char TrackStatus[33];
+    int MissingMandatoryPits;
+
+    int directionLightsLeft;
+    int directionLightsRight;
+
+    int GlobalYellow;
+    int GlobalYellow1;
+    int GlobalYellow2;
+    int GlobalYellow3;
+    int GlobalWhite;
+    int GlobalGreen;
+    int GlobalChequered;
+    int GlobalRed;
+    int mfdTyreSet;
+    float mfdFuelToAdd;
+    float mfdTyrePressureLF;
+    float mfdTyrePressureRF;
+    float mfdTyrePressureLR;
+    float mfdTyrePressureRR;
+    ACC_TRACK_GRIP_STATUS trackGripStatus;
+    ACC_RAIN_INTENSITY rainIntensity;
+    ACC_RAIN_INTENSITY rainIntensityIn10min;
+    ACC_RAIN_INTENSITY rainIntensityIn30min;
+    int currentTyreSet;
+    int strategyTyreSet;
+    int gapAhead;
+    int gapBehind;
 };
 
 
@@ -171,7 +317,7 @@ struct SPageFileStatic
     float maxFuel;
     float suspensionMaxTravel[4];
     float tyreRadius[4];
-   
+
     // since 1.5
     float MaxTurboBoost;
     float Deprecated1; // AirTemp since 1.6 in physic
@@ -207,7 +353,9 @@ struct SPageFileStatic
     int ReversedGridPositions;
     int PitWindowStart;
     int PitWindowEnd;
-
+    int IsOnline;
+    char dryTyresName[33];
+    char wetTyresName[33];
 };
 
 
