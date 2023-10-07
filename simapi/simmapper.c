@@ -312,6 +312,17 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mGear)));
             simdata->maxrpm = ceil( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineMaxRPM))));
             simdata->altitude = 1;
+
+            simdata->gearc = simdata->gear + 48;
+            if (simdata->gear < 0)
+            {
+                simdata->gearc = 82;
+            }
+            if (simdata->gear == 0)
+            {
+                simdata->gearc = 78;
+            }
+
             break;
     
     }
