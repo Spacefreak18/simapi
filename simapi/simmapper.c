@@ -266,6 +266,15 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
             simdata->handbrake = 0;
             simdata->fuel = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, fuel));
+            simdata->gearc = simdata->gear + 47;
+            if (simdata->gear == 0)
+            {
+                simdata->gearc = 82;
+            }
+            if (simdata->gear == 1)
+            {
+                simdata->gearc = 78;
+            }
 
             simdata->tyrewear[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 0));
             simdata->tyrewear[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 1));
