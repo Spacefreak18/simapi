@@ -76,12 +76,12 @@ typedef int ACC_RAIN_INTENSITY;
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct //accVec3
+typedef struct //acsVec3
 {
   float x;
   float y;
   float z;
-} accVec3;
+} acsVec3;
 
 typedef struct //accVehicleInfo
 {
@@ -94,7 +94,7 @@ typedef struct //accVehicleInfo
     int currentLapInvalid;
     int currentLapTimeMS;
     int lastLapTimeMS;
-    accVec3 worldPosition;
+    acsVec3 worldPosition;
     int isCarInPitline;
     int isCarInPit;
     int carLeaderboardPosition;
@@ -163,11 +163,11 @@ struct SPageFilePhysics
     float tyreTempM[4];
     float tyreTempO[4];
     int isAIControlled;
-    accVec3 tyreContactPoint[4];
-    accVec3 tyreContactNormal[4];
-    accVec3 tyreContactHeading[4];
+    acsVec3 tyreContactPoint[4];
+    acsVec3 tyreContactNormal[4];
+    acsVec3 tyreContactHeading[4];
     float brakeBias;
-    accVec3 localVelocity;
+    acsVec3 localVelocity;
     int P2PActivation; //Not used in ACC
     int P2PStatus; //Not used in ACC
     float CurrentMaxRPM; //Not used in ACC
