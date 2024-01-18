@@ -94,6 +94,7 @@ typedef struct
     char* car;
     char* track;
     char* driver;
+    char* tyrecompound;
     CarData cars[MAXCARS];
 }
 SimData;

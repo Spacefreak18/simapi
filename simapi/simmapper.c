@@ -206,6 +206,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->sectorindex = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, currentSectorIndex));
                 simdata->lastsectorinms = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, lastSectorTime));
 
+                int strsize = 32;
+                for(int i=0; i<strsize; i++)
+                {
+                    simmap->d.ac.compound[i] = *(char*) (char*) ((b + offsetof(struct SPageFileGraphic, tyreCompound)) + (sizeof(char16_t) * i));
+                }
+                simdata->tyrecompound = simmap->d.ac.compound;
+
                 float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
                 if (timeleft < 0)
                     simdata->timeleft = 0;

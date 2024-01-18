@@ -26,6 +26,7 @@ typedef struct
     char car[32];
     char driver[32];
     char track[32];
+    char compound[32];
 }
 ACMap;
 
