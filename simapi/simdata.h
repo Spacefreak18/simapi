@@ -18,6 +18,8 @@ typedef struct
     uint32_t altitude;
     uint32_t lap;
     uint32_t position;
+    double abs;
+    double wheelslip[4];
 }
 SimData;
 
@@ -60,6 +62,8 @@ typedef struct
     double clutch;
     double steer;
     double handbrake;
+    double abs;
+    double wheelslip[4];
 
     double worldposx;
     double worldposy;

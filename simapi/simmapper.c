@@ -137,6 +137,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
+            simdata->abs = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs));
+            simdata->wheelslip[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 0));
+            simdata->wheelslip[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 1));
+            simdata->wheelslip[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 2));
+            simdata->wheelslip[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 3));
             simdata->altitude = 1;
             break;
         
@@ -274,6 +279,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
             simdata->handbrake = 0;
             simdata->fuel = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, fuel));
+
+            simdata->abs = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs));
+            simdata->wheelslip[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 0));
+            simdata->wheelslip[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 1));
+            simdata->wheelslip[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 2));
+            simdata->wheelslip[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 3));
+
             simdata->gearc = simdata->gear + 47;
             if (simdata->gear == 0)
             {
