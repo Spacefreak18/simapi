@@ -162,6 +162,7 @@ int main(int argc, char* argv[])
     printf(variable_name);
 
 #ifdef ASSETTOCORSA
+#define MAPSIZE ACMAP_SIZE
     struct Map* map = (struct Map*) malloc((ACMAP_SIZE) * sizeof(struct Map));
     void* struct1;
     int datasize1;
@@ -210,6 +211,7 @@ int main(int argc, char* argv[])
     ac_init(map, acmap);
 #endif
 #ifdef RFACTOR2
+#define MAPSIZE RF2MAP_SIZE
     struct Map* map = (struct Map*) malloc((RF2MAP_SIZE) * sizeof(struct Map));
     void* struct1;
     int datasize1;
@@ -282,7 +284,7 @@ int main(int argc, char* argv[])
     }
 
     void* addr2;
-    for (int k = 0; k < 1633; k++)
+    for (int k = 0; k < MAPSIZE; k++)
     {
         if ( map[k].name == NULL )
         {
