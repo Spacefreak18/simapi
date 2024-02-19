@@ -6,6 +6,7 @@
 #include <stddef.h>
 #include <math.h>
 
+#include "simdata.h"
 #include "simapi.h"
 #include "simmapper.h"
 #include "test.h"
@@ -24,6 +25,16 @@
 
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
+
+// probably going to move functions like this to ac.h
+LapTime ac_convert_to_simdata_laptime(int ac_laptime)
+{
+    LapTime l;
+    l.minutes = ac_laptime/60000;
+    l.seconds = ac_laptime/1000-(l.minutes*60);
+    l.fraction = ac_laptime-(l.minutes*60000)-(l.seconds*1000);
+    return l;
+}
 
 bool does_sim_file_exist(const char* file)
 {
@@ -202,8 +213,10 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
                 simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
                 simdata->position = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, position));
-                simdata->lastlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iLastTime));
-                simdata->bestlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iBestTime));
+                uint32_t lastlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iLastTime));
+                simdata->lastlap = ac_convert_to_simdata_laptime(lastlap);
+                uint32_t bestlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iBestTime));
+                simdata->bestlap = ac_convert_to_simdata_laptime(bestlap);
                 simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 simdata->session = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));

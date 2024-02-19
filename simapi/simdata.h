@@ -9,6 +9,15 @@
 
 typedef struct
 {
+    uint32_t hours;
+    uint32_t minutes;
+    uint32_t seconds;
+    uint32_t fraction;
+}
+LapTime;
+
+typedef struct
+{
     uint32_t simstatus;
     uint32_t velocity;
     uint32_t rpms;
@@ -32,8 +41,8 @@ typedef struct
     uint32_t zpos;
     uint32_t pos;
     uint32_t lap;
-    uint32_t lastlap;
-    uint32_t bestlap;
+    LapTime lastlap;
+    LapTime bestlap;
     uint32_t inpitlane;
     uint32_t inpit;
     char* driver;
