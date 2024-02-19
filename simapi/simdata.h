@@ -2,10 +2,9 @@
 #define _SIMDATA_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MAXCARS 24
-
-#ifndef SIMMAP_ALL
 
 typedef struct
 {
@@ -15,6 +14,8 @@ typedef struct
     uint32_t fraction;
 }
 LapTime;
+
+#ifndef SIMMAP_ALL
 
 typedef struct
 {
@@ -41,8 +42,8 @@ typedef struct
     uint32_t zpos;
     uint32_t pos;
     uint32_t lap;
-    LapTime lastlap;
-    LapTime bestlap;
+    uint32_t lastlap;
+    uint32_t bestlap;
     uint32_t inpitlane;
     uint32_t inpit;
     char* driver;
@@ -91,8 +92,8 @@ typedef struct
     double playerspline;
     double trackspline;
 
-    uint32_t lastlap;
-    uint32_t bestlap;
+    LapTime lastlap;
+    LapTime bestlap;
     uint32_t currentlapinseconds;
     uint32_t lastlapinseconds;
     uint32_t time;
