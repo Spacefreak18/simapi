@@ -73,6 +73,7 @@ typedef struct
     double steer;
     double handbrake;
     double abs;
+    double brakebias;
     double wheelslip[4];
 
     double worldposx;

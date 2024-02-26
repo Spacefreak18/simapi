@@ -290,6 +290,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->clutch = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, clutch));
             simdata->steer = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, steerAngle));
             simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
+            simdata->brakebias = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brakeBias));
             simdata->handbrake = 0;
             simdata->fuel = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, fuel));
 
