@@ -123,8 +123,8 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
     if (does_sim_file_exist("/dev/shm/$pcars2"))
     {
         *sim = SIMULATOR_PROJECTCARS2;
-        int error = siminit(simdata, simmap, SIMULATOR_PCARS2);
-        simdatamap(simdata, simmap, SIMULATOR_PCARS2);
+        int error = siminit(simdata, simmap, SIMULATOR_PROJECTCARS2);
+        simdatamap(simdata, simmap, SIMULATOR_PROJECTCARS2);
         if (error == 0 && simdata->simstatus > 1)
         {
             //slogi("found Assetto Corsa, starting application...");
