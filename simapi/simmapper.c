@@ -181,7 +181,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->altitude = 1;
             break;
 
-        case SIMULATOR_PCARS2 :
+        case SIMULATOR_PROJECTCARS2 :
 
             a = simmap->d.rf2.telemetry_map_addr;
 
