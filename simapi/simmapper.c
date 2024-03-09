@@ -122,7 +122,7 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
     }
     if (does_sim_file_exist("/dev/shm/$pcars2"))
     {
-        *sim = SIMULATOR_PCARS2;
+        *sim = SIMULATOR_PROJECTCARS2;
         int error = siminit(simdata, simmap, SIMULATOR_PCARS2);
         simdatamap(simdata, simmap, SIMULATOR_PCARS2);
         if (error == 0 && simdata->simstatus > 1)
@@ -385,7 +385,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             break;
 
-        case SIMULATOR_PCARS2 :
+        case SIMULATOR_PROJECTCARS2 :
 
             a = simmap->d.rf2.telemetry_map_addr;
 
@@ -496,7 +496,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             break;
 
-        case SIMULATOR_PCARS2 :
+        case SIMULATOR_PROJECTCARS2 :
 
             simmap->d.pcars2.has_telemetry=false;
             simmap->fd = shm_open(PCARS2_FILE_LINUX, O_RDONLY, S_IRUSR | S_IWUSR);
