@@ -162,10 +162,14 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
             simdata->abs = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs));
-            simdata->wheelslip[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 0));
-            simdata->wheelslip[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 1));
-            simdata->wheelslip[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 2));
-            simdata->wheelslip[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs) + (sizeof(float) * 3));
+            simdata->wheelslip[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelSlip) + (sizeof(float) * 0));
+            simdata->wheelslip[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelSlip) + (sizeof(float) * 1));
+            simdata->wheelslip[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelSlip) + (sizeof(float) * 2));
+            simdata->wheelslip[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelSlip) + (sizeof(float) * 3));
+            simdata->wheelspeed[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 0));
+            simdata->wheelspeed[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 1));
+            simdata->wheelspeed[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 2));
+            simdata->wheelspeed[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 3));
             simdata->altitude = 1;
             break;
         

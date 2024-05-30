@@ -30,6 +30,7 @@ typedef struct
     uint32_t position;
     double abs;
     double wheelslip[4];
+    double wheelspeed[4];
 }
 SimData;
 
@@ -75,6 +76,7 @@ typedef struct
     double abs;
     double brakebias;
     double wheelslip[4];
+    double wheelspeed[4];
 
     double worldposx;
     double worldposy;
