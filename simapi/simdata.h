@@ -32,15 +32,12 @@ typedef struct
     double brake;
     double velocityX;
     double abs;
-<<<<<<< Updated upstream
     double tyreRPS[4];
     double tyrediameter[4];
-=======
     double wheelslip[4];
     double wheelspeed[4];
-    char* sim;
+    int sim;
     char* car;
->>>>>>> Stashed changes
 }
 SimData;
 
@@ -119,7 +116,7 @@ typedef struct
     bool inpit;
     bool lapisvalid;
 
-    char* sim;
+    int sim;
     char* car;
     char* track;
     char* driver;
