@@ -151,6 +151,14 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             {
                 b = simmap->d.ac.static_map_addr;
                 simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
+                int strsize = 32;
+                for(int i=0; i<strsize; i++)
+                {
+                    simmap->d.ac.car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
+                }
+
+                simdata->car = simmap->d.ac.car;
+
             }
             if (simmap->d.ac.has_graphic == true )
             {
