@@ -19,6 +19,10 @@ typedef struct
     void* static_map_addr;
     void* graphic_map_addr;
     void* crewchief_map_addr;
+    int fd_physics;
+    int fd_static;
+    int fd_graphic;
+    int fd_crewchief;
     struct SPageFilePhysics ac_physics;
     struct SPageFileStatic ac_static;
     struct SPageFileGraphic ac_graphic;

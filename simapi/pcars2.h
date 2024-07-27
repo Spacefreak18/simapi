@@ -11,6 +11,7 @@ typedef struct
 {
     bool has_telemetry;
     void* telemetry_map_addr;
+    int fd_telemetry;
     struct pcars2APIStruct pcars2_telemetry;
 }
 PCars2Map;
