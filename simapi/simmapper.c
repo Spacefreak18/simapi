@@ -456,7 +456,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open Assetto Corsa physics engine");
                 return SIMAPI_ERROR_NODATA;
             }
-            simmap->d.ac.physics_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_physics), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.ac.physics_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_physics), PROT_READ, MAP_SHARED, simmap->d.ac.fd_physics, 0);
             if (simmap->d.ac.physics_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve Assetto Corsa physics data");
@@ -470,7 +470,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open Assetto Corsa static data");
                 return 10;
             }
-            simmap->d.ac.static_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_static), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.ac.static_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_static), PROT_READ, MAP_SHARED, simmap->d.ac.fd_static, 0);
             if (simmap->d.ac.static_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve Assetto Corsa static data");
@@ -484,7 +484,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open Assetto Corsa graphic data");
                 return 10;
             }
-            simmap->d.ac.graphic_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_graphic), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.ac.graphic_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_graphic), PROT_READ, MAP_SHARED, simmap->d.ac.fd_graphic, 0);
             if (simmap->d.ac.graphic_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve Assetto Corsa static data");
@@ -498,7 +498,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open Assetto Corsa graphic data");
                 return 10;
             }
-            simmap->d.ac.crewchief_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_crewchief), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.ac.crewchief_map_addr = mmap(NULL, sizeof(simmap->d.ac.ac_crewchief), PROT_READ, MAP_SHARED, simmap->d.ac.fd_crewchief, 0);
             if (simmap->d.ac.crewchief_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve Assetto Corsa static data");
@@ -517,7 +517,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open Assetto Corsa physics engine");
                 return SIMAPI_ERROR_NODATA;
             }
-            simmap->d.pcars2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.pcars2.pcars2_telemetry), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.pcars2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.pcars2.pcars2_telemetry), PROT_READ, MAP_SHARED, simmap->d.pcars2.fd_telemetry, 0);
             if (simmap->d.pcars2.telemetry_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve Assetto Corsa physics data");
@@ -537,7 +537,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
                 //slogd("could not open RFactor2 Telemetry engine");
                 return SIMAPI_ERROR_NODATA;
             }
-            simmap->d.rf2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.rf2.rf2_telemetry), PROT_READ, MAP_SHARED, simmap->fd, 0);
+            simmap->d.rf2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.rf2.rf2_telemetry), PROT_READ, MAP_SHARED, simmap->d.rf2.fd_telemetry, 0);
             if (simmap->d.rf2.telemetry_map_addr == MAP_FAILED)
             {
                 //slogd("could not retrieve RFactor2 telemetry data");
