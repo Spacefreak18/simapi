@@ -95,6 +95,7 @@ float spLineLengthToDistanceRoundTrack(float trackLength, float spLine)
 void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
 {
 
+    *sim = -1;
     if (does_sim_file_exist("/dev/shm/acpmf_physics"))
     {
         if (does_sim_file_exist("/dev/shm/acpmf_static"))
@@ -557,6 +558,10 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 int simfree(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
     int error = SIMAPI_ERROR_NONE;
+    if(simulator == -1)
+    {
+        return error;
+    }
 
     switch ( simulator )
     {
