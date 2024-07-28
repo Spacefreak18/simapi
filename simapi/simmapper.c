@@ -554,110 +554,118 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 }
 
 
-int simfree(SimData* simdata, SimMap* simmap)
+int simfree(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
     int error = SIMAPI_ERROR_NONE;
 
-    // make a special case for this later
-    //if (munmap(simmap->addr, sizeof(SimData)) == -1)
-    //{
-    //    return 100;
-    //}
-
-    //if (close(simmap->fd) == -1)
-    //{
-    //    return 200;
-    //}
-
-
-    if(simmap->d.ac.has_physics==true)
+    switch ( simulator )
     {
-        if (munmap(simmap->d.ac.physics_map_addr, sizeof(simmap->d.ac.ac_physics)) == -1)
-        {
-            return 100;
-        }
+        case SIMULATOR_SIMAPI_TEST :
+            if (munmap(simmap->addr, sizeof(SimData)) == -1)
+            {
+                return 100;
+            }
 
-        if (close(simmap->d.ac.fd_physics) == -1)
-        {
-            return 200;
-        }
+            if (close(simmap->fd) == -1)
+            {
+                return 200;
+            }
+            break;
 
-        simmap->d.ac.has_physics = false;
+        case SIMULATOR_ASSETTO_CORSA :
+            if(simmap->d.ac.has_physics==true)
+            {
+                if (munmap(simmap->d.ac.physics_map_addr, sizeof(simmap->d.ac.ac_physics)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.ac.fd_physics) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.ac.has_physics = false;
+            }
+            if(simmap->d.ac.has_static==true)
+            {
+                if (munmap(simmap->d.ac.static_map_addr, sizeof(simmap->d.ac.ac_static)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.ac.fd_static) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.ac.has_static = false;
+            }
+
+            if(simmap->d.ac.has_graphic==true)
+            {
+                if (munmap(simmap->d.ac.graphic_map_addr, sizeof(simmap->d.ac.ac_graphic)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.ac.fd_graphic) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.ac.has_graphic = false;
+            }
+
+            if(simmap->d.ac.has_crewchief==true)
+            {
+                if (munmap(simmap->d.ac.crewchief_map_addr, sizeof(simmap->d.ac.ac_crewchief)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.ac.fd_crewchief) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.ac.has_crewchief = false;
+            }
+            break;
+
+        case SIMULATOR_PROJECTCARS2 :
+            if(simmap->d.pcars2.has_telemetry==true)
+            {
+                if (munmap(simmap->d.pcars2.telemetry_map_addr, sizeof(simmap->d.pcars2.pcars2_telemetry)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.pcars2.fd_telemetry) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.pcars2.has_telemetry = false;
+            }
+            break;
+
+        case SIMULATOR_RFACTOR2 :
+            if(simmap->d.rf2.has_telemetry==true)
+            {
+                if (munmap(simmap->d.rf2.telemetry_map_addr, sizeof(simmap->d.rf2.rf2_telemetry)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.rf2.fd_telemetry) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.rf2.has_telemetry = false;
+            }
+            break;
     }
-    if(simmap->d.ac.has_static==true)
-    {
-        if (munmap(simmap->d.ac.static_map_addr, sizeof(simmap->d.ac.ac_static)) == -1)
-        {
-            return 100;
-        }
-
-        if (close(simmap->d.ac.fd_static) == -1)
-        {
-            return 200;
-        }
-
-        simmap->d.ac.has_static = false;
-    }
-
-    if(simmap->d.ac.has_graphic==true)
-    {
-        if (munmap(simmap->d.ac.graphic_map_addr, sizeof(simmap->d.ac.ac_graphic)) == -1)
-        {
-            return 100;
-        }
-
-        if (close(simmap->d.ac.fd_graphic) == -1)
-        {
-            return 200;
-        }
-
-        simmap->d.ac.has_graphic = false;
-    }
-
-    if(simmap->d.ac.has_crewchief==true)
-    {
-        if (munmap(simmap->d.ac.crewchief_map_addr, sizeof(simmap->d.ac.ac_crewchief)) == -1)
-        {
-            return 100;
-        }
-
-        if (close(simmap->d.ac.fd_crewchief) == -1)
-        {
-            return 200;
-        }
-
-        simmap->d.ac.has_crewchief = false;
-    }
-
-    if(simmap->d.pcars2.has_telemetry==true)
-    {
-        if (munmap(simmap->d.pcars2.telemetry_map_addr, sizeof(simmap->d.pcars2.pcars2_telemetry)) == -1)
-        {
-            return 100;
-        }
-
-        if (close(simmap->d.pcars2.fd_telemetry) == -1)
-        {
-            return 200;
-        }
-
-        simmap->d.pcars2.has_telemetry = false;
-    }
-
-    if(simmap->d.rf2.has_telemetry==true)
-    {
-        if (munmap(simmap->d.rf2.telemetry_map_addr, sizeof(simmap->d.rf2.rf2_telemetry)) == -1)
-        {
-            return 100;
-        }
-
-        if (close(simmap->d.rf2.fd_telemetry) == -1)
-        {
-            return 200;
-        }
-
-        simmap->d.rf2.has_telemetry = false;
-    }
-
     return error;
 }
