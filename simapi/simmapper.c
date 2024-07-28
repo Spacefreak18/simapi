@@ -558,15 +558,16 @@ int simfree(SimData* simdata, SimMap* simmap)
 {
     int error = SIMAPI_ERROR_NONE;
 
-    if (munmap(simmap->addr, sizeof(SimData)) == -1)
-    {
-        return 100;
-    }
+    // make a special case for this later
+    //if (munmap(simmap->addr, sizeof(SimData)) == -1)
+    //{
+    //    return 100;
+    //}
 
-    if (close(simmap->fd) == -1)
-    {
-        return 200;
-    }
+    //if (close(simmap->fd) == -1)
+    //{
+    //    return 200;
+    //}
 
 
     if(simmap->d.ac.has_physics==true)
