@@ -226,7 +226,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
             simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_i.gear));
-            simdata->gear -= 1;
+            simdata->gear += 1;
             simdata->maxrpm = ceil( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
             simdata->altitude = 1;
             break;
@@ -454,7 +454,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
             simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_i.gear));
-            simdata->gear -= 1;
+            simdata->gear += 1;
             simdata->maxrpm = ceil( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
             simdata->altitude = 1;
             break;
