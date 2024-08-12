@@ -13,6 +13,7 @@
 #include "ac.h"
 #include "rf2.h"
 #include "pcars2.h"
+#include "scs2.h"
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -27,6 +28,7 @@
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 #include "../include/pcars2data.h"
+#include "../include/scs2data.h"
 
 // probably going to move functions like this to ac.h
 LapTime ac_convert_to_simdata_laptime(int ac_laptime)
@@ -132,6 +134,17 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
             *simstate = true;
         }
     }
+    if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
+    {
+        *sim = SIMULATOR_SCSTRUCKSIM2;
+        int error = siminit(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
+        simdatamap(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
+        if (error == 0)
+        {
+            //slogi("found Assetto Corsa, starting application...");
+            *simstate = true;
+        }
+    }
 }
 
 #ifndef SIMMAP_ALL
@@ -145,7 +158,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
         case SIMULATOR_SIMAPI_TEST :
             memcpy(simdata, simmap->addr, sizeof(SimData));
             break;
-        
+
         case SIMULATOR_ASSETTO_CORSA :
             a = simmap->d.ac.physics_map_addr;
             if (simmap->d.ac.has_static == true )
@@ -180,7 +193,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 3));
             simdata->altitude = 1;
             break;
-        
+
         case SIMULATOR_RFACTOR2 :
 
             a = simmap->d.rf2.telemetry_map_addr;
@@ -204,7 +217,20 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGear));
             simdata->altitude = 1;
             break;
-    
+
+        case SIMULATOR_SCSTRUCKSIM2 :
+
+            a = simmap->d.scs2.telemetry_map_addr;
+
+            simdata->simstatus = 2;
+            simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
+            simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
+            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_i.gear));
+            simdata->gear -= 1;
+            simdata->maxrpm = ceil( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
+            simdata->altitude = 1;
+            break;
+
     }
 }
 #endif
@@ -222,7 +248,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
         case SIMULATOR_SIMAPI_TEST :
             memcpy(simdata, simmap->addr, sizeof(SimData));
             break;
-        
+
         case SIMULATOR_ASSETTO_CORSA :
             a = simmap->d.ac.physics_map_addr;
             if (simmap->d.ac.has_static == true )
@@ -243,7 +269,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->driver = simmap->d.ac.driver;
 
             }
-            
+
             if ( simmap->d.ac.has_graphic == true )
             {
                 c = simmap->d.ac.graphic_map_addr;
@@ -319,7 +345,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->worldposy = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
                 simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
             }
-            
+
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
@@ -374,7 +400,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             simdata->altitude = 1;
             break;
-        
+
         case SIMULATOR_RFACTOR2 :
 
             a = simmap->d.rf2.telemetry_map_addr;
@@ -419,7 +445,20 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->gearc = 78;
             }
             break;
-    
+
+        case SIMULATOR_SCSTRUCKSIM2 :
+
+            a = simmap->d.scs2.telemetry_map_addr;
+
+            simdata->simstatus = 2;
+            simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
+            simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
+            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_i.gear));
+            simdata->gear -= 1;
+            simdata->maxrpm = ceil( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
+            simdata->altitude = 1;
+            break;
+
     }
 }
 #endif
@@ -446,7 +485,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             //slogi("found data for monocoque test...");
             break;
-        
+
         case SIMULATOR_ASSETTO_CORSA :
 
             simmap->d.ac.has_physics=false;
@@ -548,6 +587,23 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 
 
             //slogi("found data for RFactor2...");
+            break;
+
+        case SIMULATOR_SCSTRUCKSIM2 :
+
+            simmap->d.scs2.has_telemetry=false;
+            simmap->d.scs2.fd_telemetry = shm_open(SCS2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            if (simmap->d.scs2.fd_telemetry == -1)
+            {
+                return SIMAPI_ERROR_NODATA;
+            }
+            simmap->d.scs2.telemetry_map_addr = mmap(NULL, sizeof(simmap->d.scs2.scs2_telemetry), PROT_READ, MAP_SHARED, simmap->d.scs2.fd_telemetry, 0);
+            if (simmap->d.scs2.telemetry_map_addr == MAP_FAILED)
+            {
+                return 30;
+            }
+            simmap->d.scs2.has_telemetry=true;
+
             break;
     }
 
@@ -669,6 +725,22 @@ int simfree(SimData* simdata, SimMap* simmap, Simulator simulator)
                 }
 
                 simmap->d.rf2.has_telemetry = false;
+            }
+            break;
+        case SIMULATOR_SCSTRUCKSIM2 :
+            if(simmap->d.scs2.has_telemetry==true)
+            {
+                if (munmap(simmap->d.scs2.telemetry_map_addr, sizeof(simmap->d.scs2.scs2_telemetry)) == -1)
+                {
+                    return 100;
+                }
+
+                if (close(simmap->d.scs2.fd_telemetry) == -1)
+                {
+                    return 200;
+                }
+
+                simmap->d.scs2.has_telemetry = false;
             }
             break;
     }

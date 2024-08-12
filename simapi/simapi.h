@@ -7,6 +7,7 @@ typedef enum
     SIMULATOR_ASSETTO_CORSA     = 1,
     SIMULATOR_RFACTOR2          = 2,
     SIMULATOR_PROJECTCARS2      = 3,
+    SIMULATOR_SCSTRUCKSIM2      = 4,
 }
 Simulator;
 

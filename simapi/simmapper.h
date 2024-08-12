@@ -4,6 +4,7 @@
 #include "ac.h"
 #include "rf2.h"
 #include "pcars2.h"
+#include "scs2.h"
 
 #include "simdata.h"
 
@@ -16,6 +17,7 @@ typedef struct
         ACMap ac;
         RF2Map rf2;
         PCars2Map pcars2;
+        SCS2Map scs2;
     } d;
 }
 SimMap;
