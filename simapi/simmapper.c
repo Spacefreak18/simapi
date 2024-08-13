@@ -592,7 +592,8 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
         case SIMULATOR_SCSTRUCKSIM2 :
 
             simmap->d.scs2.has_telemetry=false;
-            simmap->d.scs2.fd_telemetry = shm_open(SCS2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.scs2.fd_telemetry = open("/dev/shm/SCS/SCSTelemetry", O_CREAT | O_RDWR, 0777);
+            //simmap->d.scs2.fd_telemetry = shm_open(SCS2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->d.scs2.fd_telemetry == -1)
             {
                 return SIMAPI_ERROR_NODATA;
