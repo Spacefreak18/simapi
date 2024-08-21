@@ -286,6 +286,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->lastlap = ac_convert_to_simdata_laptime(lastlap);
                 uint32_t bestlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iBestTime));
                 simdata->bestlap = ac_convert_to_simdata_laptime(bestlap);
+                uint32_t currentlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
+                simdata->currentlap = ac_convert_to_simdata_laptime(currentlap);
                 simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 simdata->session = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));

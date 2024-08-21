@@ -105,6 +105,7 @@ typedef struct
 
     LapTime lastlap;
     LapTime bestlap;
+    LapTime currentlap;
     uint32_t currentlapinseconds;
     uint32_t lastlapinseconds;
     uint32_t time;
