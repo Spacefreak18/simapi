@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "../include/rf2data.h"
 
+#define RFACTOR2_EXE "rFactor2.exe"
+
 #define RF2_TELEMETRY_FILE "$rFactor2SMMP_Telemetry$"
 #define RF2_SCORING_FILE "$rFactor2SMMP_Scoring$"
 

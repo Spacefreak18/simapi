@@ -4,6 +4,9 @@
 #include <stdbool.h>
 #include "../include/acdata.h"
 
+#define AC_EXE "acs.exe"
+#define ACC_EXE "acc.exe"
+
 #define AC_PHYSICS_FILE "acpmf_physics"
 #define AC_STATIC_FILE "acpmf_static"
 #define AC_GRAPHIC_FILE "acpmf_graphics"

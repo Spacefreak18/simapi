@@ -24,7 +24,7 @@
     #include <unistd.h>
 #endif
 
-
+#include "getpid.h"
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 #include "../include/pcars2data.h"
@@ -98,13 +98,44 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
 {
 
     *sim = -1;
-    if (does_sim_file_exist("/dev/shm/acpmf_physics"))
+    if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true)
     {
-        if (does_sim_file_exist("/dev/shm/acpmf_static"))
+        if (does_sim_file_exist("/dev/shm/acpmf_physics"))
         {
-            *sim = SIMULATOR_ASSETTO_CORSA;
-            int error = siminit(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
-            simdatamap(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
+            if (does_sim_file_exist("/dev/shm/acpmf_static"))
+            {
+                *sim = SIMULATOR_ASSETTO_CORSA;
+                int error = siminit(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
+                simdatamap(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
+                if (error == 0 && simdata->simstatus > 1)
+                {
+                    //slogi("found Assetto Corsa, starting application...");
+                    *simstate = true;
+                }
+            }
+        }
+    }
+    if (IsProcessRunning(RFACTOR2_EXE)==true)
+    {
+        if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
+        {
+            *sim = SIMULATOR_RFACTOR2;
+            int error = siminit(simdata, simmap, SIMULATOR_RFACTOR2);
+            simdatamap(simdata, simmap, SIMULATOR_RFACTOR2);
+            if (error == 0)
+            {
+                //slogi("found Assetto Corsa, starting application...");
+                *simstate = true;
+            }
+        }
+    }
+    if (IsProcessRunning(AMS2_EXE)==true)
+    {
+        if (does_sim_file_exist("/dev/shm/$pcars2"))
+        {
+            *sim = SIMULATOR_PROJECTCARS2;
+            int error = siminit(simdata, simmap, SIMULATOR_PROJECTCARS2);
+            simdatamap(simdata, simmap, SIMULATOR_PROJECTCARS2);
             if (error == 0 && simdata->simstatus > 1)
             {
                 //slogi("found Assetto Corsa, starting application...");
@@ -112,37 +143,17 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
             }
         }
     }
-    if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
-    {
-        *sim = SIMULATOR_RFACTOR2;
-        int error = siminit(simdata, simmap, SIMULATOR_RFACTOR2);
-        simdatamap(simdata, simmap, SIMULATOR_RFACTOR2);
-        if (error == 0)
+    if (IsProcessRunning(EUROTRUCKS2_EXE)==true)
+        if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
         {
-            //slogi("found Assetto Corsa, starting application...");
-            *simstate = true;
-        }
-    }
-    if (does_sim_file_exist("/dev/shm/$pcars2"))
-    {
-        *sim = SIMULATOR_PROJECTCARS2;
-        int error = siminit(simdata, simmap, SIMULATOR_PROJECTCARS2);
-        simdatamap(simdata, simmap, SIMULATOR_PROJECTCARS2);
-        if (error == 0 && simdata->simstatus > 1)
-        {
-            //slogi("found Assetto Corsa, starting application...");
-            *simstate = true;
-        }
-    }
-    if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
-    {
-        *sim = SIMULATOR_SCSTRUCKSIM2;
-        int error = siminit(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
-        simdatamap(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
-        if (error == 0)
-        {
-            //slogi("found Assetto Corsa, starting application...");
-            *simstate = true;
+            *sim = SIMULATOR_SCSTRUCKSIM2;
+            int error = siminit(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
+            simdatamap(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
+            if (error == 0)
+            {
+                //slogi("found Assetto Corsa, starting application...");
+                *simstate = true;
+            }
         }
     }
 }
@@ -504,7 +515,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             simmap->d.ac.has_physics=false;
             simmap->d.ac.has_static=false;
-            simmap->d.ac.fd_physics = shm_open(AC_PHYSICS_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.ac.fd_physics = shm_open(AC_PHYSICS_FILE, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
             if (simmap->d.ac.fd_physics == -1)
             {
                 //slogd("could not open Assetto Corsa physics engine");
@@ -518,7 +529,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             simmap->d.ac.has_physics=true;
 
-            simmap->d.ac.fd_static = shm_open(AC_STATIC_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.ac.fd_static = shm_open(AC_STATIC_FILE, O_RDWR|O_CREATE, S_IRUSR | S_IWUSR);
             if (simmap->d.ac.fd_static == -1)
             {
                 //slogd("could not open Assetto Corsa static data");
@@ -532,7 +543,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             simmap->d.ac.has_static=true;
 
-            simmap->d.ac.fd_graphic = shm_open(AC_GRAPHIC_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.ac.fd_graphic = shm_open(AC_GRAPHIC_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.ac.fd_graphic == -1)
             {
                 //slogd("could not open Assetto Corsa graphic data");
@@ -546,7 +557,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             simmap->d.ac.has_graphic=true;
             //slogi("found data for Assetto Corsa...");
-            simmap->d.ac.fd_crewchief = shm_open(AC_CREWCHIEF_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.ac.fd_crewchief = shm_open(AC_CREWCHIEF_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.ac.fd_crewchief == -1)
             {
                 //slogd("could not open Assetto Corsa graphic data");
@@ -565,7 +576,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
         case SIMULATOR_PROJECTCARS2 :
 
             simmap->d.pcars2.has_telemetry=false;
-            simmap->d.pcars2.fd_telemetry = shm_open(PCARS2_FILE_LINUX, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->d.pcars2.fd_telemetry = shm_open(PCARS2_FILE_LINUX, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.pcars2.fd_telemetry == -1)
             {
                 //slogd("could not open Assetto Corsa physics engine");
@@ -606,7 +617,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
         case SIMULATOR_SCSTRUCKSIM2 :
 
             simmap->d.scs2.has_telemetry=false;
-            simmap->d.scs2.fd_telemetry = open("/dev/shm/SCS/SCSTelemetry", O_CREAT | O_RDWR, 0777);
+            simmap->d.scs2.fd_telemetry = open("/dev/shm/SCS/SCSTelemetry", O_CREAT|O_RDWR, 0777);
             //simmap->d.scs2.fd_telemetry = shm_open(SCS2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->d.scs2.fd_telemetry == -1)
             {

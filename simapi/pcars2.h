@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "../include/pcars2data.h"
 
+#define AMS2_EXE "ams2.exe"
+
 #define PCARS2_FILE "$pcars2$"
 #define PCARS2_FILE_LINUX "$pcars2"
 

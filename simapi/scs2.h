@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "../include/scs2data.h"
 
+#define EUROTRUCKS2_EXE "eurotrucks2.exe"
+
 #define SCS2_TELEMETRY_FILE "SCS/SCSTelemetry"
 
 typedef struct
