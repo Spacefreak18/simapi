@@ -144,6 +144,7 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
         }
     }
     if (IsProcessRunning(EUROTRUCKS2_EXE)==true || IsProcessRunning(AMERICANTRUCKS_EXE))
+    {
         if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
         {
             *sim = SIMULATOR_SCSTRUCKSIM2;
@@ -529,7 +530,7 @@ int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
             }
             simmap->d.ac.has_physics=true;
 
-            simmap->d.ac.fd_static = shm_open(AC_STATIC_FILE, O_RDWR|O_CREATE, S_IRUSR | S_IWUSR);
+            simmap->d.ac.fd_static = shm_open(AC_STATIC_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.ac.fd_static == -1)
             {
                 //slogd("could not open Assetto Corsa static data");
