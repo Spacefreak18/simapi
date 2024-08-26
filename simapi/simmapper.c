@@ -143,7 +143,7 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
             }
         }
     }
-    if (IsProcessRunning(EUROTRUCKS2_EXE)==true)
+    if (IsProcessRunning(EUROTRUCKS2_EXE)==true || IsProcessRunning(AMERICANTRUCKS_EXE))
         if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
         {
             *sim = SIMULATOR_SCSTRUCKSIM2;
