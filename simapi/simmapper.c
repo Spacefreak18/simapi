@@ -159,101 +159,6 @@ void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim)
     }
 }
 
-#ifndef SIMMAP_ALL
-int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
-{
-    char* a;
-    char* b;
-    char* c;
-    switch ( simulator )
-    {
-        case SIMULATOR_SIMAPI_TEST :
-            memcpy(simdata, simmap->addr, sizeof(SimData));
-            break;
-
-        case SIMULATOR_ASSETTO_CORSA :
-            a = simmap->d.ac.physics_map_addr;
-            if (simmap->d.ac.has_static == true )
-            {
-                b = simmap->d.ac.static_map_addr;
-                simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
-                int strsize = 32;
-                for(int i=0; i<strsize; i++)
-                {
-                    simmap->d.ac.car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
-                }
-
-                simdata->car = simmap->d.ac.car;
-
-            }
-            if (simmap->d.ac.has_graphic == true )
-            {
-                c = simmap->d.ac.graphic_map_addr;
-                simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
-                simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
-            }
-            simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
-            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
-            simdata->velocity = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
-            simdata->gas = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, gas));
-            simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
-            simdata->abs = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, abs));
-            simdata->velocityX = ceil( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity)));
-            simdata->tyreRPS[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed));
-            simdata->tyreRPS[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 1));
-            simdata->tyreRPS[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 2));
-            simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 3));
-            simdata->altitude = 1;
-            break;
-
-        case SIMULATOR_RFACTOR2 :
-
-            a = simmap->d.rf2.telemetry_map_addr;
-
-            simdata->simstatus = 2;
-            simdata->velocity = fabs(ceil(3.6 * (*(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mLocalVel)) + (sizeof(double) * 2)))));
-            simdata->rpms = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineRPM)));
-            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mGear)));
-            simdata->maxrpm = ceil( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineMaxRPM))));
-            simdata->altitude = 1;
-            break;
-
-        case SIMULATOR_PROJECTCARS2 :
-
-            a = simmap->d.rf2.telemetry_map_addr;
-
-            simdata->simstatus = 2;
-            simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSpeed))));
-            simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mRpm)));
-            simdata->maxrpm = ceil(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mMaxRPM)));
-            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGear));
-            simdata->altitude = 1;
-            break;
-
-        case SIMULATOR_SCSTRUCKSIM2 :
-
-            a = simmap->d.scs2.telemetry_map_addr;
-
-            simdata->simstatus = 2;
-            simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
-            simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
-            simdata->brake = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.userBrake)));
-            simdata->gas = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.userThrottle)));
-            simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_i.gear));
-            simdata->gear += 1;
-            simdata->tyreRPS[0] = *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.truck_wheelVelocity));
-            simdata->tyreRPS[1] = *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.truck_wheelVelocity) + (sizeof(float) * 1));
-            simdata->tyreRPS[2] = *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.truck_wheelVelocity) + (sizeof(float) * 2));
-            simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.truck_wheelVelocity) + (sizeof(float) * 3));
-            simdata->maxrpm = ceil( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
-            simdata->altitude = 1;
-            break;
-
-    }
-}
-#endif
-
-#ifdef SIMMAP_ALL
 int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
     char* a;
@@ -487,7 +392,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
     }
 }
-#endif
 
 int siminit(SimData* simdata, SimMap* simmap, Simulator simulator)
 {
