@@ -15,34 +15,6 @@ typedef struct
 }
 LapTime;
 
-#ifndef SIMMAP_ALL
-
-typedef struct
-{
-    uint32_t simstatus;
-    uint32_t velocity;
-    uint32_t rpms;
-    uint32_t gear;
-    uint32_t pulses;
-    uint32_t maxrpm;
-    uint32_t altitude;
-    uint32_t lap;
-    uint32_t position;
-    double gas;
-    double brake;
-    double velocityX;
-    double abs;
-    double tyreRPS[4];
-    double tyrediameter[4];
-    double wheelslip[4];
-    double wheelspeed[4];
-    int sim;
-    char* car;
-}
-SimData;
-
-#else
-
 typedef struct
 {
     uint32_t xpos;
@@ -125,7 +97,5 @@ typedef struct
     CarData cars[MAXCARS];
 }
 SimData;
-
-#endif
 
 #endif
