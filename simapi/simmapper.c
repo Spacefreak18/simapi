@@ -377,6 +377,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             simdata->simstatus = 2;
             simdata->velocity = ceil(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
+            simdata->velocity -= 1;
             simdata->rpms = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
             simdata->brake = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.userBrake)));
             simdata->gas = ceil(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.userThrottle)));
