@@ -45,7 +45,7 @@ typedef struct
     uint32_t numlaps;
     uint32_t playerlaps;
     uint32_t numcars;
-    char gearc;
+    char gearc[3];
     double gas;
     double brake;
     double fuel;
