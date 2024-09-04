@@ -221,6 +221,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
                 simdata->inpit = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, isInPit));
                 simdata->sectorindex = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, currentSectorIndex));
                 simdata->lastsectorinms = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, lastSectorTime));
+                simdata->flag = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, Flag));
 
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)

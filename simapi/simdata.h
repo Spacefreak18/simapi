@@ -85,6 +85,7 @@ typedef struct
     uint32_t session;
     uint32_t sectorindex;
     uint32_t lastsectorinms;
+    uint32_t flag;
 
     bool inpit;
     bool lapisvalid;
