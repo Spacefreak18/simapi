@@ -401,27 +401,27 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
             simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.truck_wheelVelocity) + (sizeof(float) * 3));
             simdata->maxrpm = droundint( *(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, config_f.engineRpmMax)));
 
-
-            if(simdata->gear>1)
+            if(simdata->gear>0)
             {
                 simdata->gearc[0] = (simdata->gear/2) + 48;
                 if(simdata->gear % 2 == 0)
                 {
-                    simdata->gearc[1] = 76;
+                    simdata->gearc[1] = 72;
                 }
                 else
                 {
-                    simdata->gearc[1] = 72;
+                    simdata->gearc[1] = 76;
+                    simdata->gearc[0]++;
                 }
                 simdata->gearc[2] = 0;
             }
             else
             {
-                if (simdata->gear <= 0)
+                if (simdata->gear < 0)
                 {
                     simdata->gearc[0] = 82;
                 }
-                if (simdata->gear == 1)
+                if (simdata->gear == 0)
                 {
                     simdata->gearc[0] = 78;
                 }
@@ -430,7 +430,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator)
 
             simdata->altitude = 1;
             break;
-
     }
 }
 
