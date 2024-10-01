@@ -170,7 +170,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     //slogi("found Assetto Corsa, starting application...");
                     si.isSimOn = true;
                     si.SimSupportsMonocoque = true;
-                    si.SimSupportMonocoqueTyreEffects = true;
+                    si.SimSupportsMonocoqueTyreEffects = true;
                     si.SimSupportsTelemetry = true;
                     si.SimSupportsAdvancedUI = true;
                 }
