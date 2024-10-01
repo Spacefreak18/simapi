@@ -6,6 +6,34 @@
 #include <libgen.h>
 #include <stdbool.h>
 #include "getpid.h"
+#include <stdint.h>
+
+uint8_t strContains(char* string, char* toFind)
+{
+    uint8_t slen = strlen(string);
+    uint8_t tFlen = strlen(toFind);
+    uint8_t found = 0;
+
+    if( slen >= tFlen )
+    {
+        for(uint8_t s=0, t=0; s<slen; s++)
+        {
+            do{
+
+                if( string[s] == toFind[t] )
+                {
+                    if( ++found == tFlen ) return 1;
+                    s++;
+                    t++;
+                }
+                else { s -= found; found=0; t=0; }
+
+              }while(found);
+        }
+        return 0;
+    }
+    else return -1;
+}
 
 /* checks if the string is purely an integer
  * we can do it with `strtol' also
@@ -61,7 +89,8 @@ int *pidof (char *pname)
       if (fp != NULL)
       {
         fscanf (fp, "%s", read_buf);
-        if (strcmp (read_buf, pname) == 0)
+        //if (strcmp (read_buf, pname) == 0)
+        if (strContains(read_buf, pname) > 0)
         {
           /* add to list and expand list if needed */
           pidlist[pidlist_index++] = atoi (entry->d_name);
