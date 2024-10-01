@@ -7,6 +7,20 @@
 #include "scs2.h"
 
 #include "simdata.h"
+#include "simapi.h"
+
+
+typedef struct
+{
+    bool isSimOn;
+    bool SimUsesUDP;
+    bool SimSupportsMonocoque;
+    bool SimSupportsMonocoqueTyreEffects;
+    bool SimSupportsTelemetry;
+    bool SimSupportsAdvancedUI;
+    SimulatorAPI simulatorapi;
+}
+SimInfo;
 
 typedef struct
 {
@@ -22,9 +36,10 @@ typedef struct
 }
 SimMap;
 
-void getSim(SimData* simdata, SimMap* simmap, bool* simstate, Simulator* sim);
-int siminit(SimData* simdata, SimMap* simmap, Simulator simulator);
-int simdatamap(SimData* simdata, SimMap* simmap, Simulator simulator);
-int simfree(SimData* simdata, SimMap* simmap, Simulator simulator);
+SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int));
+int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool udp, char* base);
+int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 
 #endif
