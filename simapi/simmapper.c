@@ -158,6 +158,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
     if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true)
     {
+        simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa");
         if (does_sim_file_exist("/dev/shm/acpmf_physics"))
         {
             if (does_sim_file_exist("/dev/shm/acpmf_static"))
@@ -167,7 +168,6 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdatamap(simdata, simmap, SIMULATOR_ASSETTO_CORSA, false, NULL);
                 if (error == 0 && simdata->simstatus > 1)
                 {
-                    //slogi("found Assetto Corsa, starting application...");
                     si.isSimOn = true;
                     si.SimSupportsMonocoque = true;
                     si.SimSupportsMonocoqueTyreEffects = true;
@@ -175,6 +175,14 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.SimSupportsAdvancedUI = true;
                 }
             }
+            else
+            {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find static shared memory file");
+            }
+        }
+        else
+        {
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file");
         }
     }
     if (IsProcessRunning(RFACTOR2_EXE)==true)
