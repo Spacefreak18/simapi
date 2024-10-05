@@ -56,25 +56,28 @@ void set_simapi_log_trace(func_ptr_t func) {
 
 void simapi_log(SIMAPI_LOGLEVEL sll, char* message)
 {
-    if(sll == 0)
+    if(message != NULL)
     {
-        if(loginfo != SIMAPI_LOGLEVEL_INFO)
+        if(sll == SIMAPI_LOGLEVEL_INFO)
         {
-            loginfo(message);
+            if(loginfo != NULL)
+            {
+                loginfo(message);
+            }
         }
-    }
-    if(sll == SIMAPI_LOGLEVEL_DEBUG)
-    {
-        if(loginfo != NULL)
+        if(sll == SIMAPI_LOGLEVEL_DEBUG)
         {
-            loginfo(message);
+            if(logdebug != NULL)
+            {
+                logdebug(message);
+            }
         }
-    }
-    if(sll == SIMAPI_LOGLEVEL_TRACE)
-    {
-        if(logtrace != NULL)
+        if(sll == SIMAPI_LOGLEVEL_TRACE)
         {
-            logtrace(message);
+            if(logtrace != NULL)
+            {
+                logtrace(message);
+            }
         }
     }
 }
