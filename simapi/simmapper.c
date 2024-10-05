@@ -149,9 +149,9 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     si.simulatorapi = -1;
     si.isSimOn = false;
     si.SimUsesUDP = false;
-    si.SimSupportsMonocoque = false;
-    si.SimSupportsMonocoqueTyreEffects = false;
-    si.SimSupportsTelemetry = false;
+    si.SimSupportsBasicTelemetry = false;
+    si.SimSupportsTyreEffects = false;
+    si.SimSupportsRealtimeTelemetry = false;
     si.SimSupportsAdvancedUI = false;
 
     simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
@@ -169,9 +169,9 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 if (error == 0 && simdata->simstatus > 1)
                 {
                     si.isSimOn = true;
-                    si.SimSupportsMonocoque = true;
-                    si.SimSupportsMonocoqueTyreEffects = true;
-                    si.SimSupportsTelemetry = true;
+                    si.SimSupportsBasicTelemetry = true;
+                    si.SimSupportsTyreEffects = true;
+                    si.SimSupportsRealtimeTelemetry = true;
                     si.SimSupportsAdvancedUI = true;
                 }
             }
@@ -196,7 +196,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 //slogi("found Assetto Corsa, starting application...");
                 si.isSimOn = true;
-                si.SimSupportsMonocoque = true;
+                si.SimSupportsBasicTelemetry = true;
             }
         }
     }
@@ -213,7 +213,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 {
                     //slogi("found Assetto Corsa, starting application...");
                     si.isSimOn = true;
-                    si.SimSupportsMonocoque = true;
+                    si.SimSupportsBasicTelemetry = true;
                 }
             }
         }
@@ -230,7 +230,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             if (error == 0 && simdata->simstatus > 1)
             {
                 si.isSimOn = true;
-                si.SimSupportsMonocoque = true;
+                si.SimSupportsBasicTelemetry = true;
             }
         }
     }
@@ -245,7 +245,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 //slogi("found Assetto Corsa, starting application...");
                 si.isSimOn = true;
-                si.SimSupportsMonocoque = true;
+                si.SimSupportsBasicTelemetry = true;
             }
         }
     }

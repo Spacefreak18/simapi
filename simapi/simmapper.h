@@ -14,9 +14,9 @@ typedef struct
 {
     bool isSimOn;
     bool SimUsesUDP;
-    bool SimSupportsMonocoque;
-    bool SimSupportsMonocoqueTyreEffects;
-    bool SimSupportsTelemetry;
+    bool SimSupportsBasicTelemetry;
+    bool SimSupportsTyreEffects;
+    bool SimSupportsRealtimeTelemetry;
     bool SimSupportsAdvancedUI;
     SimulatorAPI simulatorapi;
 }
