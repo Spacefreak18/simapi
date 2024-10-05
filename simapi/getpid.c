@@ -92,7 +92,8 @@ int* pidof (char* pname)
                         }
                     }
                 }
-                fclose (fp);
+                fclose(fp);
+                fclose(fp2);
             }
         }
     }
