@@ -32,7 +32,7 @@ int* pidof (char* pname)
     FILE* fp2;
     struct dirent* entry;
     int* pidlist, pidlist_index = 0, pidlist_realloc_count = 1;
-    char path[2048], cmdline[2048], read_buf[8196], read_buf2[8196];
+    char path[2048], cmdline[2048], read_buf[16392], read_buf2[16392];
 
 
     dirp = opendir ("/proc/");
@@ -54,8 +54,8 @@ int* pidof (char* pname)
         {
             memset(&path, 0, sizeof(path));
             memset(&cmdline, 0, sizeof(cmdline));
-            memset(read_buf, 0, sizeof(read_buf));
-            memset(read_buf2, 0, sizeof(read_buf2));
+            memset(&read_buf, 0, sizeof(read_buf));
+            memset(&read_buf2, 0, sizeof(read_buf2));
 
             strcpy (path, "/proc/");
             strcat (path, entry->d_name);
@@ -76,9 +76,10 @@ int* pidof (char* pname)
                 fscanf (fp, "%s", read_buf);
                 fp2= fopen (cmdline, "r");
                 fscanf (fp2, "%s", read_buf2);
-                char* i = strcasestr(read_buf2, pname);
-                //fprintf(stderr, "from %s searching for %s in %s from cmdline %s occurs at %s\n", path, pname, read_buf, read_buf2, i);
-                if(i>0)
+                char* i = strcasestr(read_buf, pname);
+                char* j = strcasestr(read_buf2, pname);
+                //fprintf(stderr, "from %s searching for %s in %s from cmdline %s occurs at %s or %s\n", path, pname, read_buf, read_buf2, i, j);
+                if(i>0 || j>0)
                 {
                     /* add to list and expand list if needed */
                     pidlist[pidlist_index++] = atoi (entry->d_name);
