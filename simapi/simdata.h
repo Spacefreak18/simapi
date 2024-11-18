@@ -90,12 +90,16 @@ typedef struct
     bool inpit;
     bool lapisvalid;
 
-    int sim;
     char* car;
     char* track;
     char* driver;
     char* tyrecompound;
     CarData cars[MAXCARS];
+
+    int sim;
+    int simapi;
+    bool simon;
+    int simversion;
 }
 SimData;
 

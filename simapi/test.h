@@ -1,6 +1,6 @@
 #ifndef _TEST_H
 #define _TEST_H
 
-#define TEST_MEM_FILE_LOCATION "/monocoque_test"
+#define SIMAPI_MEM_FILE "SIMAPI.DAT"
 
 #endif

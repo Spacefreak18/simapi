@@ -8079,6 +8079,9 @@ int CreateACMap(struct Map *map, ACMap *acmap, int mapdata)
     map[2685].value = ((char*) spfc + offsetof(struct SPageFileCrewChief, pluginVersion)) + (sizeof(char) * 31);
     map[2685].dtype = CHAR;
 
+    map[2686].name = "SPageFileGraphic_flag";
+    map[2686].value = ((char*) spfg + offsetof(struct SPageFileGraphic, Flag));
+    map[2686].dtype = CHAR;
 
     return 0;
 }

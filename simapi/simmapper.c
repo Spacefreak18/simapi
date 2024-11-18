@@ -30,6 +30,25 @@
 #include "../include/pcars2data.h"
 #include "../include/scs2data.h"
 
+struct _simmap
+{
+    void* addr;
+    int fd;
+    union
+    {
+        ACMap ac;
+        RF2Map rf2;
+        PCars2Map pcars2;
+        SCS2Map scs2;
+    } d;
+};
+
+SimMap* createSimMap() {
+    SimMap* ptr = malloc(sizeof(SimMap));
+    return ptr;
+}
+
+
 int droundint(double d)
 {
     return trunc(nearbyint(d));
@@ -146,6 +165,31 @@ float spLineLengthToDistanceRoundTrack(float trackLength, float spLine)
     return spLine * trackLength;
 }
 
+int setSimInfo(SimInfo* si)
+{
+    switch ( si->simulatorapi )
+    {
+
+        case SIMULATOR_ASSETTO_CORSA :
+            si->SimUsesUDP = false;
+            si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = true;
+            si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsAdvancedUI = true;
+            break;
+        case SIMULATOR_RFACTOR2 :
+            si->SimSupportsBasicTelemetry = true;
+        case SIMULATOR_PROJECTCARS2 :
+            si->SimSupportsBasicTelemetry = true;
+        case SIMULATOR_SCSTRUCKSIM2 :
+            si->SimSupportsBasicTelemetry = true;
+        default:
+            si->SimSupportsBasicTelemetry = true;
+    }
+
+    return 0;
+}
+
 SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int))
 {
     SimInfo si;
@@ -159,6 +203,30 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
     simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
 
+#ifndef SIMD
+    if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
+    {
+
+        siminit(simdata, simmap, SIMULATOR_SIMAPI_TEST);
+        simapi_log(SIMAPI_LOGLEVEL_INFO, "found running simapi daemon");
+        simdatamap(simdata, simmap, NULL, SIMULATOR_SIMAPI_TEST, false, NULL);
+        if(simdata->simversion == SIMAPI_VERSION)
+        {
+            if (simdata->simon == true)
+            {
+                si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
+                setSimInfo(&si);
+            }
+            return si;
+        }
+        else
+        {
+            simapi_log(SIMAPI_LOGLEVEL_INFO, "skipping sim api daemon due to version mismatch");
+        }
+    }
+#endif
+
     if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true)
     {
         simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa");
@@ -168,14 +236,14 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 si.simulatorapi = SIMULATOR_ASSETTO_CORSA;
                 int error = siminit(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
-                simdatamap(simdata, simmap, SIMULATOR_ASSETTO_CORSA, false, NULL);
+                simdatamap(simdata, simmap, NULL, SIMULATOR_ASSETTO_CORSA, false, NULL);
                 if (error == 0 && simdata->simstatus > 1)
                 {
-                    si.isSimOn = true;
-                    si.SimSupportsBasicTelemetry = true;
-                    si.SimSupportsTyreEffects = true;
-                    si.SimSupportsRealtimeTelemetry = true;
-                    si.SimSupportsAdvancedUI = true;
+                    simdata->simon = true;
+                    simdata->sim = SIMULATOR_ASSETTO_CORSA;
+                    simdata->simapi = SIMULATOR_ASSETTO_CORSA;
+
+                    setSimInfo(&si);
                 }
             }
             else
@@ -194,12 +262,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         {
             si.simulatorapi = SIMULATOR_RFACTOR2;
             int error = siminit(simdata, simmap, SIMULATOR_RFACTOR2);
-            simdatamap(simdata, simmap, SIMULATOR_RFACTOR2, false, NULL);
+            simdatamap(simdata, simmap, NULL, SIMULATOR_RFACTOR2, false, NULL);
             if (error == 0)
             {
                 //slogi("found Assetto Corsa, starting application...");
                 si.isSimOn = true;
-                si.SimSupportsBasicTelemetry = true;
+                setSimInfo(&si);
             }
         }
     }
@@ -211,12 +279,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 si.simulatorapi = SIMULATOR_PROJECTCARS2;
                 int error = siminit(simdata, simmap, SIMULATOR_PROJECTCARS2);
-                simdatamap(simdata, simmap, SIMULATOR_PROJECTCARS2, false, NULL);
+                simdatamap(simdata, simmap, NULL, SIMULATOR_PROJECTCARS2, false, NULL);
                 if (error == 0 && simdata->simstatus > 1)
                 {
                     //slogi("found Assetto Corsa, starting application...");
                     si.isSimOn = true;
-                    si.SimSupportsBasicTelemetry = true;
+                    setSimInfo(&si);
                 }
             }
         }
@@ -228,12 +296,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 si.simulatorapi = SIMULATOR_PROJECTCARS2;
                 si.SimUsesUDP = true;
-                simdatamap(simdata, simmap, SIMULATOR_PROJECTCARS2, true, NULL);
+                simdatamap(simdata, simmap, NULL, SIMULATOR_PROJECTCARS2, true, NULL);
             }
             if (error == 0 && simdata->simstatus > 1)
             {
                 si.isSimOn = true;
-                si.SimSupportsBasicTelemetry = true;
+                setSimInfo(&si);
             }
         }
     }
@@ -243,24 +311,25 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         {
             si.simulatorapi = SIMULATOR_SCSTRUCKSIM2;
             int error = siminit(simdata, simmap, SIMULATOR_SCSTRUCKSIM2);
-            simdatamap(simdata, simmap, SIMULATOR_SCSTRUCKSIM2, false, NULL);
+            simdatamap(simdata, simmap, NULL, SIMULATOR_SCSTRUCKSIM2, false, NULL);
             if (error == 0)
             {
                 //slogi("found Assetto Corsa, starting application...");
                 si.isSimOn = true;
-                si.SimSupportsBasicTelemetry = true;
+                setSimInfo(&si);
             }
         }
     }
     return si;
 }
 
-int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool udp, char* base)
+int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulator, bool udp, char* base)
 {
     char* a;
     char* b;
     char* c;
     char* d;
+
 
     switch ( simulator )
     {
@@ -269,6 +338,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool ud
             break;
 
         case SIMULATOR_ASSETTO_CORSA :
+
             a = simmap->d.ac.physics_map_addr;
             if (simmap->d.ac.has_static == true )
             {
@@ -286,12 +356,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool ud
                 simdata->car = simmap->d.ac.car;
                 simdata->track = simmap->d.ac.track;
                 simdata->driver = simmap->d.ac.driver;
-
             }
 
             if ( simmap->d.ac.has_graphic == true )
             {
                 c = simmap->d.ac.graphic_map_addr;
+
                 simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
                 simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
                 simdata->position = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, position));
@@ -326,7 +396,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool ud
             {
                 d = simmap->d.ac.crewchief_map_addr;
                 int strsize = 32;
-
 
                 simdata->numcars = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, numVehicles));
                 int numcars = simdata->numcars;
@@ -573,6 +642,17 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool ud
             simdata->altitude = 1;
             break;
     }
+
+    if (simmap2 != NULL && simmap2->addr != NULL)
+    {
+        simdmap(simmap2, simdata);
+    }
+}
+
+int simdmap(SimMap* simmap, SimData* simdata)
+{
+
+    memcpy(simmap->addr, simdata, sizeof(SimData));
 }
 
 int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
@@ -604,7 +684,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
     switch ( simulator )
     {
         case SIMULATOR_SIMAPI_TEST :
-            simmap->fd = shm_open(TEST_MEM_FILE_LOCATION, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
             if (simmap->fd == -1)
             {
                 return 10;
@@ -877,5 +957,189 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
             }
             break;
     }
+
     return error;
+}
+
+int freesimmap(SimMap* simmap)
+{
+
+    simapi_log(SIMAPI_LOGLEVEL_INFO, "Freeing universal shared memory");
+    
+    if (munmap(simmap->addr, sizeof(SimData)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(SIMAPI_MEM_FILE);
+    
+    if (close(simmap->fd) == -1)
+    {
+        return 200;
+    }
+
+    free(simmap);
+    return 0;
+}
+
+int opensimmap(SimMap* simmap)
+{
+    simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (simmap->fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    int res = ftruncate(simmap->fd, sizeof(SimData));
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    void* addr = mmap(NULL, sizeof(SimData), PROT_WRITE, MAP_SHARED, simmap->fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    simmap->addr = addr;
+    return 0;
+}
+
+
+int opensimcompatmap(SimCompatMap* compatmap)
+{
+
+    compatmap->acphysics_fd = shm_open(AC_PHYSICS_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->acphysics_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    int res = ftruncate(compatmap->acphysics_fd, sizeof(struct SPageFilePhysics));
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    void* addr = mmap(NULL, sizeof(struct SPageFilePhysics), PROT_WRITE, MAP_SHARED, compatmap->acphysics_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->acphysics_addr = addr;
+
+    compatmap->acgraphics_fd = shm_open(AC_GRAPHIC_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->acgraphics_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    res = ftruncate(compatmap->acgraphics_fd, sizeof(struct SPageFileGraphic));
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    addr = mmap(NULL, sizeof(struct SPageFileGraphic), PROT_WRITE, MAP_SHARED, compatmap->acgraphics_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->acgraphics_addr = addr;
+
+    compatmap->acstatic_fd = shm_open(AC_STATIC_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->acstatic_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    res = ftruncate(compatmap->acstatic_fd, sizeof(struct SPageFileStatic));
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    addr = mmap(NULL, sizeof(struct SPageFileStatic), PROT_WRITE, MAP_SHARED, compatmap->acstatic_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->acstatic_addr = addr;
+
+    compatmap->accrew_fd = shm_open(AC_CREWCHIEF_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->accrew_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    res = ftruncate(compatmap->accrew_fd, sizeof(struct SPageFileCrewChief));
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    addr = mmap(NULL, sizeof(struct SPageFileCrewChief), PROT_WRITE, MAP_SHARED, compatmap->accrew_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->accrew_addr = addr;
+    return 0;
+}
+
+int freesimcompatmap(SimCompatMap* compatmap)
+{
+    if (munmap(compatmap->acphysics_addr, sizeof(struct SPageFilePhysics)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(AC_PHYSICS_FILE);
+    
+    if (close(compatmap->acphysics_fd) == -1)
+    {
+        return 200;
+    }
+    
+    if (munmap(compatmap->acstatic_addr, sizeof(struct SPageFileStatic)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(AC_STATIC_FILE);
+    
+    if (close(compatmap->acstatic_fd) == -1)
+    {
+        return 200;
+    }
+    
+    if (munmap(compatmap->acgraphics_addr, sizeof(struct SPageFileGraphic)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(AC_GRAPHIC_FILE);
+    
+    if (close(compatmap->acgraphics_fd) == -1)
+    {
+        return 200;
+    }
+    
+    if (munmap(compatmap->accrew_addr, sizeof(struct SPageFileCrewChief)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(AC_CREWCHIEF_FILE);
+    
+    if (close(compatmap->accrew_fd) == -1)
+    {
+        return 200;
+    }
+    return 0;
 }
