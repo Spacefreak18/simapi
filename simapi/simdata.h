@@ -46,13 +46,18 @@ typedef struct
     uint32_t playerlaps;
     uint32_t numcars;
     char gearc[3];
+
+    int Xvelocity;
+    int Yvelocity;
+    int Zvelocity;
+
     double gas;
     double brake;
     double fuel;
     double clutch;
     double steer;
     double handbrake;
-    double velocityX;
+
     double abs;
     double brakebias;
     double tyreRPS[4];
