@@ -178,10 +178,12 @@ int setSimInfo(SimInfo* si)
             si->SimSupportsAdvancedUI = true;
             break;
         case SIMULATOR_RFACTOR2 :
+            si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
         case SIMULATOR_PROJECTCARS2 :
             si->SimSupportsBasicTelemetry = true;
         case SIMULATOR_SCSTRUCKSIM2 :
+            si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
         default:
             si->SimSupportsBasicTelemetry = true;
@@ -234,16 +236,22 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         {
             if (does_sim_file_exist("/dev/shm/acpmf_static"))
             {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                 si.simulatorapi = SIMULATOR_ASSETTO_CORSA;
                 int error = siminit(simdata, simmap, SIMULATOR_ASSETTO_CORSA);
                 simdatamap(simdata, simmap, NULL, SIMULATOR_ASSETTO_CORSA, false, NULL);
                 if (error == 0 && simdata->simstatus > 1)
                 {
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "AC Shared memory looks good");
                     simdata->simon = true;
                     simdata->sim = SIMULATOR_ASSETTO_CORSA;
                     simdata->simapi = SIMULATOR_ASSETTO_CORSA;
 
+                    si.isSimOn = true;
+                    si.simulatorapi = simdata->simapi;
                     setSimInfo(&si);
+
+                    return si;
                 }
             }
             else
@@ -266,8 +274,16 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             if (error == 0)
             {
                 //slogi("found Assetto Corsa, starting application...");
+
+                simdata->simon = true;
+                simdata->sim = SIMULATOR_RFACTOR2;
+                simdata->simapi = SIMULATOR_RFACTOR2;
+
                 si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
                 setSimInfo(&si);
+
+                return si;
             }
         }
     }
@@ -282,9 +298,15 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdatamap(simdata, simmap, NULL, SIMULATOR_PROJECTCARS2, false, NULL);
                 if (error == 0 && simdata->simstatus > 1)
                 {
-                    //slogi("found Assetto Corsa, starting application...");
+                    simdata->simon = true;
+                    simdata->sim = SIMULATOR_PROJECTCARS2;
+                    simdata->simapi = SIMULATOR_PROJECTCARS2;
+
                     si.isSimOn = true;
+                    si.simulatorapi = simdata->simapi;
                     setSimInfo(&si);
+
+                    return si;
                 }
             }
         }
@@ -300,8 +322,15 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             if (error == 0 && simdata->simstatus > 1)
             {
+                simdata->simon = true;
+                simdata->sim = SIMULATOR_PROJECTCARS2;
+                simdata->simapi = SIMULATOR_PROJECTCARS2;
+
                 si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
                 setSimInfo(&si);
+
+                return si;
             }
         }
     }
@@ -314,9 +343,15 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             simdatamap(simdata, simmap, NULL, SIMULATOR_SCSTRUCKSIM2, false, NULL);
             if (error == 0)
             {
-                //slogi("found Assetto Corsa, starting application...");
+                simdata->simon = true;
+                simdata->sim = SIMULATOR_SCTRUCKSIM2;
+                simdata->simapi = SIMULATOR_SCTRUCKSIM2;
+
                 si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
                 setSimInfo(&si);
+
+                return si;
             }
         }
     }
@@ -441,9 +476,9 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
-            simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity)) + (0 * sizeof(float)) );
-            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity)) + (1 * sizeof(float)) );
-            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity)) + (2 * sizeof(float)) );
+            simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 0 )) );
+            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 )) );
+            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 )) );
             simdata->gas = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, gas));
             simdata->clutch = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, clutch));
             simdata->steer = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, steerAngle));
