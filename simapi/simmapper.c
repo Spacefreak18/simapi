@@ -344,8 +344,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             if (error == 0)
             {
                 simdata->simon = true;
-                simdata->sim = SIMULATOR_SCTRUCKSIM2;
-                simdata->simapi = SIMULATOR_SCTRUCKSIM2;
+                simdata->sim = SIMULATOR_SCSTRUCKSIM2;
+                simdata->simapi = SIMULATOR_SCSTRUCKSIM2;
 
                 si.isSimOn = true;
                 si.simulatorapi = simdata->simapi;
