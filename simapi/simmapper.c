@@ -476,9 +476,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, gear));
             simdata->velocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, speedKmh)));
+
             simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 0 )) );
-            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 )) );
-            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 )) );
+            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 )) );
+            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 )) );
+
             simdata->gas = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, gas));
             simdata->clutch = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, clutch));
             simdata->steer = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, steerAngle));
