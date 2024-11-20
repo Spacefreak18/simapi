@@ -194,7 +194,7 @@ int setSimInfo(SimInfo* si)
     return 0;
 }
 
-SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int))
+SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd)
 {
     SimInfo si;
     si.simulatorapi = -1;
@@ -207,29 +207,30 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
     simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
 
-#ifndef SIMD
-    if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
+    if(simd == false)
     {
+        if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
+        {
 
-        siminit(simdata, simmap, SIMULATOR_SIMAPI_TEST);
-        simapi_log(SIMAPI_LOGLEVEL_INFO, "found running simapi daemon");
-        simdatamap(simdata, simmap, NULL, SIMULATOR_SIMAPI_TEST, false, NULL);
-        if(simdata->simversion == SIMAPI_VERSION)
-        {
-            if (simdata->simon == true)
+            siminit(simdata, simmap, SIMULATOR_SIMAPI_TEST);
+            simapi_log(SIMAPI_LOGLEVEL_INFO, "found running simapi daemon");
+            simdatamap(simdata, simmap, NULL, SIMULATOR_SIMAPI_TEST, false, NULL);
+            if(simdata->simversion == SIMAPI_VERSION)
             {
-                si.isSimOn = true;
-                si.simulatorapi = simdata->simapi;
-                setSimInfo(&si);
+                if (simdata->simon == true)
+                {
+                    si.isSimOn = true;
+                    si.simulatorapi = simdata->simapi;
+                    setSimInfo(&si);
+                }
+                return si;
             }
-            return si;
-        }
-        else
-        {
-            simapi_log(SIMAPI_LOGLEVEL_INFO, "skipping sim api daemon due to version mismatch");
+            else
+            {
+                simapi_log(SIMAPI_LOGLEVEL_INFO, "skipping sim api daemon due to version mismatch");
+            }
         }
     }
-#endif
 
     if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true)
     {

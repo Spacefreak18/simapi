@@ -7,8 +7,6 @@ project(simd)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 
-add_compile_definitions(SIMD)
-
 add_executable(simd simd.c parameters.c)
 target_link_libraries(simd m uv yder argtable2 simapi)
 
