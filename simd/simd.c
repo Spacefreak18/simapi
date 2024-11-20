@@ -19,17 +19,17 @@
 
 bool compatmemmap;
 
+Parameters* p;
 loop_data* baton;
 SimData* simdata;
 SimMap* simmap;
 SimMap* simmap2;
 SimCompatMap* compatmap;
 
-uv_idle_t idler;
+uv_poll_t pollt;
 uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
 uv_udp_t recv_socket;
-
 
 
 bool doui = false;
@@ -53,24 +53,33 @@ void simapilib_logtrace(char* message)
     y_log_message(Y_LOG_LEVEL_DEBUG, message);
 }
 
-
+static void close_walk_cb(uv_handle_t* handle, void* arg) {
+  if (!uv_is_closing(handle))
+    uv_close(handle, NULL);
+}
+#define ASSERT(expr) expr
 void release()
 {
-
     uv_timer_stop(&datamaptimer);
     uv_timer_stop(&datachecktimer);
+    uv_walk(uv_default_loop(), close_walk_cb, NULL);
+    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
+    ASSERT(0 == uv_loop_close(uv_default_loop()));
+    uv_library_shutdown();
 
     if(compatmemmap == true)
     {
         freesimcompatmap(compatmap);
         free(compatmap);
     }
+
     freesimmap(simmap);
     freesimmap(simmap2);
 
     free(baton);
     free(simdata);
 
+    free(p);
     y_close_logs();
 }
 
@@ -264,7 +273,7 @@ void cb(uv_poll_t* handle, int status, int events)
 int main(int argc, char** argv)
 {
 
-    Parameters* p = malloc(sizeof(Parameters));
+    p = malloc(sizeof(Parameters));
 
     ConfigError ppe = getParameters(argc, argv, p);
 
@@ -346,6 +355,8 @@ int main(int argc, char** argv)
     }
 
     simdata = malloc(sizeof(SimData));
+    bzero(simdata, sizeof(SimData));
+
     simmap = createSimMap();
     simmap2 = createSimMap();
 
@@ -380,6 +391,8 @@ int main(int argc, char** argv)
     appstate = 1;
     y_log_message(Y_LOG_LEVEL_DEBUG, "setting initial app state");
     uv_timer_init(uv_default_loop(), &datachecktimer);
+    uv_timer_init(uv_default_loop(), &datamaptimer);
+
     if(p->daemon == false)
     {
         fprintf(stdout, "Searching for sim data... Press q to quit...\n");
@@ -387,21 +400,13 @@ int main(int argc, char** argv)
     uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
 
 
+    uv_poll_t* poll;
     if(p->daemon == false)
     {
-        uv_poll_t* poll = (uv_poll_t*) malloc(uv_handle_size(UV_POLL));
-        uv_handle_set_data((uv_handle_t*) poll, (void*) baton);
-        if (0 != uv_poll_init(uv_default_loop(), poll, 0))
-        {
-            return 1;
-        };
-        if (0 != uv_poll_start(poll, UV_READABLE, cb))
-        {
-            return 2;
-        };
+        uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
+        uv_poll_init(uv_default_loop(), &pollt, 0);
+        uv_poll_start(&pollt, UV_READABLE, cb);
     }
-
-    uv_timer_init(uv_default_loop(), &datamaptimer);
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
@@ -410,102 +415,11 @@ int main(int argc, char** argv)
         fprintf(stdout, "\n");
         fflush(stdout);
         tcsetattr(0, TCSANOW, &canonicalmode);
+        uv_poll_stop(&pollt);
         release();
     }
-    //freesimcompatmap(compatmap);
-    //freesimmap(simmap2);
 
-    //free(baton);
-    //free(simdata);
-    //free(simmap);
-    //free(simmap2);
-    //free(compatmap);
-
-    //y_close_logs();
 cleanup_final:
 
     return 0;
 }
-
-//int main()
-//{
-//
-//    y_init_logs("simd", Y_LOG_MODE_FILE, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
-//
-//    SimData* simdata = malloc(sizeof(SimData));
-//    SimMap* simmap = malloc(sizeof(SimMap));
-//    SimMap* simmap2 = malloc(sizeof(SimMap));
-//    SimCompatMap* compatmap = malloc(sizeof(SimCompatMap));
-//
-//    struct termios newsettings, canonicalmode;
-//    tcgetattr(0, &canonicalmode);
-//    newsettings = canonicalmode;
-//    newsettings.c_lflag &= (~ICANON & ~ECHO);
-//    newsettings.c_cc[VMIN] = 1;
-//    newsettings.c_cc[VTIME] = 0;
-//    tcsetattr(0, TCSANOW, &newsettings);
-//    char ch;
-//    struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
-//
-//    uv_poll_t* poll = (uv_poll_t*) malloc(uv_handle_size(UV_POLL));
-//
-//    opensimmap(simmap2);
-//    opensimcompatmap(compatmap);
-//
-//    simdata->simversion = SIMAPI_VERSION;
-//    simdmap(simmap2, simdata);
-//
-//    loop_data* baton = (loop_data*) malloc(sizeof(loop_data));
-//    baton->simmap = simmap;
-//    baton->simmap2 = simmap2;
-//    baton->simdata = simdata;
-//    baton->simstate = false;
-//    baton->uion = false;
-//    baton->releasing = false;
-//    baton->sim = 0;
-//    baton->req.data = (void*) baton;
-//    uv_handle_set_data((uv_handle_t*) &datachecktimer, (void*) baton);
-//    uv_handle_set_data((uv_handle_t*) &datamaptimer, (void*) baton);
-//    uv_handle_set_data((uv_handle_t*) &recv_socket, (void*) baton);
-//    uv_handle_set_data((uv_handle_t*) poll, (void*) baton);
-//    appstate = 1;
-//    y_log_message(Y_LOG_LEVEL_DEBUG, "setting initial app state");
-//    uv_timer_init(uv_default_loop(), &datachecktimer);
-//    fprintf(stdout, "Searching for sim data... Press q to quit...\n");
-//    uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
-//
-//    set_simapi_log_info(simapilib_loginfo);
-//    set_simapi_log_debug(simapilib_logdebug);
-//    set_simapi_log_trace(simapilib_logtrace);
-//
-//
-//    if (0 != uv_poll_init(uv_default_loop(), poll, 0))
-//    {
-//        return 1;
-//    };
-//    if (0 != uv_poll_start(poll, UV_READABLE, cb))
-//    {
-//        return 2;
-//    };
-//
-//
-//    uv_timer_init(uv_default_loop(), &datamaptimer);
-//
-//    uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-//    fprintf(stdout, "\n");
-//    fflush(stdout);
-//    tcsetattr(0, TCSANOW, &canonicalmode);
-//
-//    freesimcompatmap(compatmap);
-//    freesimmap(simmap2);
-//
-//    free(baton);
-//    free(simdata);
-//    free(simmap);
-//    free(simmap2);
-//    free(compatmap);
-//
-//    y_close_logs();
-//    return 0;
-//}
-

@@ -45,6 +45,8 @@ struct _simmap
 
 SimMap* createSimMap() {
     SimMap* ptr = malloc(sizeof(SimMap));
+    ptr->fd = -1;
+    ptr->addr = 0;
     return ptr;
 }
 
@@ -1002,14 +1004,20 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
             break;
     }
 
+    bzero(simdata, sizeof(SimData));
     return error;
 }
 
 int freesimmap(SimMap* simmap)
 {
-
     simapi_log(SIMAPI_LOGLEVEL_INFO, "Freeing universal shared memory");
-    
+
+    if(simmap->fd == -1)
+    {
+        free(simmap);
+        return 0;
+    }
+
     if (munmap(simmap->addr, sizeof(SimData)) == -1)
     {
         return 100;
