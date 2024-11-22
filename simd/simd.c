@@ -206,15 +206,18 @@ void datacheckcallback(uv_timer_t* handle)
 
     if ( appstate == 1 )
     {
+        fprintf(stderr, "calling getsim");
         SimInfo si = getSim(simdata, simmap, false, startudp, true);
         //TODO: move all this to a siminfo struct in loop_data
         f->simstate = si.isSimOn;
         f->sim = si.simulatorapi;
         f->use_udp = si.SimUsesUDP;
 
+        fprintf(stderr, "simstate is %i", f->simstate);
     }
     if (f->simstate == true && simdata->simstatus >= 2)
     {
+        fprintf(stderr, "the timer will stop");
         if ( appstate == 1 )
         {
             appstate++;
@@ -231,6 +234,7 @@ void datacheckcallback(uv_timer_t* handle)
             }
             else
             {
+                fprintf(stderr, "map timer start");
                 uv_timer_start(&datamaptimer, shmdatamapcallback, 2000, 16);
             }
             uv_timer_stop(handle);

@@ -198,6 +198,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 {
     SimInfo si;
     si.simulatorapi = -1;
+    si.mapapi = -1;
     si.isSimOn = false;
     si.SimUsesUDP = false;
     si.SimSupportsBasicTelemetry = false;
@@ -221,6 +222,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 {
                     si.isSimOn = true;
                     si.simulatorapi = simdata->simapi;
+                    si.mapapi = SIMULATOR_SIMAPI_TEST;
                     setSimInfo(&si);
                 }
                 return si;
@@ -267,8 +269,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file");
         }
     }
+
+
     if (IsProcessRunning(RFACTOR2_EXE)==true)
     {
+
         if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
         {
             si.simulatorapi = SIMULATOR_RFACTOR2;
@@ -284,12 +289,14 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
                 si.isSimOn = true;
                 si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
                 setSimInfo(&si);
 
                 return si;
             }
         }
     }
+
     if (IsProcessRunning(AMS2_EXE)==true)
     {
         if (force_udp == false)

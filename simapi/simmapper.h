@@ -19,6 +19,7 @@ typedef struct
     bool SimSupportsRealtimeTelemetry;
     bool SimSupportsAdvancedUI;
     SimulatorAPI simulatorapi;
+    SimulatorAPI mapapi;
 }
 SimInfo;
 
