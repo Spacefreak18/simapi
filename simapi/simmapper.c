@@ -254,6 +254,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
                     si.isSimOn = true;
                     si.simulatorapi = simdata->simapi;
+                    si.mapapi = si.simulatorapi;
                     setSimInfo(&si);
 
                     return si;
@@ -314,6 +315,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
                     si.isSimOn = true;
                     si.simulatorapi = simdata->simapi;
+                    si.mapapi = si.simulatorapi;
                     setSimInfo(&si);
 
                     return si;
@@ -338,6 +340,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
                 si.isSimOn = true;
                 si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
                 setSimInfo(&si);
 
                 return si;
@@ -359,6 +362,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
                 si.isSimOn = true;
                 si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
                 setSimInfo(&si);
 
                 return si;
