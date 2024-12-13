@@ -160,7 +160,7 @@ typedef struct //rF2ScoringInfo
   unsigned char mTrackName[64];
   int mSession;
   double mCurrentET;
-  int mMAxLaps;
+  int mMaxLaps;
   double mLapDist;
   unsigned char pointer1[8];
 
