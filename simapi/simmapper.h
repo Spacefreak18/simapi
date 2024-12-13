@@ -44,6 +44,8 @@ typedef struct _simmap SimMap;
 
 typedef struct
 {
+    void* pcars_addr;
+    int pcars_fd;
     void* acphysics_addr;
     int acphysics_fd;
     void* acgraphics_addr;
