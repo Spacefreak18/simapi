@@ -216,14 +216,14 @@ struct SPageFileGraphic
     int currentSectorIndex;
     int lastSectorTime;
     int numberOfLaps;
-    char tyreCompound[33];
+    char16_t tyreCompound[33];
 
     float replayTimeMultiplier;
     float normalizedCarPosition;
     float carCoordinates[3];
-    int CarID[60];
 
-    int PlayerCarId;
+    //int CarID[60];
+    //int PlayerCarId;
 
     float PenaltyTime;
     ACC_FLAG_TYPE Flag;
