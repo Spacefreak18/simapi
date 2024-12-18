@@ -18,16 +18,16 @@ frequency    = 27;
 }
 ```
 
-frequency - base frequency of effect
-channel - left or right ( surround sound cards are supported, but it can be a challenge to map physical channels to the correct channel id )
-effect - engine, gear, tyrelock, tyreslip, abs
-devid - find with ```pacmd list-sinks | grep name:```
-tyre - All, Fronts, Rears, FrontLeft, RearRight, etc
++ frequency - base frequency of effect
++ channel - left or right ( surround sound cards are supported, but it can be a challenge to map physical channels to the correct channel id )
++ effect - engine, gear, tyrelock, tyreslip, abs
++ devid - find with ```pacmd list-sinks | grep name:```
++ tyre - All, Fronts, Rears, FrontLeft, RearRight, etc
 
 Setting up bass shakers and getting a good experience is a bit of a black art. Here are some tips ( mostly pertaining to SimHub ) but deal with the fine tuning and would still apply.
 
-[SimHub Shaker Documentation](https://github.com/SHWotever/SimHub/wiki/ShakeIt-V3-Effects-configuration)
++ [SimHub Shaker Documentation](https://github.com/SHWotever/SimHub/wiki/ShakeIt-V3-Effects-configuration)
 
-[RPM Effect Discussion](https://www.overtake.gg/threads/simhub-bass-shaker-rpm-effect-porsche-911-4-0-singer.211132)
++ [RPM Effect Discussion](https://www.overtake.gg/threads/simhub-bass-shaker-rpm-effect-porsche-911-4-0-singer.211132)
 
-[Bass Shaker Technical Thread - Tactile Immersion](https://www.overtake.gg/threads/tactile-immersion-general-discussion-hardware-software.137631/)
++ [Bass Shaker Technical Thread - Tactile Immersion](https://www.overtake.gg/threads/tactile-immersion-general-discussion-hardware-software.137631/)
