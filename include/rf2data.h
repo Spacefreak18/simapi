@@ -10,6 +10,7 @@
 
 #pragma pack(push)
 #pragma pack(4)
+#pragma warning(disable : 4121)   // Alignment sensitivity (ISI sets 4 byte pack)
 
 typedef struct //rF2Vec3
 {
@@ -160,6 +161,7 @@ typedef struct //rF2ScoringInfo
   unsigned char mTrackName[64];
   int mSession;
   double mCurrentET;
+  double mEndET;
   int mMaxLaps;
   double mLapDist;
   unsigned char pointer1[8];
@@ -196,7 +198,6 @@ typedef struct //rF2ScoringInfo
   char mInRealtime;                // in realtime as opposed to at the monitor
 
   char mPlayerName[32];            // player name (including possible multiplayer override)
-
   char mPlrFileName[64];           // may be encoded to be a legal filename
 
   // weather
@@ -207,6 +208,15 @@ typedef struct //rF2ScoringInfo
   rF2Vec3 mWind;                // wind speed
   double mMinPathWetness;          // minimum wetness on main path 0.0-1.0
   double mMaxPathWetness;          // maximum wetness on main path 0.0-1.0
+
+  //char mGameMode;                  // 1 = server, 2 = client, 3 = server and client
+  //char mIsPasswordProtected;       // is the server password protected
+  //char mServerPort;              // the port of the server (if on a server)
+  //int mServerPublicIP;            // the public IP address of the server (if on a server)
+  //int mMaxPlayers;                 // maximum number of vehicles that can be in the session
+  //char mServerName[32];              // name of the server
+  //float mStartET;                  // start time (seconds since midnight) of the event
+  //double mAvgPathWetness;
 
   // Future use
   char mExpansion[256];

@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stddef.h>
+#include <limits.h>
 #include <math.h>
 
 #include "simdata.h"
@@ -50,6 +51,12 @@ SimMap* createSimMap() {
     ptr->addr = 0;
     return ptr;
 }
+
+void* getSimMapPtr(SimMap* simmap)
+{
+    return simmap->addr;
+}
+
 
 
 int droundint(double d)
@@ -112,6 +119,153 @@ LapTime ac_convert_to_simdata_laptime(int ac_laptime)
     l.seconds = ac_laptime/1000-(l.minutes*60);
     l.fraction = ac_laptime-(l.minutes*60000)-(l.seconds*1000);
     return l;
+}
+
+LapTime rf2_convert_to_simdata_laptime(double rf2_laptime)
+{
+    if(rf2_laptime <= 0)
+    {
+        return (LapTime){0, 0, 0};
+    }
+    LapTime l;
+    l.hours = rf2_laptime/60/60;
+    l.minutes = rf2_laptime/60-(l.hours*60);
+    l.seconds = rf2_laptime-(l.minutes*60);
+    l.fraction = (rf2_laptime*1000)-(l.minutes*60000)-(l.seconds*1000);
+    return l;
+}
+
+LapTime pcars2_convert_to_simdata_laptime(float pcars2_laptime)
+{
+    if(pcars2_laptime <= 0)
+    {
+        return (LapTime){0, 0, 0};
+    }
+    LapTime l;
+    l.seconds = floor(pcars2_laptime);
+    float a = pcars2_laptime-l.seconds;
+    l.fraction = a * 1000;
+    l.hours = l.seconds/60/60;
+    l.minutes = l.seconds/60-(l.hours*60);
+    l.seconds = l.seconds-(l.minutes*60);
+    return l;
+}
+
+int rf2_phase_to_simdata_flag(int rf2_flag)
+{
+
+    int courseflag = 0;
+    if(rf2_flag < 5 || rf2_flag > 8)
+    {
+        courseflag = 0;
+    }
+    else
+    {
+        courseflag = rf2_flag - 5;
+    }
+
+    return courseflag;
+}
+
+int rf2_flag_to_simdata_flag(int rf2_flag)
+{
+
+    int playerflag = 0;
+    if(rf2_flag == 6)
+    {
+        playerflag = 4;
+    }
+
+    return playerflag;
+}
+
+int pcars2_flag_to_simdata_flag(int pcars2_flag)
+{
+    switch ( pcars2_flag )
+    {
+        case FLAG_COLOUR_NONE:
+            return SIMAPI_FLAG_GREEN;
+        case FLAG_COLOUR_GREEN:
+            return SIMAPI_FLAG_GREEN;
+        case FLAG_COLOUR_BLUE:
+            return SIMAPI_FLAG_BLUE;
+        case FLAG_COLOUR_WHITE_SLOW_CAR:
+            return SIMAPI_FLAG_WHITE;
+        case FLAG_COLOUR_WHITE_FINAL_LAP:
+            return SIMAPI_FLAG_WHITE;
+        case FLAG_COLOUR_RED:
+            return SIMAPI_FLAG_RED;
+        case FLAG_COLOUR_YELLOW:
+            return SIMAPI_FLAG_YELLOW;
+        case FLAG_COLOUR_DOUBLE_YELLOW:
+            return SIMAPI_FLAG_YELLOW;
+        case FLAG_COLOUR_BLACK_AND_WHITE:
+            return SIMAPI_FLAG_BLACK_WHITE;
+        case FLAG_COLOUR_BLACK_ORANGE_CIRCLE:
+            return SIMAPI_FLAG_BLACK_ORANGE;
+        case FLAG_COLOUR_BLACK:
+            return SIMAPI_FLAG_BLACK;
+        case FLAG_COLOUR_CHEQUERED:
+            return SIMAPI_FLAG_CHEQUERED;
+        default:
+            return SIMAPI_FLAG_GREEN;
+    }
+}
+
+int pcars2_state_to_simdata_flag(int pcars2_state)
+{
+    if(pcars2_state == 8)
+    {
+        return SIMAPI_FLAG_RED;
+    }
+    if(pcars2_state > 0)
+    {
+        return SIMAPI_FLAG_YELLOW;
+    }
+    return SIMAPI_FLAG_GREEN;
+}
+
+
+int acc_flag_to_simdata_flag(int ac_flag)
+{
+
+    switch ( ac_flag )
+    {
+        case ACC_NO_FLAG:
+            return SIMAPI_FLAG_GREEN;
+        case ACC_GREEN_FLAG:
+            return SIMAPI_FLAG_GREEN;
+        case ACC_BLUE_FLAG:
+            return SIMAPI_FLAG_BLUE;
+        case ACC_WHITE_FLAG:
+            return SIMAPI_FLAG_WHITE;
+        case ACC_YELLOW_FLAG:
+            return SIMAPI_FLAG_YELLOW;
+        case ACC_PENALTY_FLAG:
+            return SIMAPI_FLAG_BLACK_WHITE;
+        case ACC_BLACK_FLAG:
+            return SIMAPI_FLAG_BLACK;
+        case ACC_CHECKERED_FLAG:
+            return SIMAPI_FLAG_CHEQUERED;
+        case ACC_ORANGE_FLAG:
+            return SIMAPI_FLAG_ORANGE;
+        default:
+            return SIMAPI_FLAG_GREEN;
+    }
+}
+
+int acc_get_global_flag(int yellow, int white, int chequered, int green, int red)
+{
+    if(chequered > 0)
+        return SIMAPI_FLAG_CHEQUERED;
+    if(red > 0)
+        return SIMAPI_FLAG_RED;
+    if(yellow > 0)
+        return SIMAPI_FLAG_YELLOW;
+    if(white > 0)
+        return SIMAPI_FLAG_WHITE;
+
+    return SIMAPI_FLAG_GREEN;
 }
 
 bool does_sim_file_exist(const char* file)
@@ -183,8 +337,14 @@ int setSimInfo(SimInfo* si)
         case SIMULATOR_RFACTOR2 :
             si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = true;
+            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsAdvancedUI = true;
         case SIMULATOR_PROJECTCARS2 :
             si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = true;
+            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsAdvancedUI = true;
         case SIMULATOR_SCSTRUCKSIM2 :
             si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
@@ -195,8 +355,63 @@ int setSimInfo(SimInfo* si)
     return 0;
 }
 
+void hexDump(char *desc, void *addr, int len)
+{
+  int i;
+  unsigned char buff[17];
+  unsigned char *pc = (unsigned char*)addr;
+
+  // Output description if given.
+  if (desc != NULL)
+    printf ("%s:\n", desc);
+
+  // Process every byte in the data.
+  for (i = 0; i < len; i++) {
+    // Multiple of 16 means new line (with line offset).
+    if ((i % 16) == 0) {
+      // Just don't print ASCII for the zeroth line.
+      if (i != 0)
+        printf ("  %s\n", buff);
+
+      // Output the offset.
+      printf ("  %04x ", i);
+    }
+
+    // Now the hex code for the specific character.
+    printf (" %02x", pc[i]);
+
+    // And store a printable ASCII character for later.
+    if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+      buff[i % 16] = '.';
+    else
+      buff[i % 16] = pc[i];
+    buff[(i % 16) + 1] = '\0';
+  }
+
+  // Pad out last line if not exactly 16 characters.
+  while ((i % 16) != 0) {
+    printf ("   ");
+    i++;
+  }
+
+  // And print the final ASCII bit.
+  printf ("  %s\n", buff);
+}
+
+
 SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd)
 {
+    //simdata->car = NULL;
+    //simdata->driver = NULL;
+    //simdata->track = NULL;
+    //simdata->tyrecompound = NULL;
+    //for(int i = 0; i < MAXCARS; i++)
+    //{
+    //    simdata->cars[i].car = NULL;
+    //    simdata->cars[i].driver = NULL;
+
+    //}
+
     SimInfo si;
     si.simulatorapi = -1;
     si.mapapi = -1;
@@ -213,14 +428,18 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     {
         if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
         {
-
-            siminit(simdata, simmap, SIMULATOR_SIMAPI_TEST);
-            simapi_log(SIMAPI_LOGLEVEL_INFO, "found running simapi daemon");
+            int e = siminit(simdata, simmap, SIMULATOR_SIMAPI_TEST);
+            simdatamap(simdata, simmap, NULL, SIMULATOR_SIMAPI_TEST, false, NULL);
+            char* temp;
+            asprintf(&temp, "found running simapi daemon simint error %i", e);
+            simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
+            free(temp);
             simdatamap(simdata, simmap, NULL, SIMULATOR_SIMAPI_TEST, false, NULL);
             if(simdata->simversion == SIMAPI_VERSION)
             {
-                if (simdata->simon == true)
+                if (simdata->simon == 1)
                 {
+                    simapi_log(SIMAPI_LOGLEVEL_TRACE, "status okay");
                     si.isSimOn = true;
                     si.simulatorapi = simdata->simapi;
                     si.mapapi = SIMULATOR_SIMAPI_TEST;
@@ -385,8 +604,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
     {
         case SIMULATOR_SIMAPI_TEST :
             memcpy(simdata, simmap->addr, sizeof(SimData));
-            break;
-
+            return 0;
         case SIMULATOR_ASSETTO_CORSA :
 
             a = simmap->d.ac.physics_map_addr;
@@ -465,27 +683,33 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->bestlap = ac_convert_to_simdata_laptime(bestlap);
                 uint32_t currentlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
                 simdata->currentlap = ac_convert_to_simdata_laptime(currentlap);
-                simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
+                //simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
                 simdata->session = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));
                 simdata->inpit = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, isInPit));
                 simdata->sectorindex = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, currentSectorIndex));
                 simdata->lastsectorinms = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, lastSectorTime));
-                simdata->flag = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, Flag));
-                simdata->inpit = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, isInPit));
+                simdata->playerflag = acc_flag_to_simdata_flag(*(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, Flag)));
+
+                int yellow = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, GlobalYellow));
+                int white = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, GlobalWhite));
+                int chequered = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, GlobalChequered));
+                int green = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, GlobalGreen));
+                int red = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, GlobalRed));
+                simdata->courseflag = acc_get_global_flag( yellow, white, chequered, green, red);
 
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)
                 {
                     simmap->d.ac.compound[i] = *(char*) (char*) ((c + offsetof(struct SPageFileGraphic, tyreCompound)) + (sizeof(char16_t) * i));
                 }
-                simdata->tyrecompound = simmap->d.ac.compound;
+                //simdata->tyrecompound = simmap->d.ac.compound;
 
-                float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
-                if (timeleft < 0)
-                    simdata->timeleft = 0;
-                else
-                    simdata->timeleft = droundint(timeleft);
+                //float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
+                //if (timeleft < 0)
+                //    simdata->timeleft = 0;
+                //else
+                //    simdata->timeleft = droundint(timeleft);
             }
 
             if (simmap->d.ac.has_static == true )
@@ -496,14 +720,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)
                 {
-                    simmap->d.ac.car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
-                    simmap->d.ac.track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, track)) + (sizeof(char16_t) * i));
-                    simmap->d.ac.driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, playerName)) + (sizeof(char16_t) * i));
+                    simdata->car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
+                    simdata->track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, track)) + (sizeof(char16_t) * i));
+                    simdata->driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, playerName)) + (sizeof(char16_t) * i));
                 }
 
-                simdata->car = simmap->d.ac.car;
-                simdata->track = simmap->d.ac.track;
-                simdata->driver = simmap->d.ac.driver;
             }
 
             // realtime telemetry
@@ -522,14 +743,21 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 {
                     simdata->cars[i].lap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lapCount)));
                     simdata->cars[i].pos = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carLeaderboardPosition)));
-                    simdata->cars[i].lastlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lastLapTimeMS)));
-                    simdata->cars[i].bestlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, bestLapMS)));
+                    uint32_t lastlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lastLapTimeMS)));
+                    uint32_t bestlap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, bestLapMS)));
+                    simdata->cars[i].bestlap = ac_convert_to_simdata_laptime(bestlap);
+                    simdata->cars[i].lastlap = ac_convert_to_simdata_laptime(lastlap);
+                    //uint32_t currentlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
+                    //simdata->currentlap = ac_convert_to_simdata_laptime(currentlap);
                     simdata->cars[i].inpitlane = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPitline)));
                     simdata->cars[i].inpit = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, isCarInPit)));
 
-
-                    simdata->cars[i].driver = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)));
-                    simdata->cars[i].car = (char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)));
+                    int strsize = 32;
+                    for(int k=0; k<strsize; k++)
+                    {
+                        simdata->cars[i].driver[k] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, driverName)) + (sizeof(char) * k));
+                        simdata->cars[i].car[k] = *(char*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, carModel)) + (sizeof(char) * k));
+                    }
                 }
 
                 float player_spline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, spLineLength)));
@@ -561,17 +789,16 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
             // basic telemetry
             simdata->simstatus = 2;
-            simdata->car = "default";
             simdata->velocity = abs(droundint(3.6 * (*(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mLocalVel)) + (sizeof(double) * 2)))));
             simdata->rpms = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineRPM)));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mGear)));
             simdata->maxrpm = droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineMaxRPM))));
-            simdata->gas = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredThrottle));
-            simdata->brake = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredBrake));
-            simdata->clutch = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredClutch));
-            simdata->steer = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredSteering));
-            simdata->fuel = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mFuel));
-            simdata->brakebias = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mRearBrakeBias));
+            simdata->gas = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredThrottle));
+            simdata->brake = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredBrake));
+            simdata->clutch = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredClutch));
+            simdata->steer = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mUnfilteredSteering));
+            simdata->fuel = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mFuel));
+            simdata->brakebias = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mRearBrakeBias));
             simdata->handbrake = 0;
             simdata->altitude = 1;
 
@@ -588,44 +815,117 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
             // tyre effects
             //simdata->abs = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles));
-            simdata->tyreRPS[0] = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 0)));
-            simdata->tyreRPS[1] = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 1)));
-            simdata->tyreRPS[2] = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 2)));
-            simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 3)));
+            simdata->tyreRPS[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 0)));
+            simdata->tyreRPS[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 1)));
+            simdata->tyreRPS[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 2)));
+            simdata->tyreRPS[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 3)));
 
-            simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(float) * 0 )) );
-            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(float) * 1 )) );
-            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(float) * 2 )) );
+            simdata->Xvelocity = droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 0 )) );
+            simdata->Zvelocity = droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 1 )) );
+            // do i want negative 1 of all these, might not matter
+            simdata->Yvelocity = -1 * droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 2 )) );
 
             //advanced ui
             if (simmap->d.rf2.has_scoring == true )
             {
                 b = simmap->d.rf2.scoring_map_addr;
-                simdata->airtemp = *(float*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mAmbientTemp));
-                simdata->tracktemp = *(float*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mTrackTemp));
+
+                simdata->tyrewear[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 0)));
+                simdata->tyrewear[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 1)));
+                simdata->tyrewear[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 2)));
+                simdata->tyrewear[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 3)));
+               
+                simdata->tyretemp[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mTireCarcassTemperature) + (sizeof(TelemWheelV01) * 0)));
+                simdata->tyretemp[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mTireCarcassTemperature) + (sizeof(TelemWheelV01) * 1)));
+                simdata->tyretemp[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mTireCarcassTemperature) + (sizeof(TelemWheelV01) * 2)));
+                simdata->tyretemp[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mTireCarcassTemperature) + (sizeof(TelemWheelV01) * 3)));
+
+                for(int k = 0; k<4; k++)
+                {
+                    simdata->tyretemp[k] = simdata->tyretemp[k] - 273.15;
+                }
+
+                simdata->braketemp[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mBrakeTemp) + (sizeof(TelemWheelV01) * 0)));
+                simdata->braketemp[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mBrakeTemp) + (sizeof(TelemWheelV01) * 1)));
+                simdata->braketemp[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mBrakeTemp) + (sizeof(TelemWheelV01) * 2)));
+                simdata->braketemp[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mBrakeTemp) + (sizeof(TelemWheelV01) * 3)));
+                
+                simdata->tyrepressure[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mPressure) + (sizeof(TelemWheelV01) * 0)));
+                simdata->tyrepressure[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mPressure) + (sizeof(TelemWheelV01) * 1)));
+                simdata->tyrepressure[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mPressure) + (sizeof(TelemWheelV01) * 2)));
+                simdata->tyrepressure[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mPressure) + (sizeof(TelemWheelV01) * 3)));
+
+                //printf("%f\n", simdata->tyrepressure[0]);
+
+                simdata->airtemp = *(double*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mAmbientTemp));
+                simdata->tracktemp = *(double*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mTrackTemp));
 
                 simdata->lap = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLapNumber));
-                simdata->position = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mPlace));
+                simdata->lap++;
+                simdata->position = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mPlace));
 
-                double lastlap = *(float*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mLastLapTime));
-                double bestlap = *(float*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mBestLapTime));
-                double currentlap = *(float*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mTimeIntoLap));
+                simdata->lastlap = rf2_convert_to_simdata_laptime(*(double*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mLastLapTime)));
+                simdata->bestlap = rf2_convert_to_simdata_laptime(*(double*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mBestLapTime)));
+                simdata->currentlap = rf2_convert_to_simdata_laptime(*(double*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mTimeIntoLap)));
+
 
                 simdata->numlaps = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mMaxLaps));
+                if(simdata->numlaps == INT_MAX)
+                {
+                    simdata->numlaps = 0;
+                }
                 //simdata->session
                 simdata->sectorindex = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mSector));
                 simdata->inpit = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mInPits));
                 //simdata->lastsectorinms
-                simdata->flag = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mFlag));
-                simdata->timeleft = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mElapsedTime));
+                simdata->playerflag = rf2_flag_to_simdata_flag(*(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mFlag)));
+                simdata->courseflag = rf2_phase_to_simdata_flag(*(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2ScoringInfo, mGamePhase)));
+                double z = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mElapsedTime));
+                simdata->sessiontime = rf2_convert_to_simdata_laptime(*(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mElapsedTime)));
 
+                // Car and Track
+                size_t actsize = 0;
+                size_t actsize2 = 0;
+                int strsize = 64;
+                for(int i=0; i<strsize; i++)
+                {
+                    simdata->car[i] = *(char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mVehicleName) + (sizeof(char)*i));
+                    //simdata->track[i] = *(char*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mTrackName) + (sizeof(char)*i));
+                    simdata->track[i] = *(char*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mTrackName) + (sizeof(char)*i));
+                    if(simdata->car[i] != '\0')
+                    {
+                        actsize++;
+                    }
+                    if(simdata->track[i] != '\0')
+                    {
+                        actsize2++;
+                    }
+                }
 
+                // Driver
+                strsize = 32;
+                actsize = 0;
+                for(int i=0; i<strsize; i++)
+                {
+                    simdata->driver[i] = *(char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mDriverName) + (sizeof(char)*i));
+                    if(simdata->driver[i] != '\0')
+                    {
+                        actsize++;
+                    }
+                }
+                simdata->driver[32] = '\0';
 
-                simdata->tyrecompound = (char*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mFrontTireCompoundName));
-                simdata->car = (char*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mVehicleName));
-                simdata->driver = (char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mDriverName));
-
-                int strsize = 32;
+                //Tyre Compound
+                strsize = 18;
+                actsize = 0;
+                for(int i=0; i<strsize; i++)
+                {
+                    simdata->tyrecompound[i] = *(char*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mRearTireCompoundName) + (sizeof(char)*i));
+                    if(simdata->tyrecompound[i] != '\0')
+                    {
+                        actsize++;
+                    }
+                }
 
                 simdata->numcars = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mNumVehicles));
                 int numcars = simdata->numcars;
@@ -636,12 +936,44 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 for(int i=0; i<numcars; i++)
                 {
                     simdata->cars[i].lap = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * i) + offsetof(rF2VehicleTelemetry, mLapNumber));
-                    simdata->cars[i].pos = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mPlace));
+                    simdata->cars[i].pos = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mPlace));
+                    uint8_t pitstate = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mPitState));
+                    simdata->cars[i].inpitlane = 0;
+                    simdata->cars[i].inpit = 0;
+                    if(pitstate == 2 || pitstate == 4)
+                    {
+                        simdata->cars[i].inpitlane = 1;
+                    }
+                    if(pitstate == 3)
+                    {
+                        simdata->cars[i].inpit = 1;
+                    }
 
-                    simdata->cars[i].inpit = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mInPits));
+                    simdata->cars[i].lastlap = rf2_convert_to_simdata_laptime(*(double*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mLastLapTime)));
+                    simdata->cars[i].bestlap = rf2_convert_to_simdata_laptime(*(double*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mBestLapTime)));
 
-                    simdata->cars[i].car = (char*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * i) + offsetof(rF2VehicleTelemetry, mVehicleName));
-                    simdata->cars[i].driver = (char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mDriverName));
+
+                    strsize = 32;
+                    actsize = 0;
+                    for(int k=0; k<strsize; k++)
+                    {
+                        simdata->cars[i].driver[k] = *(char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mDriverName) + (sizeof(rF2VehicleScoring) * i) + (sizeof(char)*k));
+                        if(simdata->cars[i].driver[k] != '\0')
+                        {
+                            actsize++;
+                        }
+                    }
+
+                    actsize = 0;
+                    strsize = 64;
+                    for(int k=0; k<strsize; k++)
+                    {
+                        simdata->cars[i].car[k] = *(char*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mVehicleName) + (sizeof(rF2VehicleScoring) * i) + (sizeof(char)*k));
+                        if(simdata->cars[i].driver[k] != '\0')
+                        {
+                            actsize++;
+                        }
+                    }
                 }
             }
 
@@ -657,12 +989,14 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 a = simmap->d.pcars2.telemetry_map_addr;
                 // basic telemetry
                 simdata->simstatus = 2;
-                simdata->car = "default";
                 simdata->velocity = droundint(3.6 * (*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSpeed))));
                 simdata->rpms = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mRpm)));
                 simdata->maxrpm = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mMaxRPM)));
                 simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGear));
                 simdata->fuel = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mFuelLevel));
+                simdata->gas = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mThrottle));
+                simdata->brake = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mBrake));
+                simdata->steer = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSteering));
                 // bool
                 simdata->abs = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mAntiLockActive));
                 simdata->altitude = 1;
@@ -677,7 +1011,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     simdata->gearc[0] = 78;
                 }
                 simdata->gearc[1] = 0;
-
 
 
                 // tyre effects
@@ -718,20 +1051,53 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->airtemp = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mAmbientTemperature));
                 simdata->tracktemp = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackTemperature));
 
-                size_t racepos = sizeof(bool) + sizeof(char[STRING_LENGTH_MAX]) + sizeof(float[VEC_MAX]) + sizeof(float);
-                simdata->lap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + racepos + (sizeof(unsigned int) * 2));
-                simdata->position = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + racepos);
-                uint32_t lastlap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTime));
-                simdata->lastlap = ac_convert_to_simdata_laptime(lastlap);
-                uint32_t bestlap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mBestLapTime));
-                simdata->bestlap = ac_convert_to_simdata_laptime(bestlap);
-                uint32_t currentlap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mCurrentTime));
-                simdata->currentlap = ac_convert_to_simdata_laptime(currentlap);
-                simdata->time = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mCurrentTime));
+                simdata->lap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLap));
+                simdata->position = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mRacePosition));
+                float lastlap = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTime));
+                float bestlap = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mBestLapTime));
+                float currentlap = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mCurrentTime));
+                simdata->lastlap = pcars2_convert_to_simdata_laptime(lastlap);
+                simdata->bestlap = pcars2_convert_to_simdata_laptime(bestlap);
+                simdata->currentlap = pcars2_convert_to_simdata_laptime(currentlap);
+
                 simdata->numlaps = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLapsInEvent));
                 simdata->lapisvalid = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLapInvalidated));
                 simdata->lapisvalid = !simdata->lapisvalid;
+                simdata->courseflag = pcars2_state_to_simdata_flag(*(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mYellowFlagState)));
+                simdata->playerflag = pcars2_flag_to_simdata_flag(*(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mHighestFlagColour)));
 
+                int actsize = 0;
+                int actsize2 = 0;
+                int actsize3 = 0;
+                int strsize = 64;
+                for(int i=0; i<strsize; i++)
+                {
+                    simdata->car[i] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mCarName) + (sizeof(char)*i));
+                    simdata->track[i] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLocation) + (sizeof(char)*i));
+                    simdata->driver[i] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mName) + (sizeof(char)*i));
+                    if(simdata->car[i] != '\0')
+                    {
+                        actsize++;
+                    }
+                    if(simdata->track[i] != '\0')
+                    {
+                        actsize2++;
+                    }
+                    if(simdata->driver[i] != '\0')
+                    {
+                        actsize3++;
+                    }
+                }
+                actsize = 0;
+                strsize = 40;
+                for(int i=0; i<strsize; i++)
+                {
+                    simdata->tyrecompound[i] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreCompound) + (sizeof(char)*i));
+                    if(simdata->tyrecompound[i] != '\0')
+                    {
+                        actsize++;
+                    }
+                }
 
                 simdata->numcars = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mNumParticipants));
                 int numcars = simdata->numcars;
@@ -741,10 +1107,24 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 }
                 for(int i=0; i<numcars; i++)
                 {
-                    simdata->cars[i].lap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + racepos + (sizeof(unsigned int) * 2) + (sizeof(ParticipantInfo) * i));
-                    simdata->cars[i].pos = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + racepos + (sizeof(ParticipantInfo) * i));
-                    simdata->cars[i].lastlap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTimes) + ((sizeof(float) * i)));
-                    //simdata->cars[i].bestlap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTimes) + ((sizeof(float) * i)));
+                    int actsize = 0;
+                    int actsize2 = 0;
+                    int strsize = 64;
+                    for(int k=0; k<strsize; k++)
+                    {
+                        simdata->cars[i].driver[k] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mName) + (sizeof(ParticipantInfo)*i) + (sizeof(char)*k));
+                        simdata->cars[i].car[k] = *(char*) (char*) (a + offsetof(struct pcars2APIStruct, mCarNames) + STRING_LENGTH_MAX + ((sizeof(char) * k)));
+                        if(simdata->cars[i].driver[k] != '\0')
+                        {
+                            actsize++;
+                        }
+                    }
+                    simdata->cars[i].lap = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLap) + (sizeof(ParticipantInfo)*i));
+                    simdata->cars[i].pos = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mRacePosition) + (sizeof(ParticipantInfo)*i));
+                    simdata->cars[i].lastlap = pcars2_convert_to_simdata_laptime(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTimes) + ((sizeof(float) * i))));
+                    simdata->cars[i].bestlap = pcars2_convert_to_simdata_laptime(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mFastestLapTimes) + ((sizeof(float) * i))));
+
+                    // TODO move to it's own function
                     simdata->cars[i].inpitlane = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mPitModes) + ((sizeof(float) * i)));
                     if(simdata->cars[i].inpitlane == 1 || simdata->cars[i].inpitlane == 3)
                     {
@@ -755,7 +1135,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                         simdata->cars[i].inpitlane = 0;
                     }
                     simdata->cars[i].inpit = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mPitModes) + ((sizeof(float) * i)));
-                    if(simdata->cars[i].inpit == 2)
+                    if(simdata->cars[i].inpit == 2 || simdata->cars[i].inpit > 3)
                     {
                         simdata->cars[i].inpit = 1;
                     }
@@ -763,10 +1143,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     {
                         simdata->cars[i].inpit = 0;
                     }
-
-
-                    simdata->cars[i].driver = (char*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + ((sizeof(bool))));
-                    simdata->cars[i].car = (char*) (char*) (a + offsetof(struct pcars2APIStruct, mCarName) + ((sizeof(char[STRING_LENGTH_MAX]) * i)));
                 }
 
                 // realtime telemetry
@@ -801,7 +1177,15 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     switch ( packet_type )
                     {
                         case 0:
-                            simdata->car = "default";
+                            simdata->car[0] ='d';
+                            simdata->car[1]='e';
+                            simdata->car[2]='f';
+                            simdata->car[3]='a';
+                            simdata->car[4]='u';
+                            simdata->car[5]='l';
+                            simdata->car[6]='t';
+                            simdata->car[7]='\0';
+
                             simdata->fuel = *(float*) (char*) (a + offsetof(struct ams2UDPData, sFuelLevel));
                             simdata->velocity = droundint(3.6 * (*(float*) (char*) (a + offsetof(struct ams2UDPData, sSpeed))));
                             simdata->rpms = *(uint16_t*) (char*) (a + offsetof(struct ams2UDPData, sRpm));
@@ -834,7 +1218,16 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             a = simmap->d.scs2.telemetry_map_addr;
 
             simdata->simstatus = 2;
-            simdata->car = "default";
+            simdata->car[0] ='d';
+            simdata->car[1]='e';
+            simdata->car[2]='f';
+            simdata->car[3]='a';
+            simdata->car[4]='u';
+            simdata->car[5]='l';
+            simdata->car[6]='t';
+            simdata->car[7]='\0';
+
+
             simdata->velocity = droundint(3.6 * (*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.speed))));
             simdata->rpms = droundint(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.engineRpm)));
             simdata->brake = droundint(*(float*) (char*) (a + offsetof(struct scs2TelemetryMap_s, truck_f.userBrake)));
@@ -876,11 +1269,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->altitude = 1;
             break;
     }
-
+   
     if (simmap2 != NULL && simmap2->addr != NULL)
     {
         simdmap(simmap2, simdata);
     }
+
 }
 
 int simdmap(SimMap* simmap, SimData* simdata)
@@ -918,7 +1312,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
     switch ( simulator )
     {
         case SIMULATOR_SIMAPI_TEST :
-            simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
+            simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDONLY, S_IRUSR|S_IWUSR);
             if (simmap->fd == -1)
             {
                 return 10;
@@ -1223,7 +1617,7 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
     return error;
 }
 
-int freesimmap(SimMap* simmap)
+int freesimmap(SimMap* simmap, bool issimd)
 {
     simapi_log(SIMAPI_LOGLEVEL_INFO, "Freeing universal shared memory");
 
@@ -1237,7 +1631,10 @@ int freesimmap(SimMap* simmap)
     {
         return 100;
     }
-    shm_unlink(SIMAPI_MEM_FILE);
+    if(issimd == true)
+    {
+        shm_unlink(SIMAPI_MEM_FILE);
+    }
     
     if (close(simmap->fd) == -1)
     {

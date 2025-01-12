@@ -19,6 +19,10 @@ typedef struct
     int fd_scoring;
     struct rF2Telemetry rf2_telemetry;
     struct rF2Scoring rf2_scoring;
+    char car[64];
+    char driver[33];
+    char track[64];
+    char compound[18];
 }
 RF2Map;
 

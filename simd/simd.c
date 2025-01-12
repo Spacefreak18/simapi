@@ -73,8 +73,8 @@ void release()
         free(compatmap);
     }
 
-    freesimmap(simmap);
-    freesimmap(simmap2);
+    freesimmap(simmap, true);
+    freesimmap(simmap2, true);
 
     free(baton);
     free(simdata);

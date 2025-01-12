@@ -424,11 +424,11 @@ struct pcars2APIStruct
   unsigned int mTerrain[TYRE_MAX];                 // [ enum (Type#11) Terrain Materials ]
   float mTyreY[TYRE_MAX];                          // [ UNITS = Local Space  Y ]
   float mTyreRPS[TYRE_MAX];                        // [ UNITS = Revolutions per second ]
-	float mTyreSlipSpeed[TYRE_MAX];                  // OBSOLETE, kept for backward compatibility only
+  float mTyreSlipSpeed[TYRE_MAX];                  // OBSOLETE, kept for backward compatibility only
   float mTyreTemp[TYRE_MAX];                       // [ UNITS = Celsius ]   [ UNSET = 0.0f ]
-	float mTyreGrip[TYRE_MAX];                       // OBSOLETE, kept for backward compatibility only
+  float mTyreGrip[TYRE_MAX];                       // OBSOLETE, kept for backward compatibility only
   float mTyreHeightAboveGround[TYRE_MAX];          // [ UNITS = Local Space  Y ]
-	float mTyreLateralStiffness[TYRE_MAX];           // OBSOLETE, kept for backward compatibility only
+  float mTyreLateralStiffness[TYRE_MAX];           // OBSOLETE, kept for backward compatibility only
   float mTyreWear[TYRE_MAX];                       // [ RANGE = 0.0f->1.0f ]
   float mBrakeDamage[TYRE_MAX];                    // [ RANGE = 0.0f->1.0f ]
   float mSuspensionDamage[TYRE_MAX];               // [ RANGE = 0.0f->1.0f ]

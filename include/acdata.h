@@ -21,16 +21,19 @@ typedef int AC_SESSION_TYPE;
 #define AC_DRIFT 5
 #define AC_DRAG 6
 
-typedef int ACC_FLAG_TYPE;;
-#define ACC_NO_FLAG = 0,
-#define ACC_BLUE_FLAG = 1,
-#define ACC_YELLOW_FLAG = 2,
-#define ACC_BLACK_FLAG = 3,
-#define ACC_WHITE_FLAG = 4,
-#define ACC_CHECKERED_FLAG = 5,
-#define ACC_PENALTY_FLAG = 6,
-#define ACC_GREEN_FLAG = 7,
-#define ACC_ORANGE_FLAG = 8
+typedef enum
+{
+    ACC_NO_FLAG = 0,
+    ACC_BLUE_FLAG = 1,
+    ACC_YELLOW_FLAG = 2,
+    ACC_BLACK_FLAG = 3,
+    ACC_WHITE_FLAG = 4,
+    ACC_CHECKERED_FLAG = 5,
+    ACC_PENALTY_FLAG = 6,
+    ACC_GREEN_FLAG = 7,
+    ACC_ORANGE_FLAG = 8
+}
+ACC_FLAG_TYPE;
 
 typedef int ACC_PENALTY_TYPE;
 #define ACC_NONE = 0,

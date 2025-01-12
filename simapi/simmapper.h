@@ -64,9 +64,10 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 
 SimMap* createSimMap(void);
+void* getSimMapPtr(SimMap* simmap);
 int simdmap(SimMap* simmap, SimData* simdata);
 int opensimmap(SimMap* simmap);
-int freesimmap(SimMap* simmap);
+int freesimmap(SimMap* simmap, bool issimd);
 int opensimcompatmap(SimCompatMap* compatmap);
 int freesimcompatmap(SimCompatMap* compatmap);
 
