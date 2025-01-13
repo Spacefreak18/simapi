@@ -1673,26 +1673,26 @@ int opensimmap(SimMap* simmap)
 
 int opensimcompatmap(SimCompatMap* compatmap)
 {
-    compatmap->pcars_fd = shm_open(PCARS2_FILE_LINUX, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
-    if (compatmap->pcars_fd == -1)
+    compatmap->pcars2_fd = shm_open(PCARS2_FILE_LINUX, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->pcars2_fd == -1)
     {
         printf("open");
         return 10;
     }
-    int res = ftruncate(compatmap->pcars_fd, sizeof(struct pcars2APIStruct));
+    int res = ftruncate(compatmap->pcars2_fd, sizeof(struct pcars2APIStruct));
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    void* addr = mmap(NULL, sizeof(struct pcars2APIStruct), PROT_WRITE, MAP_SHARED, compatmap->pcars_fd, 0);
+    void* addr = mmap(NULL, sizeof(struct pcars2APIStruct), PROT_WRITE, MAP_SHARED, compatmap->pcars2_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
         return 30;
     }
-    compatmap->pcars_addr = addr;
+    compatmap->pcars2_addr = addr;
 
     compatmap->acphysics_fd = shm_open(AC_PHYSICS_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->acphysics_fd == -1)
@@ -1825,5 +1825,17 @@ int freesimcompatmap(SimCompatMap* compatmap)
     {
         return 200;
     }
+
+    if (munmap(compatmap->pcars2_addr, sizeof(struct pcars2APIStruct)) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(PCARS2_FILE_LINUX);
+
+    if (close(compatmap->pcars2_fd) == -1)
+    {
+        return 200;
+    }
+
     return 0;
 }
