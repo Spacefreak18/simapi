@@ -640,9 +640,9 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->tyreRPS[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 2));
             simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelAngularSpeed) + (sizeof(float) * 3));
 
-            simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 0 )) );
-            simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 )) );
-            simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 )) );
+            simdata->Xvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 0 ));
+            simdata->Zvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 ));
+            simdata->Yvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 ));
 
             //advanced ui
             simdata->tyrewear[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 0));
@@ -820,10 +820,10 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->tyreRPS[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 2)));
             simdata->tyreRPS[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 3)));
 
-            simdata->Xvelocity = droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 0 )) );
-            simdata->Zvelocity = droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 1 )) );
+            simdata->Xvelocity = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 0 ));
+            simdata->Zvelocity = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 1 ));
             // do i want negative 1 of all these, might not matter
-            simdata->Yvelocity = -1 * droundint( *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 2 )) );
+            simdata->Yvelocity = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 2 ));
 
             //advanced ui
             if (simmap->d.rf2.has_scoring == true )
@@ -1015,9 +1015,9 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
                 // tyre effects
                 // m/s
-                simdata->Xvelocity = droundint( *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 0 )) );
-                simdata->Yvelocity = droundint( *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 1 )) );
-                simdata->Zvelocity = droundint( *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 2 )) );
+                simdata->Xvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 0 ));
+                simdata->Yvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 1 ));
+                simdata->Zvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 2 ));
 
 
                 simdata->tyreRPS[0] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 0));

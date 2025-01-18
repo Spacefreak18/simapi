@@ -66,9 +66,9 @@ typedef struct
     uint32_t numcars;
     char gearc[3];
 
-    uint32_t Xvelocity;
-    uint32_t Yvelocity;
-    uint32_t Zvelocity;
+    double Xvelocity;
+    double Yvelocity;
+    double Zvelocity;
 
     double gas;
     double brake;
