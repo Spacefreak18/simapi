@@ -6,7 +6,7 @@
 
 #define AC_EXE "acs.exe"
 #define ACC_EXE "acc.exe"
-#define ACE_EXE "ace.exe"
+#define ACE_EXE "AssettoCorsaEVO.exe"
 
 #define AC_PHYSICS_FILE "acpmf_physics"
 #define AC_STATIC_FILE "acpmf_static"
