@@ -454,7 +454,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         }
     }
 
-    if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true)
+    if (IsProcessRunning(AC_EXE)==true || IsProcessRunning(ACC_EXE)==true || IsProcessRunning(ACE_EXE)==true)
     {
         simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa");
         if (does_sim_file_exist("/dev/shm/acpmf_physics"))
