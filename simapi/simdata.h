@@ -43,8 +43,8 @@ typedef struct
     uint32_t lap;
     LapTime lastlap;
     LapTime bestlap;
-    uint32_t inpitlane;
-    uint32_t inpit;
+    uint8_t inpitlane;
+    uint8_t inpit;
     char driver[128];
     char car[128];
 }
@@ -106,13 +106,12 @@ typedef struct
     uint32_t lastlapinseconds;
     uint32_t time;
     LapTime sessiontime;
-    uint32_t session;
-    uint32_t sectorindex;
+    uint8_t session;
+    uint8_t sectorindex;
     uint32_t lastsectorinms;
     uint8_t courseflag;
     uint8_t playerflag;
 
-    bool inpit;
     bool lapisvalid;
 
     char car[128];
@@ -121,10 +120,10 @@ typedef struct
     char tyrecompound[128];
     CarData cars[MAXCARS];
 
-    int sim;
-    int simapi;
+    uint8_t simapi;
+    uint8_t simexe;
     bool simon;
-    int simversion;
+    uint8_t simapiversion;
 }
 SimData;
 

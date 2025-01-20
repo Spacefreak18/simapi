@@ -18,8 +18,9 @@ typedef struct
     bool SimSupportsTyreEffects;
     bool SimSupportsRealtimeTelemetry;
     bool SimSupportsAdvancedUI;
-    SimulatorAPI simulatorapi;
     SimulatorAPI mapapi;
+    SimulatorAPI simulatorapi;
+    SimulatorEXE simulatorexe;
 }
 SimInfo;
 
@@ -62,6 +63,9 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulator, bool udp, char* base);
 int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+
+int simapi_strtogame(const char* game);
+char* simapi_gametostr(SimulatorEXE sim);
 
 SimMap* createSimMap(void);
 void* getSimMapPtr(SimMap* simmap);
