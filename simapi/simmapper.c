@@ -622,7 +622,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         case SIMULATOREXE_AUTOMOBILISTA2:
             if (force_udp == false)
             {
-                if (does_sim_file_exist("/dev/shm/$pcars2"))
+                if (does_sim_file_exist("/dev/shm/$pcars2$"))
                 {
                     si.simulatorapi = SIMULATORAPI_PROJECTCARS2;
                     int error = siminit(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
@@ -915,14 +915,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
             // tyre effects
             //simdata->abs = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles));
-            simdata->tyreRPS[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 0)));
-            simdata->tyreRPS[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 1)));
-            simdata->tyreRPS[2] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 2)));
-            simdata->tyreRPS[3] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 3)));
+            simdata->tyreRPS[0] = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 0)));
+            simdata->tyreRPS[1] = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 1)));
+            simdata->tyreRPS[2] = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 2)));
+            simdata->tyreRPS[3] = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mRotation) + (sizeof(TelemWheelV01) * 3)));
 
-            simdata->Xvelocity = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 0 ));
-            simdata->Zvelocity = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 1 ));
-            // do i want negative 1 of all these, might not matter
+            simdata->Xvelocity = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 0 ));
+            simdata->Zvelocity = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 1 ));
             simdata->Yvelocity = -1 * *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mLocalVel) + (sizeof(double) * 2 ));
 
             //advanced ui
@@ -1114,15 +1113,15 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
                 // tyre effects
                 // m/s
-                simdata->Xvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 0 ));
-                simdata->Yvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 1 ));
-                simdata->Zvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 2 ));
+                simdata->Xvelocity = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 0 ));
+                simdata->Zvelocity = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 1 ));
+                simdata->Yvelocity = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 2 ));
 
 
-                simdata->tyreRPS[0] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 0));
-                simdata->tyreRPS[1] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 1));
-                simdata->tyreRPS[2] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 2));
-                simdata->tyreRPS[3] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 3));
+                simdata->tyreRPS[0] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 0));
+                simdata->tyreRPS[1] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 1));
+                simdata->tyreRPS[2] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 2));
+                simdata->tyreRPS[3] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 3));
 
                 simdata->tyrewear[0] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreWear) + (sizeof(float) * 0));
                 simdata->tyrewear[1] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreWear) + (sizeof(float) * 1));
@@ -1490,7 +1489,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
         case SIMULATORAPI_PROJECTCARS2 :
 
             simmap->d.pcars2.has_telemetry=false;
-            simmap->d.pcars2.fd_telemetry = shm_open(PCARS2_FILE_LINUX, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
+            simmap->d.pcars2.fd_telemetry = shm_open(PCARS2_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.pcars2.fd_telemetry == -1)
             {
                 //slogd("could not open Assetto Corsa physics engine");
@@ -1772,7 +1771,7 @@ int opensimmap(SimMap* simmap)
 
 int opensimcompatmap(SimCompatMap* compatmap)
 {
-    compatmap->pcars2_fd = shm_open(PCARS2_FILE_LINUX, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    compatmap->pcars2_fd = shm_open(PCARS2_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->pcars2_fd == -1)
     {
         printf("open");
