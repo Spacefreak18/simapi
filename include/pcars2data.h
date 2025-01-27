@@ -8,7 +8,7 @@
 #include <stdbool.h>
 #include <uchar.h>
 
-#define PCARS2_SIZE = 102288;
+#define PCARS2_SIZE  102288
 
 #pragma pack(push)
 #pragma pack(4)
