@@ -5,6 +5,11 @@
 
 #include <uchar.h>
 
+#define AC_PHYSICS_SIZE = 2048;
+#define AC_GRAPHIC_SIZE = 2048;
+#define AC_STATIC_SIZE = 2048;
+#define AC_CREWCHIEF_SIZE = 16000;
+
 typedef int AC_STATUS;
 #define AC_OFF 0
 #define AC_REPLAY 1
