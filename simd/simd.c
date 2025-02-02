@@ -371,7 +371,7 @@ int main(int argc, char** argv)
 
     opensimmap(simmap2);
 
-    simdata->simversion = SIMAPI_VERSION;
+    simdata->simapiversion = SIMAPI_VERSION;
     simdmap(simmap2, simdata);
 
     baton = (loop_data*) malloc(sizeof(loop_data));
