@@ -36,15 +36,18 @@ LapTime;
 
 typedef struct
 {
-    uint32_t xpos;
-    uint32_t ypos;
-    uint32_t zpos;
+    double xpos;
+    double ypos;
+    double zpos;
+    double carspline;
     uint32_t pos;
     uint32_t lap;
+    uint32_t trackpos;
     LapTime lastlap;
     LapTime bestlap;
     uint8_t inpitlane;
     uint8_t inpit;
+    double speed;
     char driver[128];
     char car[128];
 }
@@ -98,6 +101,8 @@ typedef struct
     double trackdistancearound;
     double playerspline;
     double trackspline;
+    uint32_t playertrackpos;
+    uint32_t tracksamples;
 
     LapTime lastlap;
     LapTime bestlap;
