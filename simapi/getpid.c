@@ -73,9 +73,11 @@ int* pidof (char* pname)
             fp = fopen (path, "r");
             if (fp != NULL)
             {
-                fscanf (fp, "%s", read_buf);
+                fgets(read_buf, sizeof read_buf, fp);
+                //fscanf (fp, "%s", read_buf);
                 fp2= fopen (cmdline, "r");
-                fscanf (fp2, "%s", read_buf2);
+                fgets(read_buf2, sizeof read_buf2, fp2);
+                //fscanf (fp2, "%s", read_buf2);
                 char* i = strcasestr(read_buf, pname);
                 char* j = strcasestr(read_buf2, pname);
                 //fprintf(stderr, "from %s searching for %s in %s from cmdline %s occurs at %s or %s\n", path, pname, read_buf, read_buf2, i, j);
