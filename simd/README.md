@@ -48,7 +48,10 @@ or simply
 simd
 ```
 if you get an error like ``` simd: error while loading shared libraries: libsimapi.so.1: cannot open shared object file: No such file or directory ```
-run this command first ``` export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib ```
+run this command first
+```
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+```
 
 simd has a built in work around to automatically create memory mapped files for assetto corsa and project cars 2 based sims, so a workaround
 such as createsim isn't needed, but a helper process running in the wine/proton environment such as simshmbridge.exe is still needed. The
