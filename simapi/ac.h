@@ -5,7 +5,7 @@
 #include "../include/acdata.h"
 
 #define AC_EXE "acs.exe"
-#define ACC_EXE "acc.exe"
+#define ACC_EXE "AC2-Win64-Shipping.exe"
 #define ACE_EXE "AssettoCorsaEVO.exe"
 
 #define AC_PHYSICS_FILE "acpmf_physics"
