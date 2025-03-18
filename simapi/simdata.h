@@ -6,6 +6,8 @@
 
 #define MAXCARS 24
 
+#define PROXCARS 6
+
 typedef enum
 {
     SIMAPI_FLAG_GREEN            = 0,
@@ -20,6 +22,7 @@ typedef enum
     SIMAPI_FLAG_ORANGE           = 9
 }
 SimAPI_FLAG;
+
 
 
 #pragma pack(push)
@@ -55,6 +58,14 @@ CarData;
 
 typedef struct
 {
+    double radius;
+    double theta; // in degrees
+    uint32_t lap;
+}
+ProximityData;
+
+typedef struct
+{
     uint32_t simstatus;
     uint32_t velocity;
     uint32_t rpms;
@@ -85,6 +96,7 @@ typedef struct
     double tyreRPS[4];
     double tyrediameter[4];
 
+    double heading;
     double worldposx;
     double worldposy;
     double worldposz;
@@ -93,6 +105,10 @@ typedef struct
     double tyrewear[4];
     double tyretemp[4];
     double tyrepressure[4];
+
+    double tyrecontact0[4];
+    double tyrecontact1[4];
+    double tyrecontact2[4];
 
     double airdensity;
     double airtemp;
@@ -124,6 +140,8 @@ typedef struct
     char driver[128];
     char tyrecompound[128];
     CarData cars[MAXCARS];
+
+    ProximityData pd[3];
 
     uint8_t simapi;
     uint8_t simexe;

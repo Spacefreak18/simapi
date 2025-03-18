@@ -182,6 +182,95 @@ void simapi_log(SIMAPI_LOGLEVEL sll, char* message)
     }
 }
 
+void SetProximityData(SimData* simdata, int cars)
+{
+    double carwidth = 1.8;
+    double maxradius = 10.0;
+
+    int proxcars = PROXCARS;
+    if(cars < PROXCARS)
+    {
+        proxcars = cars;
+    }
+
+
+    for(int x = 0; x < proxcars; x++)
+    {
+        simdata->pd[x].radius = 0.0;
+        simdata->pd[x].theta = 0.0;
+    }
+    for(int car = 1; car < cars; car++)
+    {
+        double rawXCoordinate = simdata->cars[car].xpos - simdata->worldposx;
+        double rawYCoordinate = simdata->cars[car].ypos - simdata->worldposy;
+
+        double ff = simdata->tyrecontact0[0];
+        double lf = simdata->tyrecontact2[0];
+        double fr = simdata->tyrecontact0[2];
+        double lr = simdata->tyrecontact2[2];
+
+        double f = ff - fr;
+        double l = lf - lr;
+
+        double mag1 = sqrt((f*f) + (l*l));
+
+        double negx = -(f / mag1);
+        double negy = -(l / mag1);
+
+        double angle = atan2(-1, 0) - atan2(negy, negx);
+        double angleD = angle * 360 / (2 * M_PI);
+        double angleR = angleD * M_PI / 180;
+
+        double cosTheta = cos(angleR);
+        double sinTheta = sin(angleR);
+        double xscore  = cosTheta * rawXCoordinate - sinTheta * rawYCoordinate;
+        double yscore  = sinTheta * rawXCoordinate + cosTheta * rawYCoordinate;
+
+        double rads = atan2(-yscore, -xscore);
+        double degrees = (rads * (180 / M_PI)) + 90.0;
+
+        double radius = sqrt((rawXCoordinate * rawXCoordinate) + (rawYCoordinate * rawYCoordinate));
+        double theta = degrees;
+        if( theta < 0 )
+        {
+            theta = 360 + degrees;
+        }
+        radius = radius - carwidth;
+
+        //fprintf(stderr, "rawx: %f, rawy: %f degs: %f mag: %f\n", rawXCoordinate, rawYCoordinate, theta, radius);
+
+        if(radius < maxradius)
+        {
+            int j = proxcars - 1;
+            if((simdata->pd[j].radius == 0) || (radius < simdata->pd[j].radius))
+            {
+                simdata->pd[j].radius = radius;
+                simdata->pd[j].theta = theta;
+
+
+                j--;
+                while(j >= 0)
+                {
+                    double tempradius = simdata->pd[j+1].radius;
+                    double temptheta = simdata->pd[j+1].theta;
+
+
+                    if((simdata->pd[j].radius == 0) || (tempradius < simdata->pd[j].radius))
+                    {
+                        simdata->pd[j+1].radius = simdata->pd[j].radius;
+                        simdata->pd[j+1].theta = simdata->pd[j].theta;
+
+                        simdata->pd[j].radius = tempradius;
+                        simdata->pd[j].theta = temptheta;
+                    }
+                    j--;
+                }
+            }
+        }
+    }
+}
+
+
 // probably going to move functions like this to ac.h
 LapTime ac_convert_to_simdata_laptime(int ac_laptime)
 {
@@ -719,6 +808,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->clutch = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, clutch));
             simdata->steer = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, steerAngle));
             simdata->brake = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brake));
+            simdata->heading = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, heading) + sizeof(float));
             simdata->brakebias = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brakeBias));
             simdata->handbrake = 0;
             simdata->fuel = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, fuel));
@@ -755,6 +845,37 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->tyretemp[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreCoreTemperature) + (sizeof(float) * 1));
             simdata->tyretemp[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreCoreTemperature) + (sizeof(float) * 2));
             simdata->tyretemp[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreCoreTemperature) + (sizeof(float) * 3));
+
+            //simdata->tyrecontact0[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 0));
+            //simdata->tyrecontact0[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 1));
+            //simdata->tyrecontact0[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 2));
+            //simdata->tyrecontact0[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 3));
+
+            //simdata->tyrecontact1[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 4) + (sizeof(float) * 0));
+            //simdata->tyrecontact1[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 4) + (sizeof(float) * 1));
+            //simdata->tyrecontact1[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 4) + (sizeof(float) * 2));
+            //simdata->tyrecontact1[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 4) + (sizeof(float) * 3));
+
+            //simdata->tyrecontact2[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 8) + (sizeof(float) * 0));
+            //simdata->tyrecontact2[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 8) + (sizeof(float) * 1));
+            //simdata->tyrecontact2[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 8) + (sizeof(float) * 2));
+            //simdata->tyrecontact2[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 8) + (sizeof(float) * 3));
+
+            simdata->tyrecontact0[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 0));
+            simdata->tyrecontact1[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 1));
+            simdata->tyrecontact2[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 2));
+
+            simdata->tyrecontact1[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 3) + (sizeof(float) * 0));
+            simdata->tyrecontact1[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 3) + (sizeof(float) * 1));
+            simdata->tyrecontact2[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 3) + (sizeof(float) * 2));
+
+            simdata->tyrecontact0[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 6) + (sizeof(float) * 0));
+            simdata->tyrecontact1[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 6) + (sizeof(float) * 1));
+            simdata->tyrecontact2[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 6) + (sizeof(float) * 2));
+
+            simdata->tyrecontact0[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 9) + (sizeof(float) * 0));
+            simdata->tyrecontact1[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 9) + (sizeof(float) * 1));
+            simdata->tyrecontact2[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreContactPoint) + (sizeof(float) * 9) + (sizeof(float) * 2));
 
             simdata->braketemp[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brakeTemp) + (sizeof(float) * 0));
             simdata->braketemp[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, brakeTemp) + (sizeof(float) * 1));
@@ -831,8 +952,19 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             if ( simmap->d.ac.has_crewchief == true )
             {
                 d = simmap->d.ac.crewchief_map_addr;
-                int strsize = 32;
 
+                simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, x)));
+                simdata->worldposz = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
+                simdata->worldposy = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
+                double heading = simdata->heading;
+
+                double player_rotation = heading;
+                if(player_rotation < 0)
+                {
+                    //player_rotation = player_rotation + (M_PI * 2);
+                }
+
+                int strsize = 32;
                 float player_spline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, spLineLength)));
                 float track_spline = *(float*) (char*) (b + offsetof(struct SPageFileStatic, TrackSPlineLength));
                 int track_samples = track_spline / 4;
@@ -844,6 +976,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 {
                     numcars = MAXCARS;
                 }
+
                 for(int i=0; i<numcars; i++)
                 {
                     simdata->cars[i].lap = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, lapCount)));
@@ -872,12 +1005,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     simdata->cars[i].zpos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
                     simdata->cars[i].ypos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
                 }
+                SetProximityData(simdata, numcars);
 
                 simdata->playerspline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, spLineLength)));
                 simdata->playertrackpos = (int) track_samples * player_spline;
                 simdata->trackspline = *(float*) (char*) (b + offsetof(struct SPageFileStatic, TrackSPlineLength));
                 simdata->trackdistancearound = spLineLengthToDistanceRoundTrack(track_spline, player_spline);
-
 
 
                 simdata->playerlaps = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, lapCount)));
@@ -889,10 +1022,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 int lastlapinticks = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, lastLapTimeMS)));
                 simdata->currentlapinseconds = currentlapinticks * 100000;
                 simdata->lastlapinseconds = lastlapinticks * 100000;
-
-                simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, x)));
-                simdata->worldposz = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
-                simdata->worldposy = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
             }
 
             simdata->altitude = 1;
