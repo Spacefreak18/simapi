@@ -114,6 +114,8 @@ typedef struct
     double airtemp;
     double tracktemp;
 
+    double suspension[4];
+
     double trackdistancearound;
     double playerspline;
     double trackspline;

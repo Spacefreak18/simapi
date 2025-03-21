@@ -835,6 +835,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->Zvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 ));
             simdata->Yvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 ));
 
+            simdata->suspension[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 0));
+            simdata->suspension[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 1));
+            simdata->suspension[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 2));
+            simdata->suspension[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 3));
+
+
             //advanced ui
             simdata->tyrewear[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 0));
             simdata->tyrewear[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, tyreWear) + (sizeof(float) * 1));
