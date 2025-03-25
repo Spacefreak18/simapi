@@ -5,7 +5,6 @@
 #include <stdbool.h>
 
 #define MAXCARS 24
-
 #define PROXCARS 6
 
 typedef enum
@@ -143,7 +142,7 @@ typedef struct
     char tyrecompound[128];
     CarData cars[MAXCARS];
 
-    ProximityData pd[3];
+    ProximityData pd[PROXCARS];
 
     uint8_t simapi;
     uint8_t simexe;
