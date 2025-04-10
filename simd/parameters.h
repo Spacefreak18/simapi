@@ -8,6 +8,11 @@ typedef struct
     int verbosity_count;
     bool daemon;
     bool memmap;
+    bool udp;
+
+    bool daemon_count;
+    bool memmap_count;
+    bool udp_count;
 }
 Parameters;
 

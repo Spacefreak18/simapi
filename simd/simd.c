@@ -53,6 +53,29 @@ void simapilib_logtrace(char* message)
     y_log_message(Y_LOG_LEVEL_DEBUG, message);
 }
 
+int set_settings(Parameters* p, simd_settings* simds)
+{
+    // future config file read goes here, which can be overriden by cli options
+
+    simds->force_udp = false;
+    if(p->udp_count > 0)
+    {
+        simds->force_udp = p->udp;
+    }
+
+    simds->daemon = true;
+    if(p->daemon_count > 0)
+    {
+        simds->daemon = p->daemon;
+    }
+
+    simds->auto_memmap = true;
+    if(p->memmap_count > 0)
+    {
+        simds->auto_memmap = p->memmap;
+    }
+}
+
 static void close_walk_cb(uv_handle_t* handle, void* arg) {
   if (!uv_is_closing(handle))
     uv_close(handle, NULL);
@@ -277,14 +300,15 @@ int main(int argc, char** argv)
     p = malloc(sizeof(Parameters));
 
     ConfigError ppe = getParameters(argc, argv, p);
-
+    simd_settings simds;
+    set_settings(p, &simds);
     if (ppe == E_SUCCESS_AND_EXIT)
     {
         goto cleanup_final;
     }
 
     struct termios newsettings, canonicalmode;
-    if(p->daemon == true)
+    if(simds.daemon == true)
     {
         pid_t pid;
 
@@ -362,7 +386,7 @@ int main(int argc, char** argv)
     simmap2 = createSimMap();
 
     compatmemmap = false;
-    if(p->memmap == true)
+    if(simds.auto_memmap == true)
     {
         compatmemmap = true;
         compatmap = malloc(sizeof(SimCompatMap));
@@ -394,7 +418,7 @@ int main(int argc, char** argv)
     uv_timer_init(uv_default_loop(), &datachecktimer);
     uv_timer_init(uv_default_loop(), &datamaptimer);
 
-    if(p->daemon == false)
+    if(simds.daemon == false)
     {
         fprintf(stdout, "Searching for sim data... Press q to quit...\n");
     }
@@ -402,7 +426,7 @@ int main(int argc, char** argv)
 
 
     uv_poll_t* poll;
-    if(p->daemon == false)
+    if(simds.daemon == false)
     {
         uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
         uv_poll_init(uv_default_loop(), &pollt, 0);
@@ -411,7 +435,7 @@ int main(int argc, char** argv)
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-    if(p->daemon==false)
+    if(simds.daemon==false)
     {
         fprintf(stdout, "\n");
         fflush(stdout);

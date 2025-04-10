@@ -5,6 +5,12 @@
 #include <simdata.h>
 #include <simmapper.h>
 
+typedef struct simd_settings
+{
+  bool force_udp;
+  bool auto_memmap;
+  bool daemon;
+} simd_settings;
 
 typedef struct loop_data
 {
