@@ -642,7 +642,6 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
     SimulatorEXE simexe = getSimExe();
 
-
     switch ( simexe )
     {
         case SIMULATOREXE_ASSETTO_CORSA:
@@ -687,6 +686,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         case SIMULATOREXE_RFACTOR2:
             if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
             {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "RFactor2 telemetry file found");
                 si.simulatorapi = SIMULATORAPI_RFACTOR2;
                 int error = siminit(simdata, simmap, SIMULATORAPI_RFACTOR2);
                 simdatamap(simdata, simmap, NULL, SIMULATORAPI_RFACTOR2, false, NULL);
@@ -793,7 +793,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
     switch ( simulator )
     {
         case SIMULATORAPI_SIMAPI_TEST :
-            memcpy(simdata, simmap->addr, sizeof(SimData));
+            simdata = simmap->addr;
             return 0;
         case SIMULATORAPI_ASSETTO_CORSA :
 
