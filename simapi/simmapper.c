@@ -618,7 +618,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             asprintf(&temp, "found running simapi daemon simint error %i", e);
             simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
             free(temp);
-            simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
+            //simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             if(simdata->simapiversion == SIMAPI_VERSION)
             {
                 if (simdata->simon == 1)
@@ -635,7 +635,10 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             else
             {
-                simapi_log(SIMAPI_LOGLEVEL_INFO, "skipping sim api daemon due to version mismatch");
+                char* temp;
+                asprintf(&temp, "skipping sim api daemon due to version mismatch. Daemon Version: %i. App Version: %i", simdata->simapiversion, SIMAPI_VERSION);
+                simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
+                free(temp);
             }
         }
     }
@@ -668,6 +671,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                         si.mapapi = si.simulatorapi;
                         si.simulatorexe = simdata->simexe;
                         setSimInfo(&si);
+                        if(simexe == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE)
+                        {
+                            // support will have to be revisited for this sim
+                            si.SimSupportsRealtimeTelemetry = false;
+                        }
 
                         return si;
                     }
@@ -681,6 +689,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file");
             }
+            break;
 
 
         case SIMULATOREXE_RFACTOR2:
@@ -707,6 +716,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     return si;
                 }
             }
+            break;
 
         case SIMULATOREXE_AUTOMOBILISTA2:
             if (force_udp == false)
@@ -756,6 +766,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     return si;
                 }
             }
+            break;
         case SIMULATOREXE_EUROTRUCKS2:
         case SIMULATOREXE_AMERICANTRUCKS:
             if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
@@ -778,6 +789,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     return si;
                 }
             }
+            break;
     }
     return si;
 }
@@ -789,11 +801,18 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
     char* c;
     char* d;
 
-
     switch ( simulator )
     {
         case SIMULATORAPI_SIMAPI_TEST :
-            simdata = simmap->addr;
+            double tyre0 = simdata->tyrediameter[0];
+            double tyre1 = simdata->tyrediameter[1];
+            double tyre2 = simdata->tyrediameter[2];
+            double tyre3 = simdata->tyrediameter[3];
+            memcpy(simdata, simmap->addr, sizeof(SimData));
+            simdata->tyrediameter[0] = tyre0;
+            simdata->tyrediameter[1] = tyre1;
+            simdata->tyrediameter[2] = tyre2;
+            simdata->tyrediameter[3] = tyre3;
             return 0;
         case SIMULATORAPI_ASSETTO_CORSA :
 
@@ -955,7 +974,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             }
 
             // realtime telemetry
-            if ( simmap->d.ac.has_crewchief == true )
+            if (simmap->d.ac.has_crewchief == true && simdata->simexe != SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE )
             {
                 d = simmap->d.ac.crewchief_map_addr;
 
@@ -1527,7 +1546,6 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
 int simdmap(SimMap* simmap, SimData* simdata)
 {
-
     memcpy(simmap->addr, simdata, sizeof(SimData));
 }
 

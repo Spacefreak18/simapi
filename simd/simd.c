@@ -243,10 +243,10 @@ void datacheckcallback(uv_timer_t* handle)
         {
             appstate++;
             doui = true;
-            simdata->tyrediameter[0] = -1;
-            simdata->tyrediameter[1] = -1;
-            simdata->tyrediameter[2] = -1;
-            simdata->tyrediameter[3] = -1;
+            //simdata->tyrediameter[0] = -1;
+            //simdata->tyrediameter[1] = -1;
+            //simdata->tyrediameter[2] = -1;
+            //simdata->tyrediameter[3] = -1;
 
             if(f->use_udp == true)
             {
@@ -397,6 +397,7 @@ int main(int argc, char** argv)
 
     simdata->simapiversion = SIMAPI_VERSION;
     simdmap(simmap2, simdata);
+    fprintf(stdout, "SimApi Version: %i\n", simdata->simapiversion);
 
     baton = (loop_data*) malloc(sizeof(loop_data));
     baton->simmap = simmap;
