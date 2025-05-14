@@ -23,7 +23,6 @@ typedef enum
 SimAPI_FLAG;
 
 
-
 #pragma pack(push)
 #pragma pack(4)
 
@@ -42,14 +41,19 @@ typedef struct
     double ypos;
     double zpos;
     double carspline;
+    double speed;
     uint32_t pos;
     uint32_t lap;
     uint32_t trackpos;
     LapTime lastlap;
     LapTime bestlap;
-    uint8_t inpitlane;
-    uint8_t inpit;
-    double speed;
+    // not all of these are set by each sim
+    bool inpit; // no matter what, if you're in the pit set this
+    bool inpitlane; // in pit lane, actively entering or exiting, but not stopped or in garage
+    bool ingarage; // not always available
+    bool inpitentrance; // not always available
+    bool inpitexit; // not always available
+    bool inpitstopped; // not always available
     char driver[128];
     char car[128];
 }
