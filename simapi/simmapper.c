@@ -947,7 +947,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)
                 {
-                    simmap->d.ac.compound[i] = *(char*) (char*) ((c + offsetof(struct SPageFileGraphic, tyreCompound)) + (sizeof(char16_t) * i));
+                    simdata->tyrecompound[i] = *(char*) (char*) ((c + offsetof(struct SPageFileGraphic, tyreCompound)) + (sizeof(char16_t) * i));
                 }
                 //simdata->tyrecompound = simmap->d.ac.compound;
 
