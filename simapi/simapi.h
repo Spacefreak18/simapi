@@ -39,6 +39,7 @@ typedef enum
     SIMULATOREXE_AMERICANTRUCKS               = 5, //at
     SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 6, //acc
     SIMULATOREXE_ASSETTO_CORSA_EVO            = 7, //ace
+    SIMULATOREXE_LEMANS_ULTIMATE              = 8, //lmu
 }
 SimulatorEXE;
 

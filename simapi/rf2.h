@@ -5,6 +5,7 @@
 #include "../include/rf2data.h"
 
 #define RFACTOR2_EXE "rFactor2.exe"
+#define LEMANS_ULTIMATE_EXE "Le Mans Ultimate.exe"
 
 #define RF2_TELEMETRY_FILE "$rFactor2SMMP_Telemetry$"
 #define RF2_SCORING_FILE "$rFactor2SMMP_Scoring$"

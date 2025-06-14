@@ -99,6 +99,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_EUROTRUCKS2;
     }
+    else if (sstrcicmp(game, "lmu") == 0)
+    {
+        sim = SIMULATOREXE_LEMANS_ULTIMATE;
+    }
     else
     {
         sim = 0;
@@ -118,6 +122,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "ace";
         case SIMULATOREXE_RFACTOR2:
             return "rf2";
+        case SIMULATOREXE_LEMANS_ULTIMATE:
+            return "lmu";
         case SIMULATOREXE_AUTOMOBILISTA2:
             return "ams2";
         case SIMULATOREXE_AMERICANTRUCKS:
@@ -588,6 +594,10 @@ SimulatorEXE getSimExe()
     {
         return SIMULATOREXE_AMERICANTRUCKS;
     }
+    if(IsProcessRunning(LEMANS_ULTIMATE_EXE)==true)
+    {
+        return SIMULATOREXE_LEMANS_ULTIMATE;
+    }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -693,6 +703,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
 
         case SIMULATOREXE_RFACTOR2:
+        case SIMULATOREXE_LEMANS_ULTIMATE:
             if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "RFactor2 telemetry file found");
@@ -1566,7 +1577,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->altitude = 1;
             break;
     }
-   
+
     if (simmap2 != NULL && simmap2->addr != NULL)
     {
         simdmap(simmap2, simdata);
@@ -1931,7 +1942,7 @@ int freesimmap(SimMap* simmap, bool issimd)
     {
         shm_unlink(SIMAPI_MEM_FILE);
     }
-    
+
     if (close(simmap->fd) == -1)
     {
         return 200;
@@ -2083,40 +2094,40 @@ int freesimcompatmap(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_PHYSICS_FILE);
-    
+
     if (close(compatmap->acphysics_fd) == -1)
     {
         return 200;
     }
-    
+
     if (munmap(compatmap->acstatic_addr, sizeof(struct SPageFileStatic)) == -1)
     {
         return 100;
     }
     shm_unlink(AC_STATIC_FILE);
-    
+
     if (close(compatmap->acstatic_fd) == -1)
     {
         return 200;
     }
-    
+
     if (munmap(compatmap->acgraphics_addr, sizeof(struct SPageFileGraphic)) == -1)
     {
         return 100;
     }
     shm_unlink(AC_GRAPHIC_FILE);
-    
+
     if (close(compatmap->acgraphics_fd) == -1)
     {
         return 200;
     }
-    
+
     if (munmap(compatmap->accrew_addr, sizeof(struct SPageFileCrewChief)) == -1)
     {
         return 100;
     }
     shm_unlink(AC_CREWCHIEF_FILE);
-    
+
     if (close(compatmap->accrew_fd) == -1)
     {
         return 200;
