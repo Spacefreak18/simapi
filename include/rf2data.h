@@ -5,6 +5,13 @@
 #ifndef _RF2DATA_H
 #define _RF2DATA_H
 
+#define RF2_TELEMETRY_SIZE   250000
+#define RF2_SCORING_SIZE     2048
+#define RF2_RULES_SIZE       50000
+#define RF2_EXTENDED_SIZE    10200
+#define RF2_PITINFO_SIZE     350
+
+
 #include <stdbool.h>
 #include <uchar.h>
 
