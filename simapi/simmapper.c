@@ -345,6 +345,47 @@ int rf2_flag_to_simdata_flag(int rf2_flag)
     return playerflag;
 }
 
+
+int pcars2_session_to_simdata_session(int pcars2_session_state)
+{
+    switch ( pcars2_session_state )
+    {
+        case SESSION_PRACTICE:
+            return AC_PRACTICE;
+        case SESSION_QUALIFY:
+            return AC_QUALIFY;
+        case SESSION_RACE:
+            return AC_RACE;
+        case SESSION_TIME_ATTACK:
+            return AC_TIME_ATTACK;
+        default:
+          return AC_UNKNOWN;
+    }
+}
+
+int pcars2_gamestate_to_simdata_simstatus(int pcars2_gamestate) {
+    switch ( pcars2_gamestate ) {
+        case GAME_EXITED:
+            return AC_OFF;
+        case GAME_FRONT_END:
+            return AC_PAUSE;
+        case GAME_INGAME_PLAYING:
+            return AC_LIVE;
+        case GAME_INGAME_PAUSED:
+            return AC_PAUSE;
+        case GAME_INGAME_INMENU_TIME_TICKING:
+            return AC_LIVE;
+        case GAME_INGAME_RESTARTING:
+            return AC_PAUSE;
+        case GAME_INGAME_REPLAY:
+            return AC_REPLAY;
+        case GAME_FRONT_END_REPLAY:
+            return AC_REPLAY;
+        default:
+            return AC_LIVE;
+    }
+}
+
 int pcars2_flag_to_simdata_flag(int pcars2_flag)
 {
     switch ( pcars2_flag )
@@ -1296,7 +1337,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
                 a = simmap->d.pcars2.telemetry_map_addr;
                 // basic telemetry
-                simdata->simstatus = 2;
+                unsigned int gamestate = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGameState));
+                simdata->simstatus = pcars2_gamestate_to_simdata_simstatus(gamestate);
                 simdata->velocity = droundint(3.6 * (*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSpeed))));
                 simdata->rpms = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mRpm)));
                 simdata->maxrpm = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mMaxRPM)));
@@ -1367,6 +1409,21 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->lastlap = pcars2_convert_to_simdata_laptime(lastlap);
                 simdata->bestlap = pcars2_convert_to_simdata_laptime(bestlap);
                 simdata->currentlap = pcars2_convert_to_simdata_laptime(currentlap);
+
+                int session = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mSessionState));
+                simdata->session = pcars2_session_to_simdata_session(session);
+
+                simdata->sectorindex = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentSector));
+                if (simdata->sectorindex != 0)
+                {
+                    simdata->sectorindex -= 1;
+                    float sectorinsecs = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mCurrentSector1Time) + (simdata->sectorindex * sizeof(float)));
+                    simdata->lastsectorinms = (uint32_t) (sectorinsecs * 1000.0f);
+                }
+                else
+                {
+                    simdata->lastsectorinms = 0;
+                }
 
                 simdata->numlaps = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLapsInEvent));
                 simdata->lapisvalid = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mLapInvalidated));
@@ -1458,6 +1515,19 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->worldposx = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 0));
                 simdata->worldposy = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 1));
                 simdata->worldposz = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 2));
+
+                float track_spline = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLength));
+                float current_lap_distance = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
+                float current_lap_spline = current_lap_distance/track_spline;
+                float player_spline= current_lap_spline+simdata->lap;
+                simdata->trackdistancearound = current_lap_distance + (track_spline * simdata->lap);
+                simdata->trackspline= track_spline;
+                simdata->playerspline= player_spline;
+
+                int track_samples = track_spline * 4;
+                simdata->tracksamples = track_samples;
+                simdata->playertrackpos = (int) track_samples * player_spline;
+
                 break;
             }
             else
