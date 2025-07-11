@@ -1511,22 +1511,27 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 }
 
                 // realtime telemetry
-
                 simdata->worldposx = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 0));
                 simdata->worldposy = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 1));
                 simdata->worldposz = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 2));
 
                 float track_spline = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLength));
-                float current_lap_distance = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
-                float current_lap_spline = current_lap_distance/track_spline;
-                float player_spline= current_lap_spline+simdata->lap;
-                simdata->trackdistancearound = current_lap_distance + (track_spline * simdata->lap);
-                simdata->trackspline= track_spline;
-                simdata->playerspline= player_spline;
+                if (track_spline > 0.0f) {
+                    float current_lap_distance = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
+                    float current_lap_spline = current_lap_distance/track_spline;
+                    float player_spline= current_lap_spline+simdata->lap;
+                    if (current_lap_distance > 0.0f &&
+                        current_lap_spline > 0.0f &&
+                        player_spline >0.0f) {
+                        simdata->trackdistancearound = current_lap_distance + (track_spline * simdata->lap);
+                        simdata->trackspline= track_spline;
+                        simdata->playerspline= player_spline;
 
-                int track_samples = track_spline * 4;
-                simdata->tracksamples = track_samples;
-                simdata->playertrackpos = (int) track_samples * player_spline;
+                        int track_samples = track_spline * 4;
+                        simdata->tracksamples = track_samples;
+                        simdata->playertrackpos = (int) track_samples * player_spline;
+                    }
+                }
 
                 break;
             }
