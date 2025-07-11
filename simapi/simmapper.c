@@ -1511,11 +1511,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 if (track_spline > 0.0f) {
                     float current_lap_distance = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
                     float current_lap_spline = current_lap_distance/track_spline;
-                    float player_spline= current_lap_spline+simdata->lap;
+                    float player_spline= current_lap_spline+(simdata->lap-1);
                     if (current_lap_distance > 0.0f &&
                         current_lap_spline > 0.0f &&
                         player_spline >0.0f) {
-                        simdata->trackdistancearound = current_lap_distance + (track_spline * simdata->lap);
+                        simdata->trackdistancearound = current_lap_distance + (track_spline * (simdata->lap-1));
                         simdata->trackspline= track_spline;
                         simdata->playerspline= player_spline;
 
