@@ -367,15 +367,7 @@ int pcars2_gamestate_to_simdata_simstatus(int pcars2_gamestate) {
     switch ( pcars2_gamestate ) {
         case GAME_EXITED:
             return AC_OFF;
-        case GAME_FRONT_END:
-            return AC_PAUSE;
-        case GAME_INGAME_PLAYING:
-            return AC_LIVE;
         case GAME_INGAME_PAUSED:
-            return AC_PAUSE;
-        case GAME_INGAME_INMENU_TIME_TICKING:
-            return AC_LIVE;
-        case GAME_INGAME_RESTARTING:
             return AC_PAUSE;
         case GAME_INGAME_REPLAY:
             return AC_REPLAY;
