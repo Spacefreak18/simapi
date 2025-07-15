@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <math.h>
 #include <ctype.h>
+#include <sys/time.h>
 
 #include "simdata.h"
 #include "simapi.h"
@@ -66,6 +67,13 @@ int sstrcicmp(char const *a, char const *b)
         if (d != 0 || !*a)
             return d;
     }
+}
+
+long long timeInMilliseconds(void) {
+    struct timeval tv;
+
+    gettimeofday(&tv,NULL);
+    return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 }
 
 int simapi_strtogame(const char* game)
@@ -811,6 +819,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
     char* b;
     char* c;
     char* d;
+
+    simdata->mtick = timeInMilliseconds();
 
     switch ( simulator )
     {

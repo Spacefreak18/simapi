@@ -69,6 +69,8 @@ ProximityData;
 
 typedef struct
 {
+    uint64_t mtick;
+
     uint32_t simstatus;
     uint32_t velocity;
     uint32_t rpms;
