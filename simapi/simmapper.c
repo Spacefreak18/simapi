@@ -953,7 +953,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->currentlap = ac_convert_to_simdata_laptime(currentlap);
                 //simdata->time = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iCurrentTime));
                 simdata->numlaps = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, numberOfLaps));
-                simdata->session = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));
+                simdata->session = *(int32_t*) (char*) (c + offsetof(struct SPageFileGraphic, session));
                 simdata->sectorindex = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, currentSectorIndex));
                 simdata->lastsectorinms = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, lastSectorTime));
                 simdata->playerflag = acc_flag_to_simdata_flag(*(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, Flag)));
@@ -1071,7 +1071,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             a = simmap->d.rf2.telemetry_map_addr;
 
             // basic telemetry
-            simdata->simstatus = 2;
+
             simdata->velocity = abs(droundint(3.6 * (*(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mLocalVel)) + (sizeof(double) * 2)))));
             simdata->rpms = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mEngineRPM)));
             simdata->gear = *(uint32_t*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + ((sizeof(rF2VehicleTelemetry) * 0) + offsetof(rF2VehicleTelemetry, mGear)));
@@ -1112,6 +1112,41 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             if (simmap->d.rf2.has_scoring == true )
             {
                 b = simmap->d.rf2.scoring_map_addr;
+                uint8_t s = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mGamePhase));
+                // TODO: will need to track something additional since on session over a value of 8 will still be present when
+                // the user has returned to the menu
+                if (s > 2)
+                {
+                    simdata->simstatus = 2;
+                }
+                else
+                {
+                    simdata->simstatus = 0;
+                }
+                s = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mGamePhase));
+                switch (s)
+                {
+                    case 0:
+                    case 1:
+                    case 2:
+                    case 3:
+                    case 4:
+                    case 9:
+                        simdata->session = 0;
+                    case 5:
+                    case 6:
+                    case 7:
+                    case 8:
+                        simdata->session = 1;
+                    case 10:
+                    case 11:
+                    case 12:
+                    case 13:
+                        simdata->session = 2;
+                    default:
+                        simdata->session = 0;
+                }
+
 
                 simdata->tyrewear[0] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 0)));
                 simdata->tyrewear[1] = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mWheel) + (offsetof(TelemWheelV01, mWear) + (sizeof(TelemWheelV01) * 1)));
@@ -1168,7 +1203,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->sectorindex = *(uint32_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mSector));
                 //simdata->lastsectorinms
                 simdata->playerflag = rf2_flag_to_simdata_flag(*(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2VehicleScoring, mFlag)));
-                simdata->courseflag = rf2_phase_to_simdata_flag(*(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mVehicles) + offsetof(rF2ScoringInfo, mGamePhase)));
+                simdata->courseflag = rf2_phase_to_simdata_flag(*(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mGamePhase)));
                 double z = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mElapsedTime));
                 simdata->sessiontime = rf2_convert_to_simdata_laptime(*(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + offsetof(rF2VehicleTelemetry, mElapsedTime)));
 
