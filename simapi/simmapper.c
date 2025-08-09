@@ -745,10 +745,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorapi = SIMULATORAPI_PROJECTCARS2;
                     int error = siminit(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
                     simdatamap(simdata, simmap, NULL, SIMULATORAPI_PROJECTCARS2, false, NULL);
-                    if (error == 0 && simdata->simstatus > 1)
+                    if (error == 0)
                     {
                         simdata->simon = true;
                         simdata->simapi = SIMULATORAPI_PROJECTCARS2;
+                        simdata->simexe = simexe;
 
                         si.isSimOn = true;
                         si.simulatorapi = simdata->simapi;
@@ -770,7 +771,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.SimUsesUDP = true;
                     simdatamap(simdata, simmap, NULL, SIMULATORAPI_PROJECTCARS2, true, NULL);
                 }
-                if (error == 0 && simdata->simstatus > 1)
+                if (error == 0)
                 {
                     simdata->simon = true;
                     simdata->simapi = SIMULATORAPI_PROJECTCARS2;
@@ -1418,6 +1419,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 simdata->lapisvalid = !simdata->lapisvalid;
                 simdata->courseflag = pcars2_state_to_simdata_flag(*(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mYellowFlagState)));
                 simdata->playerflag = pcars2_flag_to_simdata_flag(*(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mHighestFlagColour)));
+
+                float trackdist = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLength));
+                float pos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
+                simdata->tracksamples = ceil(trackdist * 4);
+                simdata->playerspline = (pos/trackdist);
 
                 int actsize = 0;
                 int actsize2 = 0;
