@@ -2188,7 +2188,7 @@ int freesimcompatmap(SimCompatMap* compatmap)
     {
         return 100;
     }
-    shm_unlink(PCARS2_FILE_LINUX);
+    shm_unlink(PCARS2_FILE);
 
     if (close(compatmap->pcars2_fd) == -1)
     {
