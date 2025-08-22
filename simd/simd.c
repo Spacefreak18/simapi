@@ -296,7 +296,7 @@ void gamefindcallback(uv_timer_t* handle)
             char* wineprefix = NULL;
             if(env2 != NULL)
             {
-                asprintf(&wineprefix, "WINE_PREFIX=%s/pfx", env2);
+                asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env2);
             }
             free(env2);
 
@@ -337,7 +337,7 @@ void gamefindcallback(uv_timer_t* handle)
             }
 
             static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
-            static char* newenviron[]= {"WINE_PREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
+            static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
             newargv[1] = env3;
             newenviron[0] = wineprefix;
 
