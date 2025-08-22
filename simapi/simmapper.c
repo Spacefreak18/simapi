@@ -76,6 +76,19 @@ long long timeInMilliseconds(void) {
     return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 }
 
+bool does_sim_need_bridge(SimulatorEXE s)
+{
+    if(s == SIMULATOREXE_ASSETTO_CORSA || s == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE || s == SIMULATOREXE_ASSETTO_CORSA_EVO)
+    {
+        return true;
+    }
+
+    if(s == SIMULATOREXE_AUTOMOBILISTA2)
+    {
+        return true;
+    }
+}
+
 int simapi_strtogame(const char* game)
 {
     int sim = 0;
@@ -574,35 +587,35 @@ void hexDump(char *desc, void *addr, int len)
 
 SimulatorEXE getSimExe()
 {
-    if(IsProcessRunning(AC_EXE)==true)
+    if(IsProcessRunning(AC_EXE)>0)
     {
         return SIMULATOREXE_ASSETTO_CORSA;
     }
-    if(IsProcessRunning(ACC_EXE)==true)
+    if(IsProcessRunning(ACC_EXE)>0)
     {
         return SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
     }
-    if(IsProcessRunning(ACE_EXE)==true)
+    if(IsProcessRunning(ACE_EXE)>0)
     {
         return SIMULATOREXE_ASSETTO_CORSA_EVO;
     }
-    if(IsProcessRunning(RFACTOR2_EXE)==true)
+    if(IsProcessRunning(RFACTOR2_EXE)>0)
     {
         return SIMULATOREXE_RFACTOR2;
     }
-    if(IsProcessRunning(AMS2_EXE)==true)
+    if(IsProcessRunning(AMS2_EXE)>0)
     {
         return SIMULATOREXE_AUTOMOBILISTA2;
     }
-    if(IsProcessRunning(EUROTRUCKS2_EXE)==true)
+    if(IsProcessRunning(EUROTRUCKS2_EXE)>0)
     {
         return SIMULATOREXE_EUROTRUCKS2;
     }
-    if(IsProcessRunning(AMERICANTRUCKS_EXE)==true)
+    if(IsProcessRunning(AMERICANTRUCKS_EXE)>0)
     {
         return SIMULATOREXE_AMERICANTRUCKS;
     }
-    if(IsProcessRunning(LEMANS_ULTIMATE_EXE)==true)
+    if(IsProcessRunning(LEMANS_ULTIMATE_EXE)>0)
     {
         return SIMULATOREXE_LEMANS_ULTIMATE;
     }

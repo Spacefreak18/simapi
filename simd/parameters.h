@@ -8,11 +8,19 @@ typedef struct
     int verbosity_count;
     bool daemon;
     bool memmap;
+    bool bridge;
     bool udp;
 
     bool daemon_count;
     bool memmap_count;
+    bool bridge_count;
     bool udp_count;
+
+    bool user_specified_bridgepath;
+    bool user_specified_compatpath;
+
+    char* bridgepath;
+    char* compatpath;
 }
 Parameters;
 

@@ -15,12 +15,12 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
 
     ConfigError exitcode = E_SOMETHING_BAD;
 
-    p->verbosity_count     = 0;
+    p->verbosity_count           = 0;
 
-    p->daemon                 = true;
-    p->memmap                 = true;
-    p->udp                    = false;
-
+    p->daemon                    = true;
+    p->memmap                    = true;
+    p->bridge                    = true;
+    p->udp                       = false;
 
     // setup argument handling structures
     const char* progname = "simd";
@@ -29,11 +29,13 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
 
     struct arg_lit* arg_nodaemon     = arg_lit0("n", "nodaemon", "no daemon mode");
     struct arg_lit* arg_nomemmap     = arg_lit0("h", "nomemmap", "no automatic memory mapping for supported sim games");
+    struct arg_lit* arg_nobridge     = arg_lit0("a", "nobridge", "no automatic memory bridging for supported sim games");
+
     struct arg_lit* arg_udp          = arg_lit0("u", "udp", "force udp on all sims which support udp sufficiently");
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
     struct arg_end* end              = arg_end(20);
-    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_verbosity,help,vers,end};
+    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_verbosity,help,vers,end};
     int nerrors0;
 
     if (arg_nullcheck(argtable0) != 0)
@@ -58,10 +60,15 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
         {
             p->memmap = false;
         }
+        if (arg_nobridge->count > 0)
+        {
+            p->bridge = false;
+        }
         if (arg_udp->count > 0)
         {
             p->udp = true;
         }
+
         exitcode = E_SUCCESS_AND_DO;
     }
 

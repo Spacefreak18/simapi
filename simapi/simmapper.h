@@ -58,6 +58,8 @@ typedef struct
 }
 SimCompatMap;
 
+bool does_sim_need_bridge(SimulatorEXE s);
+SimulatorEXE getSimExe();
 SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd);
 int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);

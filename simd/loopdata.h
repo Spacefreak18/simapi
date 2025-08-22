@@ -5,14 +5,31 @@
 #include <simdata.h>
 #include <simmapper.h>
 
-typedef struct simd_settings
+typedef struct
 {
-  bool force_udp;
-  bool auto_memmap;
-  bool daemon;
-} simd_settings;
+    char* Name;
+    int GameId;
+    bool UseUDP;
+    char* LaunchExe;
+    char* LiveExe;
+    int BridgeDelay;
+    int simapi;
+}
+GameCompatInfo;
 
-typedef struct loop_data
+typedef struct
+{
+    bool force_udp;
+    bool auto_memmap;
+    bool auto_bridge;
+    bool daemon;
+    bool bridge_path_set;
+    char* home_dir;
+    char* configfile;
+}
+SimdSettings;
+
+typedef struct
 {
     uv_work_t req;
     SimulatorAPI sim;
@@ -20,10 +37,13 @@ typedef struct loop_data
     bool simstate;
     bool uion;
     bool releasing;
-    int numdevices;
+    SimdSettings simds;
+    int compat_info_size;
+    GameCompatInfo* game_compat_info;
     SimData* simdata;
     SimMap* simmap;
     SimMap* simmap2;
-} loop_data;
+}
+LoopData;
 
 #endif

@@ -32,14 +32,14 @@ SimulatorAPI;
 typedef enum
 {
     SIMULATOREXE_SIMAPI_TEST_NONE             = 0,
-    SIMULATOREXE_ASSETTO_CORSA                = 1, //ac
-    SIMULATOREXE_RFACTOR2                     = 2, //rf2
-    SIMULATOREXE_AUTOMOBILISTA2               = 3, //ams2
-    SIMULATOREXE_EUROTRUCKS2                  = 4, //et2
-    SIMULATOREXE_AMERICANTRUCKS               = 5, //at
-    SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 6, //acc
-    SIMULATOREXE_ASSETTO_CORSA_EVO            = 7, //ace
-    SIMULATOREXE_LEMANS_ULTIMATE              = 8, //lmu
+    SIMULATOREXE_ASSETTO_CORSA                = 244210, //ac
+    SIMULATOREXE_RFACTOR2                     = 365960, //rf2
+    SIMULATOREXE_AUTOMOBILISTA2               = 1066890, //ams2
+    SIMULATOREXE_EUROTRUCKS2                  = 227300, //et2
+    SIMULATOREXE_AMERICANTRUCKS               = 270880, //at
+    SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 805550, //acc
+    SIMULATOREXE_ASSETTO_CORSA_EVO            = 3058630, //ace
+    SIMULATOREXE_LEMANS_ULTIMATE              = 2399420, //lmu
 }
 SimulatorEXE;
 

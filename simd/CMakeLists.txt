@@ -7,8 +7,8 @@ project(simd)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 
-add_executable(simd simd.c parameters.c)
-target_link_libraries(simd m uv yder argtable2 simapi)
+add_executable(simd simd.c parameters.c confighelper.c dirhelper.c)
+target_link_libraries(simd m uv yder argtable2 config simapi)
 
 target_include_directories(simd PUBLIC)
 
@@ -70,4 +70,3 @@ else() # GCC/Clang warning option
         enable_cxx_compiler_flag_if_supported("-Wno-error=unused-but-set-variable")
     endif()
 endif()
-
