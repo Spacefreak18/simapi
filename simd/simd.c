@@ -284,7 +284,7 @@ void gamefindcallback(uv_timer_t* handle)
 
             pid_t pid = gamepid;
             const char* env_var1 = "STEAM_COMPAT_TOOL_PATHS"; // this will need to be interpreted
-            const char* env_var2 = "STEAM_COMPAT_DATA_PATH"; // this will be exactly what we need
+            const char* env_var2 = "STEAM_COMPAT_DATA_PATH"; // this will be exactly what we need except append /pfx
             const char* env_var3 = "SIMD_BRIDGE_EXE_PATH"; // this will be exactly what we need
             char* env1 = getEnvValueForPid(pid, env_var1);
             char* env2 = getEnvValueForPid(pid, env_var2);
@@ -292,6 +292,13 @@ void gamefindcallback(uv_timer_t* handle)
             y_log_message(Y_LOG_LEVEL_DEBUG, "Retrieved env vars %s and %s and %s", env1, env2, env3);
 
             char* token = strtok(env1, ":");
+
+            char* wineprefix = NULL;
+            if(env2 != NULL)
+            {
+                asprintf(&wineprefix, "WINE_PREFIX=%s/pfx", env2);
+            }
+            free(env2);
 
             char* wineexe = NULL;
             if(token != NULL)
@@ -330,9 +337,9 @@ void gamefindcallback(uv_timer_t* handle)
             }
 
             static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
-            static char* newenviron[]= {"WINE_PREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", NULL};
+            static char* newenviron[]= {"WINE_PREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
             newargv[1] = env3;
-            newenviron[0] = env2;
+            newenviron[0] = wineprefix;
 
             uint8_t ret = 0;
             pid_t process;
@@ -360,7 +367,7 @@ void gamefindcallback(uv_timer_t* handle)
                 ret = execve(wineexe, newargv, newenviron);
             }
             free(env1);
-            free(env2);
+            free(wineprefix);
             free(env3);
 
             if(process > 0)
