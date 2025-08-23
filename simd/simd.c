@@ -258,7 +258,6 @@ void gamefindcallback(uv_timer_t* handle)
         if(gamepid > 0)
         {
             sim = game_compat_info[i].GameId;
-            fprintf(stderr, "found a specified launch process for gameid %i running at pid %i!!!\n", sim, gamepid);
             y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
             break;
         }
@@ -428,7 +427,6 @@ void datacheckcallback(uv_timer_t* handle)
     }
     if (f->simstate == true && simdata->simstatus >= 2)
     {
-        fprintf(stderr, "the timer will stop");
         if ( appstate == 1 )
         {
             appstate++;
@@ -470,7 +468,6 @@ void cb(uv_poll_t* handle, int status, int events)
         {
             appstate--;
             y_log_message(Y_LOG_LEVEL_INFO, "User requested stop appstate is now %i", appstate);
-            fprintf(stdout, "User requested stop appstate is now %i\n", appstate);
             fflush(stdout);
         }
     }
@@ -495,7 +492,7 @@ int main(int argc, char** argv)
     }
     simds.home_dir = strdup(home_dir_str);
 
-    y_init_logs("simd", Y_LOG_MODE_FILE, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
+
 
     // cli parameters
     p = malloc(sizeof(Parameters));
@@ -505,8 +502,14 @@ int main(int argc, char** argv)
     {
         goto cleanup_final;
     }
+    int ylog_mode = Y_LOG_MODE_FILE;
+    if(simds.daemon == false)
+    {
+        ylog_mode = Y_LOG_MODE_CONSOLE;
+    }
 
-    fprintf(stderr, "Started. Found home directory and interpreted parameters.\n");
+    y_init_logs("simd", ylog_mode, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
+    y_log_message(Y_LOG_LEVEL_INFO, "Started. Found home directory and interpreted parameters.\n");
 
     // config file
     bool good_config = false;
@@ -526,7 +529,6 @@ int main(int argc, char** argv)
     else
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Opened and validated simd configuration file");
-        fprintf(stderr, "Opened and validated simd configuration file.\n");
         good_config = true;
     }
     config_destroy(&cfg);
@@ -541,7 +543,6 @@ int main(int argc, char** argv)
         loadconfig(simds, compat_info_size, game_compat_info);
 
         y_log_message(Y_LOG_LEVEL_INFO, "Successfullly loaded configuration file");
-        fprintf(stderr, "Successfully loaded configuration file.\n");
     }
 
     struct termios newsettings, canonicalmode;
@@ -634,7 +635,7 @@ int main(int argc, char** argv)
 
     simdata->simapiversion = SIMAPI_VERSION;
     simdmap(simmap2, simdata);
-    fprintf(stdout, "SimApi Version: %i\n", simdata->simapiversion);
+    y_log_message(Y_LOG_LEVEL_INFO, "SimApi Version: %i\n", simdata->simapiversion);
 
     baton = (LoopData*) malloc(sizeof(LoopData));
     baton->simmap = simmap;
@@ -661,10 +662,7 @@ int main(int argc, char** argv)
     uv_timer_init(uv_default_loop(), &datachecktimer);
     uv_timer_init(uv_default_loop(), &datamaptimer);
 
-    if(simds.daemon == false)
-    {
-        fprintf(stdout, "Searching for sim data... Press q to quit...\n");
-    }
+    y_log_message(Y_LOG_LEVEL_INFO, "Searching for sim data... Press q to quit...\n");
     if(simds.auto_bridge == true)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
@@ -688,7 +686,6 @@ int main(int argc, char** argv)
 
     if(simds.daemon==false)
     {
-        fprintf(stdout, "\n");
         fflush(stdout);
         tcsetattr(0, TCSANOW, &canonicalmode);
         uv_poll_stop(&pollt);
