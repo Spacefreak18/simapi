@@ -285,97 +285,118 @@ void gamefindcallback(uv_timer_t* handle)
             char* env1 = getEnvValueForPid(pid, env_var1);
             char* env2 = getEnvValueForPid(pid, env_var2);
             char* env3 = getEnvValueForPid(pid, env_var3);
-            y_log_message(Y_LOG_LEVEL_DEBUG, "Retrieved env vars %s and %s and %s", env1, env2, env3);
 
-            char* token = strtok(env1, ":");
+            if(env1 == NULL || env2 == NULL || env3 == NULL)
+            {
+                err = -1;
+                y_log_message(Y_LOG_LEVEL_WARNING, "Could not find one or all of the necessary environment variables.");
+            }
+
+            if(err == 0)
+            {
+                y_log_message(Y_LOG_LEVEL_DEBUG, "Retrieved env vars %s and %s and %s", env1, env2, env3);
+            }
 
             char* wineprefix = NULL;
-            if(env2 != NULL)
+            if(err == 0)
             {
-                asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env2);
+                char* wineprefix = NULL;
+                if(env2 != NULL)
+                {
+                    asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env2);
+                }
+                free(env2);
             }
-            free(env2);
 
             char* wineexe = NULL;
-            if(token != NULL)
+            if(err == 0)
             {
-                char* pathcheck1 = NULL;
-                asprintf(&pathcheck1, "%s/dist/bin/wine", token);
-                if(does_file_exist(pathcheck1) == true)
+                char* token = strtok(env1, ":");
+                if(token != NULL)
                 {
-                    wineexe = strdup(pathcheck1);
-                }
-                if(pathcheck1 != NULL)
-                {
-                    free(pathcheck1);
-                }
-                pathcheck1 = NULL;
-                if(wineexe == NULL)
-                {
-                    asprintf(&pathcheck1, "%s/files/bin/wine", token);
-
+                    char* pathcheck1 = NULL;
+                    asprintf(&pathcheck1, "%s/dist/bin/wine", token);
                     if(does_file_exist(pathcheck1) == true)
                     {
-
                         wineexe = strdup(pathcheck1);
                     }
+                    if(pathcheck1 != NULL)
+                    {
+                        free(pathcheck1);
+                    }
+                    pathcheck1 = NULL;
+                    if(wineexe == NULL)
+                    {
+                        asprintf(&pathcheck1, "%s/files/bin/wine", token);
+
+                        if(does_file_exist(pathcheck1) == true)
+                        {
+
+                            wineexe = strdup(pathcheck1);
+                        }
+                    }
+                    if(pathcheck1 != NULL)
+                    {
+                        free(pathcheck1);
+                    }
+                    pathcheck1 = NULL;
                 }
-                if(pathcheck1 != NULL)
+
+                if(wineexe != NULL)
                 {
-                    free(pathcheck1);
+                    y_log_message(Y_LOG_LEVEL_DEBUG, "Determined wine executable path %s", wineexe);
                 }
-                pathcheck1 = NULL;
             }
 
-            if(wineexe != NULL)
+
+            if(err == 0)
             {
-                y_log_message(Y_LOG_LEVEL_DEBUG, "Determined wine executable path %s", wineexe);
-            }
 
-            static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
-            static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
-            newargv[1] = env3;
-            newenviron[0] = wineprefix;
+                static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
+                static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
+                newargv[1] = env3;
+                newenviron[0] = wineprefix;
 
-            uint8_t ret = 0;
-            pid_t process;
-            process = fork();
-            if (process == 0)
-            {
-                if (setsid() == -1)
+                uint8_t ret = 0;
+                pid_t process;
+                process = fork();
+                if (process == 0)
                 {
-                }
+                    if (setsid() == -1)
+                    {
+                    }
 
-                int devnull = open("/dev/null", O_RDONLY);
-                if (devnull == -1)
-                {
-                }
+                    int devnull = open("/dev/null", O_RDONLY);
+                    if (devnull == -1)
+                    {
+                    }
 
-                dup2(devnull, STDIN_FILENO);
-                dup2(devnull, STDOUT_FILENO);
-                dup2(devnull, STDERR_FILENO);
-                if (devnull > 2)
-                {
+                    dup2(devnull, STDIN_FILENO);
+                    dup2(devnull, STDOUT_FILENO);
+                    dup2(devnull, STDERR_FILENO);
+                    if (devnull > 2)
+                    {
+                        close(devnull);
+                    }
+
                     close(devnull);
+                    ret = execve(wineexe, newargv, newenviron);
                 }
+                free(env1);
+                free(wineprefix);
+                free(env3);
 
-                close(devnull);
-                ret = execve(wineexe, newargv, newenviron);
-            }
-            free(env1);
-            free(wineprefix);
-            free(env3);
-
-            if(process > 0)
-            {
-                y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
-                //double check that process is running
-                uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
-                uv_timer_stop(handle);
-            }
-            if(process == -1)
-            {
-                y_log_message(Y_LOG_LEVEL_DEBUG, "Could not fork a bridge process");
+                if(process > 0)
+                {
+                    y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
+                    //double check that process is running
+                    uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
+                    uv_timer_stop(handle);
+                }
+                if(process == -1)
+                {
+                    y_log_message(Y_LOG_LEVEL_DEBUG, "Could not fork a bridge process");
+                }
             }
         }
         else
