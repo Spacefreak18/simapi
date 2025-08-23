@@ -299,12 +299,11 @@ void gamefindcallback(uv_timer_t* handle)
             char* wineprefix = NULL;
             if(err == 0)
             {
-                char* wineprefix = NULL;
                 if(env2 != NULL)
                 {
                     asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env2);
+                    free(env2);
                 }
-                free(env2);
             }
 
             char* wineexe = NULL;
@@ -340,6 +339,7 @@ void gamefindcallback(uv_timer_t* handle)
                     }
                     pathcheck1 = NULL;
                 }
+                free(env1);
 
                 if(wineexe != NULL)
                 {
@@ -350,6 +350,7 @@ void gamefindcallback(uv_timer_t* handle)
 
             if(err == 0)
             {
+                y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env3);
 
                 static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
                 static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
@@ -377,11 +378,11 @@ void gamefindcallback(uv_timer_t* handle)
                     {
                         close(devnull);
                     }
-
                     close(devnull);
+
                     ret = execve(wineexe, newargv, newenviron);
                 }
-                free(env1);
+                free(wineexe);
                 free(wineprefix);
                 free(env3);
 
