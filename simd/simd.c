@@ -39,7 +39,7 @@ uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
 uv_udp_t recv_socket;
 
-
+bool forked = false;
 bool doui = false;
 int appstate = 0;
 
@@ -281,9 +281,11 @@ void gamefindcallback(uv_timer_t* handle)
             const char* env_var1 = "STEAM_COMPAT_TOOL_PATHS"; // this will need to be interpreted
             const char* env_var2 = "STEAM_COMPAT_DATA_PATH"; // this will be exactly what we need except append /pfx
             const char* env_var3 = "SIMD_BRIDGE_EXE_PATH"; // this will be exactly what we need
+            const char* env_var4 = "SIMD_WRAP_EXE_PATH"; // this will be exactly what we need
             char* env1 = getEnvValueForPid(pid, env_var1);
             char* env2 = getEnvValueForPid(pid, env_var2);
             char* env3 = getEnvValueForPid(pid, env_var3);
+            char* env4 = getEnvValueForPid(pid, env_var4);
 
             if(env1 == NULL || env2 == NULL || env3 == NULL)
             {
@@ -326,10 +328,8 @@ void gamefindcallback(uv_timer_t* handle)
                     if(wineexe == NULL)
                     {
                         asprintf(&pathcheck1, "%s/files/bin/wine", token);
-
                         if(does_file_exist(pathcheck1) == true)
                         {
-
                             wineexe = strdup(pathcheck1);
                         }
                     }
@@ -348,14 +348,28 @@ void gamefindcallback(uv_timer_t* handle)
             }
 
 
-            if(err == 0)
+            if(err == 0 && forked == false)
             {
+                forked = true;
                 y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env3);
 
-                static char* newargv[]= {"/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
+                static char* newargv[]= {"/usr/bin/steam-run", "/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
                 static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
-                newargv[1] = env3;
+
+                if(env4 == NULL)
+                {
+                    newargv[0] = wineexe;
+                    newargv[1] = env3;
+                    newargv[2] = NULL;
+                }
+                else
+                {
+                    newargv[1] = wineexe;
+                    newargv[2] = env3;
+                }
                 newenviron[0] = wineprefix;
+
+                //newenviron[2] = winebin;
 
                 uint8_t ret = 0;
                 pid_t process;
@@ -380,11 +394,19 @@ void gamefindcallback(uv_timer_t* handle)
                     }
                     close(devnull);
 
-                    ret = execve(wineexe, newargv, newenviron);
+                    if(env4 == NULL)
+                    {
+                        ret = execve(wineexe, newargv, newenviron);
+                    }
+                    else
+                    {
+                        ret = execve(env4, newargv, newenviron);
+                    }
                 }
                 free(wineexe);
                 free(wineprefix);
                 free(env3);
+                free(env4);
 
                 if(process > 0)
                 {
