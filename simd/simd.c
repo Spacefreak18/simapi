@@ -253,18 +253,14 @@ void gamefindcallback(uv_timer_t* handle)
     int sim = 0;
     for(int i = 0; i < f->compat_info_size; i++)
     {
-        if(gamepid > 0)
-        {
-            continue;
-        }
         char* tmp_launch_exe = game_compat_info[i].LaunchExe;
-        sim = game_compat_info[i].GameId;
-
         gamepid = IsProcessRunning(tmp_launch_exe);
         if(gamepid > 0)
         {
-            fprintf(stderr, "found a specified launch process running!!!\n");
-            continue;
+            sim = game_compat_info[i].GameId;
+            fprintf(stderr, "found a specified launch process for gameid %i running at pid %i!!!\n", sim, gamepid);
+            y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
+            break;
         }
     }
     if(gamepid <= 0 && sim <= 0)
