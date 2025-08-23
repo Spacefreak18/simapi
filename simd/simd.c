@@ -288,7 +288,7 @@ void gamefindcallback(uv_timer_t* handle)
             if(env1 == NULL || env2 == NULL || env3 == NULL)
             {
                 err = -1;
-                y_log_message(Y_LOG_LEVEL_WARNING, "Could not find one or all of the necessary environment variables. Found %s %s %s");
+                y_log_message(Y_LOG_LEVEL_WARNING, "Could not find one or all of the necessary environment variables. Found %s %s %s", env1, env2, env3);
             }
 
             if(err == 0)
