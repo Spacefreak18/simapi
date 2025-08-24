@@ -85,6 +85,12 @@ int set_settings(Parameters* p, SimdSettings* simds)
         simds->auto_memmap = p->memmap;
     }
 
+    simds->notify = true;
+    if(p->notify_count > 0)
+    {
+        simds->notify = p->notify;
+    }
+
     simds->auto_bridge = true;
     if(p->bridge_count > 0)
     {
@@ -268,7 +274,14 @@ void bridgeclosecallback(uv_timer_t* handle)
 
     if(is_pid_running(f->game_pid) == 0)
     {
-        y_log_message(Y_LOG_LEVEL_INFO, "looking for game pid %i to close bridge pid %i", f->game_pid, f->bridge_pid);;
+        y_log_message(Y_LOG_LEVEL_INFO, "No longer detected game pid %i, so closing bridge pid %i", f->game_pid, f->bridge_pid);;
+
+        if(simds.notify == true)
+        {
+            char cmd[512];
+            snprintf(cmd, sizeof(cmd), "notify-send -t 3 \"%s\" \"game stopped\"", "simd");
+            system(cmd);
+        }
 
         kill(f->bridge_pid, SIGTERM);
         f->bridge_pid = 0;
@@ -310,11 +323,14 @@ void gamefindcallback(uv_timer_t* handle)
     if(sim > 0)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Detected simulator id %i, starting appropriate bridge if necessary.", sim);
-        // make these notifications optional
-        char cmd[512];
-        const char* gamename = simapi_gametofullstr(sim);
-        snprintf(cmd, sizeof(cmd), "notify-send \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
-        system(cmd);
+
+        if(simds.notify == true)
+        {
+            char cmd[512];
+            const char* gamename = simapi_gametofullstr(sim);
+            snprintf(cmd, sizeof(cmd), "notify-send -t 3 \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
+            system(cmd);
+        }
 
         f->game_pid = gamepid;
         if(does_sim_need_bridge(sim) == true && err == 0 && i > -1)
@@ -458,7 +474,7 @@ void gamefindcallback(uv_timer_t* handle)
                     y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
                     //double check that process is running
                     uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
-                    //uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 1000);
+                    uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 1000);
                     uv_timer_stop(handle);
                 }
                 if(process == -1)

@@ -23,6 +23,7 @@ typedef struct
     bool auto_memmap;
     bool auto_bridge;
     bool daemon;
+    bool notify;
     bool bridge_path_set;
     char* home_dir;
     char* configfile;

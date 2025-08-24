@@ -20,6 +20,7 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     p->daemon                    = true;
     p->memmap                    = true;
     p->bridge                    = true;
+    p->notify                    = true;
     p->udp                       = false;
 
     // setup argument handling structures
@@ -30,12 +31,13 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     struct arg_lit* arg_nodaemon     = arg_lit0("n", "nodaemon", "no daemon mode");
     struct arg_lit* arg_nomemmap     = arg_lit0("h", "nomemmap", "no automatic memory mapping for supported sim games");
     struct arg_lit* arg_nobridge     = arg_lit0("a", "nobridge", "no automatic memory bridging for supported sim games");
+    struct arg_lit* arg_nonotify     = arg_lit0("s", "nonotify", "no desktop notifications");
 
     struct arg_lit* arg_udp          = arg_lit0("u", "udp", "force udp on all sims which support udp sufficiently");
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
     struct arg_end* end              = arg_end(20);
-    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_verbosity,help,vers,end};
+    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_nonotify,arg_verbosity,help,vers,end};
     int nerrors0;
 
     if (arg_nullcheck(argtable0) != 0)
@@ -50,6 +52,7 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     {
         p->verbosity_count = arg_verbosity->count;
         p->daemon_count = arg_nodaemon->count;
+        p->notify_count = arg_nonotify->count;
         p->udp_count = arg_udp->count;
 
         if (arg_nodaemon->count > 0)
@@ -59,6 +62,10 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
         if (arg_nomemmap->count > 0)
         {
             p->memmap = false;
+        }
+        if (arg_nonotify->count > 0)
+        {
+            p->notify = false;
         }
         if (arg_nobridge->count > 0)
         {

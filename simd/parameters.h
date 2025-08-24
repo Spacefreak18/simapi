@@ -9,10 +9,12 @@ typedef struct
     bool daemon;
     bool memmap;
     bool bridge;
+    bool notify;
     bool udp;
 
     bool daemon_count;
     bool memmap_count;
+    bool notify_count;
     bool bridge_count;
     bool udp_count;
 
