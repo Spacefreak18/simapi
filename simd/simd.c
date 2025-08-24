@@ -37,6 +37,7 @@ uv_poll_t pollt;
 uv_timer_t gamefindtimer;
 uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
+uv_timer_t bridgeclosetimer;
 uv_udp_t recv_socket;
 
 bool doui = false;
@@ -45,6 +46,7 @@ int appstate = 0;
 void shmdatamapcallback(uv_timer_t* handle);
 void datacheckcallback(uv_timer_t* handle);
 void gamefindcallback(uv_timer_t* handle);
+void bridgeclosecallback(uv_timer_t* handle);
 
 void simapilib_loginfo(char* message)
 {
@@ -100,6 +102,7 @@ void release()
     uv_timer_stop(&gamefindtimer);
     uv_timer_stop(&datamaptimer);
     uv_timer_stop(&datachecktimer);
+    uv_timer_stop(&bridgeclosetimer);
     uv_walk(uv_default_loop(), close_walk_cb, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
     ASSERT(0 == uv_loop_close(uv_default_loop()));
@@ -240,6 +243,41 @@ int startudp(int port)
     return err;
 }
 
+int is_pid_running(pid_t pid) {
+    if (pid <= 0) return 0;
+
+    // send signal 0 (no actual signal)
+    if (kill(pid, 0) == 0) {
+        return 1;
+    } else {
+        if (errno == ESRCH) {
+            return 0;
+        } else if (errno == EPERM) {
+            return 1;
+        } else {
+            return 0;
+        }
+        return 0;
+    }
+}
+
+void bridgeclosecallback(uv_timer_t* handle)
+{
+    void* b = uv_handle_get_data((uv_handle_t*) handle);
+    LoopData* f = (LoopData*) b;
+
+    if(is_pid_running(f->game_pid) == 0)
+    {
+        y_log_message(Y_LOG_LEVEL_INFO, "looking for game pid %i to close bridge pid %i", f->game_pid, f->bridge_pid);;
+
+        kill(f->bridge_pid, SIGTERM);
+        f->bridge_pid = 0;
+        f->game_pid = 0;
+        uv_timer_stop(handle);
+        uv_timer_start(&gamefindtimer, gamefindcallback, 5, 1000);
+    }
+}
+
 void gamefindcallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
@@ -278,6 +316,7 @@ void gamefindcallback(uv_timer_t* handle)
         snprintf(cmd, sizeof(cmd), "notify-send \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
         system(cmd);
 
+        f->game_pid = gamepid;
         if(does_sim_need_bridge(sim) == true && err == 0 && i > -1)
         {
 
@@ -377,6 +416,7 @@ void gamefindcallback(uv_timer_t* handle)
                 uint8_t ret = 0;
                 pid_t process;
                 process = fork();
+                f->bridge_pid = process;
                 if (process == 0)
                 {
                     if (setsid() == -1)
@@ -416,6 +456,7 @@ void gamefindcallback(uv_timer_t* handle)
                     y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
                     //double check that process is running
                     uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
+                    //uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 1000);
                     uv_timer_stop(handle);
                 }
                 if(process == -1)
@@ -669,6 +710,8 @@ int main(int argc, char** argv)
     baton->uion = false;
     baton->releasing = false;
     baton->sim = 0;
+    baton->bridge_pid = 0;
+    baton->game_pid = 0;
     baton->simds = simds;
     baton->compat_info_size = compat_info_size;
     baton->game_compat_info = game_compat_info;
@@ -676,6 +719,7 @@ int main(int argc, char** argv)
 
 
     uv_handle_set_data((uv_handle_t*) &gamefindtimer, (void*) baton);
+    uv_handle_set_data((uv_handle_t*) &bridgeclosetimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &datachecktimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &datamaptimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &recv_socket, (void*) baton);
@@ -683,6 +727,7 @@ int main(int argc, char** argv)
     appstate = 1;
     y_log_message(Y_LOG_LEVEL_DEBUG, "setting initial app state");
     uv_timer_init(uv_default_loop(), &gamefindtimer);
+    uv_timer_init(uv_default_loop(), &bridgeclosetimer);
     uv_timer_init(uv_default_loop(), &datachecktimer);
     uv_timer_init(uv_default_loop(), &datamaptimer);
 

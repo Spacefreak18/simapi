@@ -39,6 +39,8 @@ typedef struct
     bool releasing;
     SimdSettings simds;
     int compat_info_size;
+    pid_t bridge_pid;
+    pid_t game_pid;
     GameCompatInfo* game_compat_info;
     SimData* simdata;
     SimMap* simmap;
