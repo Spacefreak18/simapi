@@ -68,6 +68,7 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 
 int simapi_strtogame(const char* game);
 char* simapi_gametostr(SimulatorEXE sim);
+char* simapi_gametofullstr(SimulatorEXE sim);
 
 SimMap* createSimMap(void);
 void* getSimMapPtr(SimMap* simmap);

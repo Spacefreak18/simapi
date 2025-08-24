@@ -156,6 +156,31 @@ char* simapi_gametostr(SimulatorEXE sim)
     }
 }
 
+char* simapi_gametofullstr(SimulatorEXE sim)
+{
+    switch ( sim )
+    {
+        case SIMULATOREXE_ASSETTO_CORSA:
+            return "Assetto Corsa";
+        case SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE:
+            return "Assetto Corsa Competizione";
+        case SIMULATOREXE_ASSETTO_CORSA_EVO:
+            return "Assetto Corsa EVO";
+        case SIMULATOREXE_RFACTOR2:
+            return "RFactor2";
+        case SIMULATOREXE_LEMANS_ULTIMATE:
+            return "LeMans Ultimate";
+        case SIMULATOREXE_AUTOMOBILISTA2:
+            return "Automobilista 2";
+        case SIMULATOREXE_AMERICANTRUCKS:
+            return "American Truck Simulator";
+        case SIMULATOREXE_EUROTRUCKS2:
+            return "Euro Truck Simulator 2";
+        default:
+            return "default";
+    }
+}
+
 
 int droundint(double d)
 {
