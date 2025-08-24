@@ -474,7 +474,7 @@ void gamefindcallback(uv_timer_t* handle)
                     y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
                     //double check that process is running
                     uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
-                    uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 1000);
+                    //uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
                     uv_timer_stop(handle);
                 }
                 if(process == -1)
