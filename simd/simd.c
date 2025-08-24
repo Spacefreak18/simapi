@@ -39,7 +39,6 @@ uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
 uv_udp_t recv_socket;
 
-bool forked = false;
 bool doui = false;
 int appstate = 0;
 
@@ -348,9 +347,8 @@ void gamefindcallback(uv_timer_t* handle)
             }
 
 
-            if(err == 0 && forked == false)
+            if(err == 0)
             {
-                forked = true;
                 y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env3);
 
                 static char* newargv[]= {"/usr/bin/steam-run", "/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
@@ -392,7 +390,6 @@ void gamefindcallback(uv_timer_t* handle)
                     {
                         close(devnull);
                     }
-                    close(devnull);
 
                     if(env4 == NULL)
                     {
@@ -402,6 +399,7 @@ void gamefindcallback(uv_timer_t* handle)
                     {
                         ret = execve(env4, newargv, newenviron);
                     }
+                    _exit(127);
                 }
                 free(wineexe);
                 free(wineprefix);
