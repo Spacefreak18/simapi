@@ -272,6 +272,11 @@ void gamefindcallback(uv_timer_t* handle)
     if(sim > 0)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Detected simulator id %i, starting appropriate bridge if necessary.", sim);
+        // make these notifications optional
+        char cmd[512];
+        const char* gamename = simapi_gametofullstr(sim);
+        snprintf(cmd, sizeof(cmd), "notify-send \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
+        system(cmd);
 
         if(does_sim_need_bridge(sim) == true && err == 0 && i > -1)
         {
@@ -512,8 +517,6 @@ int main(int argc, char** argv)
         return 0;
     }
     simds.home_dir = strdup(home_dir_str);
-
-
 
     // cli parameters
     p = malloc(sizeof(Parameters));
