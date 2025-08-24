@@ -325,36 +325,36 @@ void gamefindcallback(uv_timer_t* handle)
             const char* env_var2 = "STEAM_COMPAT_DATA_PATH"; // this will be exactly what we need except append /pfx
             const char* env_var3 = "SIMD_BRIDGE_EXE_PATH"; // this will be exactly what we need
             const char* env_var4 = "SIMD_WRAP_EXE_PATH"; // this will be exactly what we need
-            char* env1 = getEnvValueForPid(pid, env_var1);
-            char* env2 = getEnvValueForPid(pid, env_var2);
-            char* env3 = getEnvValueForPid(pid, env_var3);
-            char* env4 = getEnvValueForPid(pid, env_var4);
+            char* env_steam_compat_tool = getEnvValueForPid(pid, env_var1);
+            char* env_steam_compat_data = getEnvValueForPid(pid, env_var2);
+            char* env_simd_bridge_exe = getEnvValueForPid(pid, env_var3);
+            char* env_simd_wrap_exe = getEnvValueForPid(pid, env_var4);
 
-            if(env1 == NULL || env2 == NULL || env3 == NULL)
+            if(env_steam_compat_tool == NULL || env_steam_compat_data == NULL || env_simd_bridge_exe == NULL)
             {
                 err = -1;
-                y_log_message(Y_LOG_LEVEL_WARNING, "Could not find one or all of the necessary environment variables. Found %s %s %s", env1, env2, env3);
+                y_log_message(Y_LOG_LEVEL_WARNING, "Could not find one or all of the necessary environment variables. Found %s %s %s", env_steam_compat_tool, env_steam_compat_data, env_simd_bridge_exe);
             }
 
             if(err == 0)
             {
-                y_log_message(Y_LOG_LEVEL_DEBUG, "Retrieved env vars %s and %s and %s", env1, env2, env3);
+                y_log_message(Y_LOG_LEVEL_DEBUG, "Retrieved env vars %s and %s and %s", env_steam_compat_tool, env_steam_compat_data, env_simd_bridge_exe);
             }
 
             char* wineprefix = NULL;
             if(err == 0)
             {
-                if(env2 != NULL)
+                if(env_steam_compat_data != NULL)
                 {
-                    asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env2);
-                    free(env2);
+                    asprintf(&wineprefix, "WINEPREFIX=%s/pfx", env_steam_compat_data);
+                    free(env_steam_compat_data);
                 }
             }
 
             char* wineexe = NULL;
             if(err == 0)
             {
-                char* token = strtok(env1, ":");
+                char* token = strtok(env_steam_compat_tool, ":");
                 if(token != NULL)
                 {
                     char* pathcheck1 = NULL;
@@ -382,7 +382,7 @@ void gamefindcallback(uv_timer_t* handle)
                     }
                     pathcheck1 = NULL;
                 }
-                free(env1);
+                free(env_steam_compat_tool);
 
                 if(wineexe != NULL)
                 {
@@ -393,21 +393,23 @@ void gamefindcallback(uv_timer_t* handle)
 
             if(err == 0)
             {
-                y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env3);
+                y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env_simd_bridge_exe);
 
                 static char* newargv[]= {"/usr/bin/steam-run", "/usr/bin/wine", "/home/user/git/simshmbridge/assets/acbridge.exe", NULL};
                 static char* newenviron[]= {"WINEPREFIX=/home/user/.local/share/Steam/steamapps/compatdata/244210", "WINEFSYNC=1", NULL};
 
-                if(env4 == NULL)
+                if(env_simd_wrap_exe == NULL)
                 {
                     newargv[0] = wineexe;
-                    newargv[1] = env3;
+                    newargv[1] = env_simd_bridge_exe;
                     newargv[2] = NULL;
                 }
                 else
                 {
+                    y_log_message(Y_LOG_LEVEL_DEBUG, "Using wrap exe path %s", env_simd_wrap_exe);
+                    newargv[0] = env_simd_wrap_exe;
                     newargv[1] = wineexe;
-                    newargv[2] = env3;
+                    newargv[2] = env_simd_bridge_exe;
                 }
                 newenviron[0] = wineprefix;
 
@@ -436,20 +438,20 @@ void gamefindcallback(uv_timer_t* handle)
                         close(devnull);
                     }
 
-                    if(env4 == NULL)
+                    if(env_simd_wrap_exe == NULL)
                     {
                         ret = execve(wineexe, newargv, newenviron);
                     }
                     else
                     {
-                        ret = execve(env4, newargv, newenviron);
+                        ret = execve(env_simd_wrap_exe, newargv, newenviron);
                     }
                     _exit(127);
                 }
                 free(wineexe);
                 free(wineprefix);
-                free(env3);
-                free(env4);
+                free(env_simd_bridge_exe);
+                free(env_simd_wrap_exe);
 
                 if(process > 0)
                 {
