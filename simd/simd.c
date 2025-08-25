@@ -350,8 +350,8 @@ void gamefindcallback(uv_timer_t* handle)
             pid_t pid = gamepid;
             const char* env_var1 = "STEAM_COMPAT_TOOL_PATHS"; // this will need to be interpreted
             const char* env_var2 = "STEAM_COMPAT_DATA_PATH"; // this will be exactly what we need except append /pfx
-            const char* env_var3 = "SIMD_BRIDGE_EXE_PATH"; // this will be exactly what we need
-            const char* env_var4 = "SIMD_WRAP_EXE_PATH"; // this will be exactly what we need
+            const char* env_var3 = "SIMD_BRIDGE_EXE"; // this will be exactly what we need
+            const char* env_var4 = "SIMD_WRAP_EXE"; // this will be exactly what we need
             char* env_steam_compat_tool = getEnvValueForPid(pid, env_var1);
             char* env_steam_compat_data = getEnvValueForPid(pid, env_var2);
             char* env_simd_bridge_exe = getEnvValueForPid(pid, env_var3);
