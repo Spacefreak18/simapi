@@ -809,7 +809,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.SimUsesUDP = true;
                     simdatamap(simdata, simmap, NULL, SIMULATORAPI_PROJECTCARS2, true, NULL);
                 }
-                if (error == 0)
+                if (error == 0 && simdata->simstatus > 1)
                 {
                     simdata->simon = true;
                     simdata->simapi = SIMULATORAPI_PROJECTCARS2;
@@ -1380,7 +1380,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
                 a = simmap->d.pcars2.telemetry_map_addr;
                 // basic telemetry
-                simdata->simstatus = 2;
+                uint8_t s = *(uint8_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGameState));
+                simdata->simstatus = 0;
+                if (s > 1 && s < 6)
+                {   
+                    simdata->simstatus = 2;
+                }
+
                 simdata->velocity = droundint(3.6 * (*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSpeed))));
                 simdata->rpms = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mRpm)));
                 simdata->maxrpm = droundint(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mMaxRPM)));
@@ -1856,6 +1862,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
             break;
     }
+    simdata->simapiversion = SIMAPI_VERSION;
 
     return error;
 }
