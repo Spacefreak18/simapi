@@ -31,6 +31,7 @@ SimData* simdata;
 SimMap* simmap;
 SimMap* simmap2;
 SimCompatMap* compatmap;
+GameCompatInfo* game_compat_info;
 SimdSettings simds;
 
 uv_poll_t pollt;
@@ -42,6 +43,7 @@ uv_udp_t recv_socket;
 
 bool doui = false;
 int appstate = 0;
+int compat_info_size = 0;
 
 void shmdatamapcallback(uv_timer_t* handle);
 void datacheckcallback(uv_timer_t* handle);
@@ -125,7 +127,16 @@ void release()
 
     free(baton);
     free(simdata);
-
+    if(compat_info_size > 0)
+    {
+        for(int i = 0; i < compat_info_size; i++)
+        {
+            free(game_compat_info[i].Name);
+            free(game_compat_info[i].LaunchExe);
+            free(game_compat_info[i].LiveExe);
+        }
+        free(game_compat_info);
+    }
     free(p);
 
     free(simds.home_dir);
@@ -616,8 +627,7 @@ int main(int argc, char** argv)
     }
     config_destroy(&cfg);
 
-    GameCompatInfo* game_compat_info;
-    int compat_info_size = 0;
+
     if(good_config == true)
     {
         compat_info_size = getNumberOfConfigs(simds.configfile);
