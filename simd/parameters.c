@@ -37,7 +37,7 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
     struct arg_end* end              = arg_end(20);
-    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_nonotify,arg_verbosity,help,vers,end};
+    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_nonotify,arg_udp,arg_verbosity,help,vers,end};
     int nerrors0;
 
     if (arg_nullcheck(argtable0) != 0)
