@@ -290,7 +290,7 @@ void bridgeclosecallback(uv_timer_t* handle)
         if(simds.notify == true)
         {
             char cmd[512];
-            snprintf(cmd, sizeof(cmd), "notify-send -t 5 \"%s\" \"game stopped\"", "simd");
+            snprintf(cmd, sizeof(cmd), "notify-send -t 3000 \"%s\" \"game stopped\"", "simd");
             system(cmd);
         }
 
@@ -481,6 +481,7 @@ void gamefindcallback(uv_timer_t* handle)
                     y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
                     //double check that process is running
                     uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
+                    // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
                     uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
                     uv_timer_stop(handle);
                 }
@@ -503,7 +504,7 @@ void gamefindcallback(uv_timer_t* handle)
             {
                 char cmd[512];
                 const char* gamename = simapi_gametofullstr(sim);
-                snprintf(cmd, sizeof(cmd), "notify-send -t 5 \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
+                snprintf(cmd, sizeof(cmd), "notify-send -t 3000 \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
                 system(cmd);
             }
         }
