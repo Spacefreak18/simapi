@@ -662,7 +662,6 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     si.SimSupportsRealtimeTelemetry = false;
     si.SimSupportsAdvancedUI = false;
 
-    simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
 
     if(simd == false)
     {
@@ -672,7 +671,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             char* temp;
             asprintf(&temp, "found running simapi daemon simint error %i", e);
-            simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
+            simapi_log(SIMAPI_LOGLEVEL_TRACE, temp);
             free(temp);
             //simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             if(simdata->simapiversion == SIMAPI_VERSION)
@@ -696,6 +695,10 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
                 free(temp);
             }
+        }
+        else
+        {
+            simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
         }
     }
 
@@ -1383,7 +1386,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 uint8_t s = *(uint8_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGameState));
                 simdata->simstatus = 0;
                 if (s > 1 && s < 6)
-                {   
+                {
                     simdata->simstatus = 2;
                 }
 
