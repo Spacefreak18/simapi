@@ -7,11 +7,12 @@ The key to a great experience is to remember that less is more. Not too many sha
 The monocoque configuration for shakers looks like this:
 
 ```
-{   
+{
 device       = "Sound";
 effect       = "Engine";
 devid        = "alsa_output.usb-Generic_USB2.0_Device_20170726905959-00.analog-stereo";
-channel      = 1;
+channels     = 2;
+pan          = 0;
 tyre         = "FrontLeft";
 volume       = 90;
 frequency    = 27;
@@ -19,7 +20,8 @@ frequency    = 27;
 ```
 
 + frequency - base frequency of effect
-+ channel - left or right ( surround sound cards are supported, but it can be a challenge to map physical channels to the correct channel id )
++ channels - number of channels, stereo cards would be 2, a 7.1 card would be 8
++ pan - left or right ( surround sound cards are supported, but it can be a challenge to map physical channels to the correct channel id )
 + effect - engine, gear, tyrelock, tyreslip, abs
 + devid - find with ```pacmd list-sinks | grep name:```
 + tyre - All, Fronts, Rears, FrontLeft, RearRight, etc
