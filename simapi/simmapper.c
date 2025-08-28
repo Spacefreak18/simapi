@@ -978,6 +978,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->tyrepressure[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelsPressure) + (sizeof(float) * 2));
             simdata->tyrepressure[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelsPressure) + (sizeof(float) * 3));
 
+            simdata->turboboost = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, turboBoost));
+
             simdata->airdensity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, airDensity));
             simdata->airtemp = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, airTemp));
             simdata->tracktemp = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, roadTemp));
