@@ -855,7 +855,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     return si;
 }
 
-int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulator, bool udp, char* base)
+int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulatorapi, bool udp, char* base)
 {
     char* a;
     char* b;
@@ -864,7 +864,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
     simdata->mtick = timeInMilliseconds();
 
-    switch ( simulator )
+    switch ( simulatorapi )
     {
         case SIMULATORAPI_SIMAPI_TEST :
             double tyre0 = simdata->tyrediameter[0];
@@ -872,10 +872,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             double tyre2 = simdata->tyrediameter[2];
             double tyre3 = simdata->tyrediameter[3];
             memcpy(simdata, simmap->addr, sizeof(SimData));
-            simdata->tyrediameter[0] = tyre0;
-            simdata->tyrediameter[1] = tyre1;
-            simdata->tyrediameter[2] = tyre2;
-            simdata->tyrediameter[3] = tyre3;
+            if(simdata->simapi != SIMULATORAPI_ASSETTO_CORSA)
+            {
+                simdata->tyrediameter[0] = tyre0;
+                simdata->tyrediameter[1] = tyre1;
+                simdata->tyrediameter[2] = tyre2;
+                simdata->tyrediameter[3] = tyre3;
+            }
             return 0;
         case SIMULATORAPI_ASSETTO_CORSA :
 
@@ -1032,6 +1035,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     simdata->car[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, carModel)) + (sizeof(char16_t) * i));
                     simdata->track[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, track)) + (sizeof(char16_t) * i));
                     simdata->driver[i] = *(char*) (char*) ((b + offsetof(struct SPageFileStatic, playerName)) + (sizeof(char16_t) * i));
+
+                    simdata->tyrediameter[0] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 0));
+                    simdata->tyrediameter[1] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 1));
+                    simdata->tyrediameter[2] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 2));
+                    simdata->tyrediameter[3] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 3));
                 }
 
             }
