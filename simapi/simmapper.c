@@ -978,7 +978,8 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             simdata->tyrepressure[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelsPressure) + (sizeof(float) * 2));
             simdata->tyrepressure[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, wheelsPressure) + (sizeof(float) * 3));
 
-            simdata->turboboost = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, turboBoost));
+            simdata->turboboostperct = 0;
+            simdata->turboboostperct = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, turboBoost));
 
             simdata->airdensity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, airDensity));
             simdata->airtemp = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, airTemp));
@@ -1026,10 +1027,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 //    simdata->timeleft = droundint(timeleft);
             }
 
+            simdata->maxturbo = 0;
             if (simmap->d.ac.has_static == true )
             {
                 b = simmap->d.ac.static_map_addr;
                 simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
+                simdata->maxturbo = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, MaxTurboBoost));
 
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)
@@ -1042,10 +1045,15 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                     simdata->tyrediameter[1] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 1));
                     simdata->tyrediameter[2] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 2));
                     simdata->tyrediameter[3] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 3));
+
+                    for(int j=0; j<4; j++)
+                    {
+                        simdata->tyrediameter[j] = simdata->tyrediameter[j] * 2;
+                    }
                 }
 
             }
-
+            simdata->turboboost = simdata->turboboost * simdata->maxturbo;
             // realtime telemetry
             if (simmap->d.ac.has_crewchief == true && simdata->simexe != SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE )
             {

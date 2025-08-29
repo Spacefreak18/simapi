@@ -97,6 +97,8 @@ typedef struct
     double handbrake;
 
     double turboboost;
+    double turboboostperct;
+    double maxturbo;
 
     double abs;
     double brakebias;
