@@ -1053,7 +1053,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
                 }
 
             }
-            simdata->turboboost = simdata->turboboost * simdata->maxturbo;
+            simdata->turboboost = simdata->turboboostperct * simdata->maxturbo;
             // realtime telemetry
             if (simmap->d.ac.has_crewchief == true && simdata->simexe != SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE )
             {
