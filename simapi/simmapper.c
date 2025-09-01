@@ -1032,7 +1032,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             {
                 b = simmap->d.ac.static_map_addr;
                 simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
-                simdata->maxturbo = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, MaxTurboBoost));
+                simdata->maxturbo = *(float*) (char*) (b + offsetof(struct SPageFileStatic, MaxTurboBoost));
 
                 int strsize = 32;
                 for(int i=0; i<strsize; i++)
