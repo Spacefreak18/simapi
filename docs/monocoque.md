@@ -1,6 +1,6 @@
 # Monocoque
 
-## [Bass Shakers](https://spacefreak18.github.io/simapi/shakers)
+## [Shakers](/simapi/shakers)
 
 ## Arduino
 
