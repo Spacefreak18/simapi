@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(simapi VERSION 1.0.1 DESCRIPTION "sim mapping library")
+project(simapi VERSION 1.0.1 DESCRIPTION "Telemetry Mapping Library for Racing Sims")
 include(GNUInstallDirs)
 add_library(simapi SHARED simapi/simmapper.c simapi/getpid.c)
 
