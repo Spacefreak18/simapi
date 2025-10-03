@@ -6,6 +6,7 @@ SET_SOURCE_FILES_PROPERTIES( simd.c PROPERTIES LANGUAGE C)
 project(simd)
 
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
+#set(CMAKE_BUILD_TYPE Debug)
 
 add_executable(simd simd.c parameters.c confighelper.c dirhelper.c)
 target_link_libraries(simd m uv yder argtable2 config simapi)
