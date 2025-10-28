@@ -224,7 +224,7 @@ void simapi_log(SIMAPI_LOGLEVEL sll, char* message)
     }
 }
 
-void SetProximityData(SimData* simdata, int cars)
+void SetProximityData(SimData* simdata, int cars, int8_t lr_flip)
 {
     double carwidth = 1.8;
     double maxradius = 10.0;
@@ -241,34 +241,27 @@ void SetProximityData(SimData* simdata, int cars)
         simdata->pd[x].radius = 0.0;
         simdata->pd[x].theta = 0.0;
     }
+    if(abs(simdata->Yvelocity) < 0.0001 && abs(simdata->Xvelocity) < 0.0001)
+    {
+        return;
+    }
+
+    double angle = atan2(-1, 0) - atan2(simdata->worldYvelocity, simdata->worldXvelocity);
+    double angleD = angle * 360 / (2 * M_PI);
+    double angleR = angleD * M_PI / 180;
+
+    double cosTheta = cos(angle);
+    double sinTheta = sin(angle);
+    
     for(int car = 1; car < cars; car++)
     {
         double rawXCoordinate = simdata->cars[car].xpos - simdata->worldposx;
         double rawYCoordinate = simdata->cars[car].ypos - simdata->worldposy;
 
-        double ff = simdata->tyrecontact0[0];
-        double lf = simdata->tyrecontact2[0];
-        double fr = simdata->tyrecontact0[2];
-        double lr = simdata->tyrecontact2[2];
-
-        double f = ff - fr;
-        double l = lf - lr;
-
-        double mag1 = sqrt((f*f) + (l*l));
-
-        double negx = -(f / mag1);
-        double negy = -(l / mag1);
-
-        double angle = atan2(-1, 0) - atan2(negy, negx);
-        double angleD = angle * 360 / (2 * M_PI);
-        double angleR = angleD * M_PI / 180;
-
-        double cosTheta = cos(angleR);
-        double sinTheta = sin(angleR);
         double xscore  = cosTheta * rawXCoordinate - sinTheta * rawYCoordinate;
         double yscore  = sinTheta * rawXCoordinate + cosTheta * rawYCoordinate;
 
-        double rads = atan2(-yscore, -xscore);
+        double rads = atan2(yscore, xscore * lr_flip);
         double degrees = (rads * (180 / M_PI)) + 90.0;
 
         double radius = sqrt((rawXCoordinate * rawXCoordinate) + (rawYCoordinate * rawYCoordinate));

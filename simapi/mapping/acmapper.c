@@ -122,6 +122,10 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     simdata->Zvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 1 ));
     simdata->Yvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, localVelocity) + (sizeof(float) * 2 ));
 
+    simdata->worldXvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity) + (sizeof(float) * 0 ));
+    simdata->worldZvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity) + (sizeof(float) * 1 ));
+    simdata->worldYvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity) + (sizeof(float) * 2 ));
+
     simdata->suspension[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 0));
     simdata->suspension[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 1));
     simdata->suspension[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 2));
@@ -313,7 +317,7 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
             simdata->cars[i].zpos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
             simdata->cars[i].ypos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
         }
-        SetProximityData(simdata, numcars);
+        SetProximityData(simdata, numcars, -1);
 
         simdata->playerlaps = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, lapCount)));
         simdata->lapisvalid = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, currentLapInvalid)));

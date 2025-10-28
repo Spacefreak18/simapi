@@ -77,7 +77,6 @@ static int pcars2_state_to_simdata_flag(int pcars2_state)
     return SIMAPI_FLAG_GREEN;
 }
 
-
 void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base)
 {
 
@@ -128,6 +127,10 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
         simdata->Zvelocity = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 1 ));
         simdata->Yvelocity = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLocalVelocity) + (sizeof(float) * 2 ));
 
+        simdata->worldXvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mWorldVelocity) + (sizeof(float) * 0 ));
+        simdata->worldZvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mWorldVelocity) + (sizeof(float) * 1 ));
+        simdata->worldYvelocity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mWorldVelocity) + (sizeof(float) * 2 ));
+
 
         simdata->tyreRPS[0] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 0));
         simdata->tyreRPS[1] = -1 * *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreRPS) + (sizeof(float) * 1));
@@ -154,6 +157,10 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
         simdata->tyrepressure[2] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mAirPressure) + (sizeof(float) * 2));
         simdata->tyrepressure[3] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mAirPressure) + (sizeof(float) * 3));
 
+        simdata->tyrecontact0[0] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreY) + (sizeof(float) * 0));
+        simdata->tyrecontact0[1] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreY) + (sizeof(float) * 1));
+        simdata->tyrecontact0[2] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreY) + (sizeof(float) * 2));
+        simdata->tyrecontact0[3] = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTyreY) + (sizeof(float) * 3));
 
         // advanced ui
         //simdata->airdensity = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, airDensity));
@@ -257,13 +264,19 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
             {
                 simdata->cars[i].inpit = 0;
             }
+
+            simdata->cars[i].xpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(ParticipantInfo)*i) + (sizeof(float) * 0));
+            simdata->cars[i].zpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(ParticipantInfo)*i) + (sizeof(float) * 1));
+            simdata->cars[i].ypos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(ParticipantInfo)*i) + (sizeof(float) * 2));
         }
 
         // realtime telemetry
+        simdata->worldposx = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(float) * 0));
+        simdata->worldposz = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(float) * 1));
+        simdata->worldposy = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(float) * 2));
 
-        simdata->worldposx = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 0));
-        simdata->worldposy = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 1));
-        simdata->worldposz = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + (sizeof(bool)) + (sizeof(char[STRING_LENGTH_MAX])) + (sizeof(float) * 2));
+
+        SetProximityData(simdata, numcars, 1);
         return;
     }
     else
