@@ -159,7 +159,7 @@ typedef struct
     ProximityData pd[PROXCARS];
 
     uint8_t simapi;
-    uint8_t simexe;
+    uint64_t simexe;
     bool simon;
     uint8_t simapiversion;
 }
