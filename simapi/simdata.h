@@ -89,6 +89,10 @@ typedef struct
     double Yvelocity;
     double Zvelocity;
 
+    double worldXvelocity;
+    double worldYvelocity;
+    double worldZvelocity;
+
     double gas;
     double brake;
     double fuel;
@@ -155,7 +159,7 @@ typedef struct
     ProximityData pd[PROXCARS];
 
     uint8_t simapi;
-    uint8_t simexe;
+    uint64_t simexe;
     bool simon;
     uint8_t simapiversion;
 }
