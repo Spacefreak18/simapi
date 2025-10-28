@@ -89,6 +89,10 @@ typedef struct
     double Yvelocity;
     double Zvelocity;
 
+    double worldXvelocity;
+    double worldYvelocity;
+    double worldZvelocity;
+
     double gas;
     double brake;
     double fuel;
