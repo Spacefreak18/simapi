@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/stat.h>
 #include <poll.h>
 #include <termios.h>
@@ -22,6 +23,8 @@
 #include "parameters.h"
 #include "dirhelper.h"
 #include "confighelper.h"
+
+#define PID_FILE "/tmp/simd.pid"
 
 bool compatmemmap;
 
@@ -141,6 +144,8 @@ void release()
 
     free(simds.home_dir);
     free(simds.configfile);
+
+    unlink(PID_FILE);
 
     y_close_logs();
 }
@@ -607,6 +612,17 @@ int main(int argc, char** argv)
     if(simds.daemon == false)
     {
         ylog_mode = Y_LOG_MODE_CONSOLE;
+    }
+
+    if(simds.daemon == true)
+    {
+        int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL);
+        if(pid_file_fd == -1)
+        {
+            fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
+            goto cleanup_final;
+        }
+        close(pid_file_fd);
     }
 
     y_init_logs("simd", ylog_mode, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
