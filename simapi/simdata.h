@@ -20,7 +20,22 @@ typedef enum
     SIMAPI_FLAG_BLACK_ORANGE     = 8,
     SIMAPI_FLAG_ORANGE           = 9
 }
-SimAPI_FLAG;
+SIMAPI_FLAG;
+
+typedef enum
+{
+    SIMAPI_GEAR_REVERSE          = 0,
+    SIMAPI_GEAR_NEUTRAL          = 1,
+    SIMAPI_GEAR_FIRST            = 2,
+    SIMAPI_GEAR_SECOND           = 3,
+    SIMAPI_GEAR_THIRD            = 4,
+    SIMAPI_GEAR_FOURTH           = 5,
+    SIMAPI_GEAR_FIFTH            = 6,
+    SIMAPI_GEAR_SIXTH            = 7,
+    SIMAPI_GEAR_SEVENTH          = 8,
+    SIMAPI_GEAR_EIGHT            = 9
+}
+SIMAPI_GEAR;
 
 
 #pragma pack(push)
