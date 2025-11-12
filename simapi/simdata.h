@@ -41,16 +41,15 @@ SIMAPI_GEAR;
 #pragma pack(push)
 #pragma pack(4)
 
-typedef struct
+typedef struct //LapTime
 {
     uint32_t hours;
     uint32_t minutes;
     uint32_t seconds;
     uint32_t fraction;
-}
-LapTime;
+} LapTime;
 
-typedef struct
+typedef struct //CarData
 {
     double xpos;
     double ypos;
@@ -71,18 +70,16 @@ typedef struct
     bool inpitstopped; // not always available
     char driver[128];
     char car[128];
-}
-CarData;
+} CarData;
 
-typedef struct
+typedef struct //ProximityData
 {
     double radius;
     double theta; // in degrees
     uint32_t lap;
-}
-ProximityData;
+} ProximityData;
 
-typedef struct
+typedef struct //simdata
 {
     uint64_t mtick;
 
@@ -169,16 +166,15 @@ typedef struct
     char track[128];
     char driver[128];
     char tyrecompound[128];
+    
     CarData cars[MAXCARS];
-
     ProximityData pd[PROXCARS];
 
     uint8_t simapi;
     uint64_t simexe;
     bool simon;
     uint8_t simapiversion;
-}
-SimData;
+} SimData;
 
 #pragma pack(pop)
 #endif
