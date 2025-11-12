@@ -726,6 +726,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
         case SIMULATORAPI_SCSTRUCKSIM2 :
 
+            map_trucks_data(simdata, simmap);
 
             break;
     }
