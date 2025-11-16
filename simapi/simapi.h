@@ -58,6 +58,10 @@ typedef enum
     DOUBLE        = 1,
     FLOAT         = 2,
     CHAR          = 3,
+    BOOLEAN       = 4,
+    UINT8         = 5,
+    UINT32        = 6,
+    UINT64        = 7,
 }
 SimDataType;
 

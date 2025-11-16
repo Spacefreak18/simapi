@@ -11,6 +11,8 @@ typedef struct
     bool bridge;
     bool notify;
     bool udp;
+    bool poke;
+    bool targetval;
 
     bool daemon_count;
     bool memmap_count;
@@ -23,6 +25,8 @@ typedef struct
 
     char* bridgepath;
     char* compatpath;
+    char* pokesetting;
+    char* targetvalue;
 }
 Parameters;
 

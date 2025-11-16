@@ -19,6 +19,7 @@ GameCompatInfo;
 
 typedef struct
 {
+    bool poke;
     bool force_udp;
     bool auto_memmap;
     bool auto_bridge;
@@ -27,6 +28,8 @@ typedef struct
     bool bridge_path_set;
     char* home_dir;
     char* configfile;
+    char* pokesetting;
+    char* targetvalue;
 }
 SimdSettings;
 
