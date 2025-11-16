@@ -79,7 +79,7 @@ typedef struct //ProximityData
     uint32_t lap;
 } ProximityData;
 
-typedef struct //simdata
+typedef struct //SimData
 {
     uint64_t mtick;
 

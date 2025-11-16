@@ -14,15 +14,22 @@
 #include <pwd.h>
 #include <libconfig.h>
 
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 #include <simapi.h>
 #include <simdata.h>
 #include <simmapper.h>
+#include "../simapi/test.h"
+#include "../simmap/basicmap.h"
 
 #include "../simapi/getpid.h"
 #include "loopdata.h"
 #include "parameters.h"
 #include "dirhelper.h"
 #include "confighelper.h"
+#include "poke.h"
 
 #define PID_FILE "/tmp/simd.pid"
 
@@ -70,8 +77,6 @@ void simapilib_logtrace(char* message)
 
 int set_settings(Parameters* p, SimdSettings* simds)
 {
-    // future config file read goes here, which can be overriden by cli options
-
     simds->force_udp = false;
     if(p->udp_count > 0)
     {
@@ -96,11 +101,25 @@ int set_settings(Parameters* p, SimdSettings* simds)
         simds->notify = p->notify;
     }
 
-    simds->auto_bridge = true;
-    if(p->bridge_count > 0)
+    simds->auto_bridge = p->bridge;
+
+    simds->poke = false;
+    if(p->poke == true)
     {
-        simds->auto_bridge = p->bridge;
+        simds->pokesetting = strdup(p->pokesetting);
+        simds->poke = true;
     }
+
+
+    if(p->targetval == false)
+    {
+        simds->poke = false;
+    }
+    else
+    {
+        simds->targetvalue = strdup(p->targetvalue); 
+    }
+    fprintf(stderr, "starting simd\n");
 }
 
 static void close_walk_cb(uv_handle_t* handle, void* arg) {
@@ -224,7 +243,7 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
 
     if (appstate == 2)
     {
-        simdatamap(simdata, simmap, NULL, f->sim, true, a);
+        //simdatamap(simdata, simmap, NULL, f->sim, true, a);
     }
 
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
@@ -524,6 +543,7 @@ void datacheckcallback(uv_timer_t* handle)
     SimMap* simmap = f->simmap;
     SimMap* simmap2 = f->simmap2;
 
+
     if ( appstate == 1 )
     {
         SimInfo si = getSim(simdata, simmap, false, startudp, true);
@@ -531,7 +551,6 @@ void datacheckcallback(uv_timer_t* handle)
         f->simstate = si.isSimOn;
         f->sim = si.simulatorapi;
         f->use_udp = si.SimUsesUDP;
-
     }
     if (f->simstate == true && simdata->simstatus >= 2)
     {
@@ -600,6 +619,7 @@ int main(int argc, char** argv)
     }
     simds.home_dir = strdup(home_dir_str);
 
+
     // cli parameters
     p = malloc(sizeof(Parameters));
     ConfigError ppe = getParameters(argc, argv, p);
@@ -614,12 +634,19 @@ int main(int argc, char** argv)
         ylog_mode = Y_LOG_MODE_CONSOLE;
     }
 
+
+
     if(simds.daemon == true)
     {
         int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL);
         if(pid_file_fd == -1)
         {
+            if( simds.poke == true )
+            {
+                poke(simds);
+            }
             fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
+            
             goto cleanup_final;
         }
         close(pid_file_fd);

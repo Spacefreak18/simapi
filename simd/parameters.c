@@ -22,6 +22,8 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     p->bridge                    = true;
     p->notify                    = true;
     p->udp                       = false;
+    p->poke                      = false;
+    p->targetval                 = false;
 
     // setup argument handling structures
     const char* progname = "simd";
@@ -32,12 +34,14 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
     struct arg_lit* arg_nomemmap     = arg_lit0("h", "nomemmap", "no automatic memory mapping for supported sim games");
     struct arg_lit* arg_nobridge     = arg_lit0("a", "nobridge", "no automatic memory bridging for supported sim games");
     struct arg_lit* arg_nonotify     = arg_lit0("s", "nonotify", "no desktop notifications");
+    struct arg_str* arg_poke         = arg_str0("p", "poke", "<string>", "poke simdata");
+    struct arg_str* arg_target       = arg_str0("t", "target", "<string>", "target value ofpoke simdata");
 
     struct arg_lit* arg_udp          = arg_lit0("u", "udp", "force udp on all sims which support udp sufficiently");
     struct arg_lit* help             = arg_litn(NULL,"help", 0, 1, "print this help and exit");
     struct arg_lit* vers             = arg_litn(NULL,"version", 0, 1, "print version information and exit");
     struct arg_end* end              = arg_end(20);
-    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_nonotify,arg_udp,arg_verbosity,help,vers,end};
+    void* argtable0[]                = {arg_nomemmap,arg_nodaemon,arg_nobridge,arg_nonotify,arg_poke,arg_target,arg_udp,arg_verbosity,help,vers,end};
     int nerrors0;
 
     if (arg_nullcheck(argtable0) != 0)
@@ -74,6 +78,17 @@ ConfigError getParameters(int argc, char** argv, Parameters* p)
         if (arg_udp->count > 0)
         {
             p->udp = true;
+        }
+
+        if(arg_poke->count > 0)
+        {
+            p->pokesetting = strdup(arg_poke->sval[0]);
+            p->poke = true;
+        }
+        if(arg_target->count > 0)
+        {
+            p->targetvalue = strdup(arg_target->sval[0]);
+            p->targetval = true;
         }
 
         exitcode = E_SUCCESS_AND_DO;
