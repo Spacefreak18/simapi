@@ -3,7 +3,7 @@ import re
 import cfile.src.cfile as C
 
 #game="Assetto Corsa"
-game="simdata"
+game="SimData"
 includefilename=""
 mapperfilename=""
 mapperheaderfilename=""
@@ -18,7 +18,7 @@ if (game == "RFactor2"):
     mapperfilename="maprf2data.c"
     mapperheaderfilename="maprf2data.h"
     mapsizevariablename="#define RF2MAP_SIZE"
-if (game == "simdata"):
+if (game == "SimData"):
     includefilename="simdata.h"
     mapperfilename="mapsimdata.c"
     mapperheaderfilename="basicmap.h"
@@ -37,10 +37,10 @@ if (game == "Assetto Corsa"):
     simmap.code.append(C.include('../simapi/ac.h'))
     simmap.code.append(C.blank())
     simmap.code.append(C.function('CreateACMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('acmap', 'ACMap', pointer=1)).add_param(C.variable('mapdata', 'int', pointer=0)))
-if (game == "simdata"):
+if (game == "SimData"):
     simmap.code.append(C.include('../simapi/simdata.h'))
     simmap.code.append(C.blank())
-    simmap.code.append(C.function('CreateSimDataMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('simdatamap', 'SimDataMap', pointer=1)).add_param(C.variable('mapdata', 'int', pointer=0)))
+    simmap.code.append(C.function('CreateSimDataMap', 'int',).add_param(C.variable('map', 'struct Map', pointer=1)).add_param(C.variable('simdata', 'SimData', pointer=1)).add_param(C.variable('mapdata', 'int', pointer=0)))
 
 body = C.block(innerIndent=4)
 
@@ -73,7 +73,7 @@ if (game == "Assetto Corsa"):
     iff.append(C.statement("spfs = acmap->static_map_addr"))
     iff.append(C.statement("spfc = acmap->crewchief_map_addr"))
     body.append(iff)
-if (game == "simdata"):
+if (game == "SimData"):
     body.append(C.statement("char* s = NULL"))
     body.append("    if (mapdata == 1)") # not sure how to do this cleaner with this api
     iff = C.block(innerIndent=4)
@@ -108,19 +108,27 @@ def setstructname(g):
                 structvar = "rf2t"
             else:
                 structname = ""
-        case "simdata":
-            if ( structname == "simdata" ):
+        case "SimData":
+            if ( structname == "SimData" ):
                 structvar = "s"
             else:
                 structname = ""
 
 def formatdatatype(d):
+        if "8" in d:
+            return "UINT8"
+        if "32" in d:
+            return "UINT32"
+        if "64" in d:
+            return "UINT64"
         if "int" in d:
             return "INTEGER"
         if "float" in d:
             return "FLOAT"
         if "double" in d:
             return "DOUBLE"
+        if "bool" in d:
+            return "BOOLEAN"
         return "CHAR"
 
 def addcodeline(textstring):
@@ -190,7 +198,7 @@ with open(includefilename) as topo_file:
         if ("#" not in line and "{" not in line and "}" not in line and not line.lstrip().startswith("/") and line.lstrip() != '\r\n'):
 
 
-            if ("typedef struct" in line and "simdata" not in line):
+            if ("typedef struct" in line and "SimData" not in line):
                 typedefname = line.split('//')[1]
                 typedefname = typedefname.strip()
                 typedeflist.append(typedefname)
@@ -198,11 +206,12 @@ with open(includefilename) as topo_file:
                 instruct = False
                 intypedef = True
                 continue
-            elif ("typedef struct //simdata" in line.lstrip()):
+            elif ("typedef struct //SimData" in line.lstrip()):
+                print(line)
                 usestruct = False
                 instruct = True
                 intypedef = False
-                structname = "simdata"
+                structname = "SimData"
                 setstructname(game)
 
             elif ("struct" in line):
