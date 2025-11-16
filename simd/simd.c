@@ -635,22 +635,18 @@ int main(int argc, char** argv)
     }
 
 
-
-    if(simds.daemon == true)
+    int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL);
+    if(pid_file_fd == -1)
     {
-        int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL);
-        if(pid_file_fd == -1)
+        if( simds.poke == true )
         {
-            if( simds.poke == true )
-            {
-                poke(simds);
-            }
-            fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
-            
-            goto cleanup_final;
+            poke(simds);
         }
-        close(pid_file_fd);
+        fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
+        
+        goto cleanup_final;
     }
+    close(pid_file_fd);
 
     y_init_logs("simd", ylog_mode, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
     y_log_message(Y_LOG_LEVEL_INFO, "Started. Found home directory and interpreted parameters.\n");
