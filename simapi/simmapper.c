@@ -788,6 +788,10 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
         case SIMULATORAPI_ASSETTO_CORSA :
 
+            if(simmap->d.ac.has_physics == true)
+            {
+                return 0;
+            }
             simmap->d.ac.has_physics=false;
             simmap->d.ac.has_static=false;
             simmap->d.ac.fd_physics = shm_open(AC_PHYSICS_FILE, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
@@ -850,6 +854,10 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
         case SIMULATORAPI_PROJECTCARS2 :
 
+            if(simmap->d.pcars2.has_telemetry == true)
+            {
+                return 0;
+            }
             simmap->d.pcars2.has_telemetry=false;
             simmap->d.pcars2.fd_telemetry = shm_open(PCARS2_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->d.pcars2.fd_telemetry == -1)
@@ -869,6 +877,10 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
         case SIMULATORAPI_RFACTOR2 :
 
+            if(simmap->d.rf2.has_telemetry == true)
+            {
+                return 0;
+            }
             simmap->d.rf2.has_telemetry=false;
             simmap->d.rf2.has_scoring=false;
             simmap->d.rf2.fd_telemetry = shm_open(RF2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
@@ -904,6 +916,10 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
         case SIMULATORAPI_SCSTRUCKSIM2 :
 
+            if(simmap->d.scs2.has_telemetry == true)
+            {
+                return 0;
+            }
             simmap->d.scs2.has_telemetry=false;
             simmap->d.scs2.fd_telemetry = open("/dev/shm/SCS/SCSTelemetry", O_CREAT|O_RDWR, 0777);
             //simmap->d.scs2.fd_telemetry = shm_open(SCS2_TELEMETRY_FILE, O_RDONLY, S_IRUSR | S_IWUSR);
