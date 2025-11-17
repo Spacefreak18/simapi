@@ -13,7 +13,7 @@ SimAPI supports the following simulator software titles ( and more ).
 * Automobilista 2
 * Euro Truck Simulator / American Truck Simulator
 
-It is recommended to install [simd](/simapi/simd) or to manually setup (simshmbridge)[/simapi/simshmbridge]
+It is recommended to install [simd](/simapi/simd) or to manually setup [simshmbridge](/simapi/simshmbridge).
 
 SimAPI can also be used in conjunction with these other software titles.
 
