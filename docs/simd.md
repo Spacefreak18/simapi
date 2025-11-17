@@ -16,6 +16,6 @@ defined bridge process from the simshmbridge process.
 Each sim title has its own set of steps to setup telemetry. For that list see this page.
 
 simd also provides functionality to arbitrarily set common simdata, to test functionality of devices
-and displays in monocoque and simmonitor respectively. See [poke](simapi/simd_poke).
+and displays in monocoque and simmonitor respectively. See [poke](simd_poke).
 
 simd also allows fine grained control over the start of memory mapping through the use of [the simd.conf](https://github.com/Spacefreak18/simapi/blob/master/simd/conf/simd.config) file.
