@@ -183,8 +183,11 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
         simdata->playerflag = pcars2_flag_to_simdata_flag(*(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mHighestFlagColour)));
 
         float trackdist = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLength));
+        simdata->trackspline = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mTrackLength));
         float pos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
-        simdata->tracksamples = ceil(trackdist * 4);
+        simdata->playertrackpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance));
+        simdata->tracksamples = ceil(trackdist);
+        int track_samples = ceil(trackdist * 4);
         simdata->playerspline = (pos/trackdist);
 
         int actsize = 0;
@@ -245,6 +248,7 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
             simdata->cars[i].lastlap = pcars2_convert_to_simdata_laptime(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mLastLapTimes) + ((sizeof(float) * i))));
             simdata->cars[i].bestlap = pcars2_convert_to_simdata_laptime(*(float*) (char*) (a + offsetof(struct pcars2APIStruct, mFastestLapTimes) + ((sizeof(float) * i))));
 
+            simdata->cars[i].speed = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mSpeeds) + ((sizeof(float) * i)));
             // TODO move to it's own function
             simdata->cars[i].inpitlane = *(uint32_t*) (char*) (a + offsetof(struct pcars2APIStruct, mPitModes) + ((sizeof(float) * i)));
             if(simdata->cars[i].inpitlane == 1 || simdata->cars[i].inpitlane == 3)
@@ -264,6 +268,8 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
             {
                 simdata->cars[i].inpit = 0;
             }
+
+            simdata->cars[i].trackpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mCurrentLapDistance) + (sizeof(ParticipantInfo)*i));
 
             simdata->cars[i].xpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(ParticipantInfo)*i) + (sizeof(float) * 0));
             simdata->cars[i].zpos = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(ParticipantInfo)*i) + (sizeof(float) * 1));
