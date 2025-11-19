@@ -92,7 +92,7 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
         // basic telemetry
         uint8_t s = *(uint8_t*) (char*) (a + offsetof(struct pcars2APIStruct, mGameState));
         simdata->simstatus = 0;
-        if (s > 1 && s < 6)
+        if (s > 1 && s < 5)
         {
             simdata->simstatus = 2;
         }
