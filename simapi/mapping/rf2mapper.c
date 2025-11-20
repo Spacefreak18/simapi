@@ -369,9 +369,9 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
         }
 
 
-        simdata->worldposx = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rf2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 0 ));
-        simdata->worldposz = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rf2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 1 ));
-        simdata->worldposy = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rf2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 2 ));
+        simdata->worldposx = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 0 ));
+        simdata->worldposz = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 1 ));
+        simdata->worldposy = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 2 ));
 
         SetProximityData(simdata, numcars, 1);
     }
