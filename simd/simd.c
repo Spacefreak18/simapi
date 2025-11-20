@@ -184,6 +184,7 @@ void shmdatamapcallback(uv_timer_t* handle)
     SimData* simdata = f->simdata;
     SimMap* simmap = f->simmap;
     SimMap* simmap2 = f->simmap2;
+    SimdSettings simds = f->simds;
     //appstate = 2;
     if (appstate == 2)
     {
@@ -211,10 +212,11 @@ void shmdatamapcallback(uv_timer_t* handle)
 
             if(appstate > 0)
             {
-                // not sure what to do here yet, but this needs to be different if you have auto bridge enabled
-                // or the data check algorithm needs to check and see if any process is even running
-                // if there isn't kill the bridge if you can and return to the gamefind if autobridge is enabled
-                uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
+                if(simds.auto_bridge == false)
+                {
+                    uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
+                }
+
             }
             f->releasing = false;
             if(appstate > 1)
