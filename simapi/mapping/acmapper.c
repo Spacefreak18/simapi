@@ -279,7 +279,7 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
         simdata->trackdistancearound = spLineLengthToDistanceRoundTrack(track_spline, player_spline);
         int track_samples = track_spline * 4;
         simdata->tracksamples = track_samples;
-        simdata->playertrackpos = (int) track_spline * player_spline;
+        simdata->playertrackpos = (int) simdata->trackdistancearound;
 
         simdata->numcars = *(uint32_t*) (char*) (d + offsetof(struct SPageFileCrewChief, numVehicles));
         int numcars = simdata->numcars;
@@ -312,7 +312,8 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
 
             //simdata->cars[i].carspline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, spLineLength)));
             float spline = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, spLineLength)));
-            simdata->cars[i].trackpos = (int) track_spline * spline;
+            simdata->cars[i].trackpos = spLineLengthToDistanceRoundTrack(track_spline, spline);
+            //simdata->cars[i].trackpos = (int) track_spline * spline;
             simdata->cars[i].xpos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, x)));
             simdata->cars[i].zpos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
             simdata->cars[i].ypos = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * i) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, z)));
