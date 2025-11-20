@@ -212,7 +212,7 @@ void shmdatamapcallback(uv_timer_t* handle)
 
             if(appstate > 0)
             {
-                if(simds.auto_bridge == false)
+                if(simds.auto_bridge == false || f->game_pid > 0)
                 {
                     uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
                 }
