@@ -212,11 +212,7 @@ void shmdatamapcallback(uv_timer_t* handle)
 
             if(appstate > 0)
             {
-                if(simds.auto_bridge == false || f->game_pid > 0)
-                {
-                    uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
-                }
-
+                uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
             }
             f->releasing = false;
             if(appstate > 1)
@@ -308,6 +304,8 @@ void bridgeclosecallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
+    SimData* simdata = f->simdata;
+    SimMap* simmap = f->simmap;
 
     if(is_pid_running(f->game_pid) == 0)
     {
@@ -324,7 +322,11 @@ void bridgeclosecallback(uv_timer_t* handle)
         f->bridge_pid = 0;
         f->game_pid = 0;
         uv_timer_stop(handle);
+        uv_timer_stop(&datachecktimer);
+        int r = simfree(simdata, simmap, f->sim);
+        y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
         uv_timer_start(&gamefindtimer, gamefindcallback, 5, 1000);
+
     }
 }
 
@@ -642,6 +644,7 @@ int main(int argc, char** argv)
     {
         if( simds.poke == true )
         {
+            fprintf(stderr, "poke enabled and attempting poke.\n");
             poke(simds);
         }
         fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
@@ -748,8 +751,6 @@ int main(int argc, char** argv)
         char ch;
         struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
     }
-
-
 
     set_simapi_log_info(simapilib_loginfo);
     if(p->verbosity_count>0)
