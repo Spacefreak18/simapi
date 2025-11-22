@@ -23,7 +23,7 @@ void map_trucks_data(SimData* simdata, SimMap* simmap)
     char* c;
     char* d;
 
-    a = simmap->d.scs2.telemetry_map_addr;
+    a = simmap->scs2.telemetry_map_addr;
 
     simdata->simstatus = 2;
     simdata->car[0] ='d';

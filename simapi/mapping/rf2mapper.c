@@ -65,15 +65,15 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
     char* a;
     char* b;
 
-    a = simmap->d.rf2.telemetry_map_addr;
+    a = simmap->rf2.telemetry_map_addr;
 
     // Find the player vehicle.
 
     int sco = 0; // Index of player vehicle in scoring.
     int veh = 0; // Index of player vehicle in telemetry.
 
-    if (simmap->d.rf2.has_scoring == true) {
-        b = simmap->d.rf2.scoring_map_addr;
+    if (simmap->rf2.has_scoring == true) {
+        b = simmap->rf2.scoring_map_addr;
 
         int id = -1;
         int num_scored_vehicles = *(int *)(char*)(b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mNumVehicles));
@@ -150,7 +150,7 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
     simdata->Zvelocity = -1 * simdata->Zvelocity;
 
     //advanced ui
-    if (simmap->d.rf2.has_scoring == true )
+    if (simmap->rf2.has_scoring == true )
     {
         uint8_t s = *(uint8_t*) (char*) (b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mGamePhase));
         // TODO: will need to track something additional since on session over a value of 8 will still be present when

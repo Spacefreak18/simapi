@@ -84,7 +84,7 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     char* c;
     char* d;
 
-    a = simmap->d.ac.physics_map_addr;
+    a = simmap->ac.physics_map_addr;
 
     // basic telemetry
     simdata->rpms = *(uint32_t*) (char*) (a + offsetof(struct SPageFilePhysics, rpms));
@@ -192,9 +192,9 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     simdata->tracktemp = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, roadTemp));
 
 
-    if ( simmap->d.ac.has_graphic == true )
+    if ( simmap->ac.has_graphic == true )
     {
-        c = simmap->d.ac.graphic_map_addr;
+        c = simmap->ac.graphic_map_addr;
 
         simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
         simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
@@ -224,7 +224,7 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
         {
             simdata->tyrecompound[i] = *(char*) (char*) ((c + offsetof(struct SPageFileGraphic, tyreCompound)) + (sizeof(char16_t) * i));
         }
-        //simdata->tyrecompound = simmap->d.ac.compound;
+        //simdata->tyrecompound = simmap->ac.compound;
 
         //float timeleft = *(float*) (char*) (c + offsetof(struct SPageFileGraphic, sessionTimeLeft));
         //if (timeleft < 0)
@@ -234,9 +234,9 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     }
 
     simdata->maxturbo = 0;
-    if (simmap->d.ac.has_static == true )
+    if (simmap->ac.has_static == true )
     {
-        b = simmap->d.ac.static_map_addr;
+        b = simmap->ac.static_map_addr;
         simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
         simdata->maxturbo = *(float*) (char*) (b + offsetof(struct SPageFileStatic, MaxTurboBoost));
 
@@ -261,9 +261,9 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     }
     simdata->turboboost = simdata->turboboostperct * simdata->maxturbo;
     // realtime telemetry
-    if (simmap->d.ac.has_crewchief == true && simdata->simexe != SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE )
+    if (simmap->ac.has_crewchief == true && simdata->simexe != SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE )
     {
-        d = simmap->d.ac.crewchief_map_addr;
+        d = simmap->ac.crewchief_map_addr;
 
         simdata->worldposx = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, x)));
         simdata->worldposz = *(float*) (char*) (d + offsetof(struct SPageFileCrewChief, vehicle) + ((sizeof(acsVehicleInfo) * 0) + offsetof(acsVehicleInfo, worldPosition) + offsetof(acsVec3, y)));
