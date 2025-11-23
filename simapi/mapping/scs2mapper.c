@@ -73,6 +73,7 @@ void map_trucks_data(SimData* simdata, SimMap* simmap)
         }
         simdata->gearc[1] = 0;
     }
+    ++simdata->gear;
 
     simdata->altitude = 1;
 

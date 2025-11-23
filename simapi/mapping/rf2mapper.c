@@ -124,7 +124,7 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
         simdata->gearc[0] = 78;
     }
     simdata->gearc[1] = 0;
-    simdata->gear += 1;
+    ++simdata->gear;
 
     // tyre effects
     //simdata->abs = *(float*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles));
