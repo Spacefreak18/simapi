@@ -545,7 +545,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     int error = siminit(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA);
                     char* temp;
                     asprintf(&temp, "siminit error %i", error);
-                    simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, temp);
                     free(temp);
                     simdatamap(simdata, simmap, NULL, SIMULATORAPI_ASSETTO_CORSA, false, NULL);
                     if (error == 0 && simdata->simstatus > 1)
