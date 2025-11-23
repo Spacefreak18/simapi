@@ -119,6 +119,7 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
             simdata->gearc[0] = 78;
         }
         simdata->gearc[1] = 0;
+        ++simdata->gear;
 
 
         // tyre effects
