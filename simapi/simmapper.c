@@ -776,6 +776,10 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
     switch ( simulator )
     {
         case SIMULATORAPI_SIMAPI_TEST :
+            if(simmap->hasSimApiDat == true)
+            {
+                return 0;
+            }
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Opening universal shared memory api");
             simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDONLY, S_IRUSR|S_IWUSR);
             if (simmap->fd == -1)
@@ -788,6 +792,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
             {
                 return 30;
             }
+            simmap->hasSimApiDat = true;
             //slogi("found data for monocoque test...");
             break;
 
@@ -1096,7 +1101,7 @@ int freesimmap(SimMap* simmap, bool issimd)
     {
         return 200;
     }
-
+    simmap->hasSimApiDat = false;
     free(simmap);
     return 0;
 }
