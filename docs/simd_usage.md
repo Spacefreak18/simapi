@@ -1,32 +1,5 @@
-# simd
+# simd usage
 
-cross sim telemetry mapping daemon.
-
-This daemon will automatically detect the currently running simulator, (RFactor2, Acs/ACC, Automobilista 2), and map the current telemetry
-data ( speed, gear, rpms, etc ) into a common memory mapped file for use in other programs such as monocoque or simmonitor. The memory
-mapped filed can be found at /dev/shm/SIMAPI.DAT.
-
-## Supported Games ( see [simapi](https://github.com/spacefreak18/simapi) for more details of what is supported from each sim )
-
-## Dependencies
-- yder - logging
-- simapi.so
-- libuv base event loop
-- argtable2
-
-## Building
-
-simd and simapi are both available in the [AUR](https://aur.archlinux.org/packages/simd-git)
-be sure to install [simapi](https://aur.archlinux.org/packages/simapi-git) first
-
-To build first compile and install simapi as a dll using the instructions at the root of the repo, then compile simd with cmake:
-```
-mkdir build; cd build
-cmake ..
-make
-```
-
-## Usage
 if you wish to use the automatic bridging mode, first copy the config file from [here](https://github.com/Spacefreak18/simapi/blob/master/simd/conf/simd.config) to ~/.config/simd/simd.config and add the appropriate
 [bridge](https://github.com/spacefreak18/simshmbridge) exe to your steam launch command like this:
 ```
@@ -56,8 +29,18 @@ nomemmap (-h) option disables this workaround.
 
 The nodaemon option (-n) disables daemon mode so the process does not fork. And verbose (-v) increases logging verbosity.
 
-for more information on [simd usage](https://spacefreak18.github.io/simapi/simd)
+## notes
+Be sure to run simd before starting any games. And that's it. It's near enough to a stable state that once you're sure you have everything
+working you can have simd run on system startup.
 
+Before that I recommend starting simd before anything else with ```simd --nodaemon -vv``` to hopefully see any logs.
 
-## ToDo
- - much, much more
+For troubleshooting try ```hexdump /dev/shm/acpmf_physics``` for Assetto Corsa sims or ```hexdump /dev/shm/$pcars2$``` for Automobilista2 and Project Cars2 sims.
+
+If there is no data in one of these files while the sim is running, there is likely a problem with your launch command in steam or the path to your [simshmbridge](https://github.com/spacefreak18/simshmbridge) exe.
+
+There should also be plenty of non-zeros when you run ```hexdump /dev/shm/SIMAPI.DAT```.
+
+If you have non-zero data in these files, then simd is running and doing it's job and running monocoque or simmonitor should work.
+
+See the troubleshooting section.
