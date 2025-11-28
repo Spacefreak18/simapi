@@ -10,6 +10,7 @@ struct _simmap
 {
     void* addr;
     int fd;
+    bool hasSimApiDat;
 
     ACMap ac;
     RF2Map rf2;
