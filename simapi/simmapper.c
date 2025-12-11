@@ -19,6 +19,7 @@
 #include "rf2.h"
 #include "pcars2.h"
 #include "scs2.h"
+#include "outgauge.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -34,6 +35,7 @@
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 #include "../include/pcars2data.h"
+#include "../include/outgauge.h"
 #include "../include/scs2data.h"
 
 
@@ -114,6 +116,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_LEMANS_ULTIMATE;
     }
+    else if (sstrcicmp(game, "lfs") == 0)
+    {
+        sim = SIMULATOREXE_LIVE_FOR_SPEED;
+    }
     else
     {
         sim = 0;
@@ -141,6 +147,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "at";
         case SIMULATOREXE_EUROTRUCKS2:
             return "et2";
+        case SIMULATOREXE_LIVE_FOR_SPEED:
+            return "lfs";
         default:
             return "default";
     }
@@ -166,6 +174,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "American Truck Simulator";
         case SIMULATOREXE_EUROTRUCKS2:
             return "Euro Truck Simulator 2";
+        case SIMULATOREXE_LIVE_FOR_SPEED:
+            return "Live For Speed";
         default:
             return "default";
     }
@@ -376,16 +386,26 @@ int setSimInfo(SimInfo* si)
             si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
-            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsRealtimeTelemetry = true;
             si->SimSupportsAdvancedUI = true;
+            break;
         case SIMULATORAPI_PROJECTCARS2 :
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
-            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsRealtimeTelemetry = true;
             si->SimSupportsAdvancedUI = true;
+            break;
         case SIMULATORAPI_SCSTRUCKSIM2 :
             si->SimUsesUDP = false;
             si->SimSupportsBasicTelemetry = true;
+            break;
+        case SIMULATORAPI_OUTSIMOUTGAUGE :
+            si->SimUsesUDP = true;
+            si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = false;
+            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsAdvancedUI = false;
+            break;
         default:
             si->SimSupportsBasicTelemetry = true;
     }
@@ -469,6 +489,10 @@ SimulatorEXE getSimExe()
     if(IsProcessRunning(LEMANS_ULTIMATE_EXE)>0)
     {
         return SIMULATOREXE_LEMANS_ULTIMATE;
+    }
+    if(IsProcessRunning(LIVE_FOR_SPEED_EXE)>0)
+    {
+        return SIMULATOREXE_LIVE_FOR_SPEED;
     }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
@@ -580,6 +604,23 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             break;
 
+        case SIMULATOREXE_LIVE_FOR_SPEED:
+            int error = (*setup_udp)(30000);
+            error = siminitudp(simdata, simmap, SIMULATORAPI_OUTSIMOUTGAUGE);
+
+            if(error == 0)
+            {
+                simdata->simon = true;
+                simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
+                simdata->simexe = simexe;
+
+                si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
+                si.simulatorexe = simdata->simexe;
+                setSimInfo(&si);
+                return si;
+            }
 
         case SIMULATOREXE_RFACTOR2:
         case SIMULATOREXE_LEMANS_ULTIMATE:
@@ -733,6 +774,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             map_trucks_data(simdata, simmap);
 
             break;
+
+        case SIMULATORAPI_OUTSIMOUTGAUGE :
+
+            map_outgauge_outsim_data(simdata, simmap, base);
+            break;
     }
 
     if (simmap2 != NULL && simmap2->addr != NULL)
@@ -750,18 +796,6 @@ int simdmap(SimMap* simmap, SimData* simdata)
 int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 {
     int error = SIMAPI_ERROR_NONE;
-
-    void* a;
-    switch ( simulator )
-    {
-        case SIMULATORAPI_PROJECTCARS2 :
-
-            simmap->pcars2.has_telemetry=false;
-
-            simmap->pcars2.telemetry_map_addr = malloc( AMS2_MAX_UDP_PACKET_SIZE );
-            simmap->pcars2.has_telemetry=true;
-            break;
-    }
 
     return error;
 }
