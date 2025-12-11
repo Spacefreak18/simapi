@@ -83,5 +83,6 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap);
 void map_rfactor2_data(SimData* simdata, SimMap* simmap);
 void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base);
 void map_trucks_data(SimData* simdata, SimMap* simmap);
+void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, char* base);
 
 #endif

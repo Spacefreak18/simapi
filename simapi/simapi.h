@@ -26,6 +26,7 @@ typedef enum
     SIMULATORAPI_RFACTOR2          = 2,
     SIMULATORAPI_PROJECTCARS2      = 3,
     SIMULATORAPI_SCSTRUCKSIM2      = 4,
+    SIMULATORAPI_OUTSIMOUTGAUGE    = 5,
 }
 SimulatorAPI;
 
@@ -40,6 +41,7 @@ typedef enum
     SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 805550, //acc
     SIMULATOREXE_ASSETTO_CORSA_EVO            = 3058630, //ace
     SIMULATOREXE_LEMANS_ULTIMATE              = 2399420, //lmu
+    SIMULATOREXE_LIVE_FOR_SPEED               = 0000001, //lfs
 }
 SimulatorEXE;
 
