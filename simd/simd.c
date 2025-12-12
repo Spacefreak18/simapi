@@ -231,6 +231,13 @@ void on_alloc(uv_handle_t* client, size_t suggested_size, uv_buf_t* buf) {
 
 static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf, const struct sockaddr* addr, unsigned flags) {
 
+    //if (nread > 0) {
+    //    slogt("udp data received");
+    //}
+    if (nread <= 0) {
+        free(rcvbuf->base);
+        return;
+    }
     char* a;
     a = rcvbuf->base;
 
@@ -238,10 +245,11 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
     SimMap* simmap = f->simmap;
+    SimMap* simmap2 = f->simmap2;
 
     if (appstate == 2)
     {
-        //simdatamap(simdata, simmap, NULL, f->sim, true, a);
+        simdatamap(simdata, simmap, simmap2, f->sim, true, a);
     }
 
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
@@ -278,6 +286,7 @@ int startudp(int port)
     struct sockaddr_in recv_addr;
     uv_ip4_addr("0.0.0.0", port, &recv_addr);
     int err = uv_udp_bind(&recv_socket, (const struct sockaddr *) &recv_addr, UV_UDP_REUSEADDR);
+    y_log_message(Y_LOG_LEVEL_DEBUG, "initial udp error is %i", err);
 
     return err;
 }
@@ -539,6 +548,15 @@ void gamefindcallback(uv_timer_t* handle)
     }
 }
 
+
+void udpstart(LoopData* f, SimData* simdata, SimMap* simmap)
+{
+    if (appstate == 2)
+    {
+        simdatamap(simdata, NULL, simmap2, f->sim, true, NULL);
+    }
+}
+
 void datacheckcallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
@@ -569,7 +587,8 @@ void datacheckcallback(uv_timer_t* handle)
 
             if(f->use_udp == true)
             {
-                //udpstart(f, simdata, simmap);
+                y_log_message(Y_LOG_LEVEL_INFO, "using udp for this sim title");
+                udpstart(f, simdata, simmap);
                 uv_udp_recv_start(&recv_socket, on_alloc, on_udp_recv);
             }
             else
