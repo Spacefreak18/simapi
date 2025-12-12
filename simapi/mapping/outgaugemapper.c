@@ -32,9 +32,9 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, char* base)
             simdata->rpms = froundint( *(float*) (char*) (a + offsetof(struct outgauge, rpm)) );
             simdata->velocity = froundint( (*(float*) (char*) (a + offsetof(struct outgauge, speed))) * 3.6 );
             simdata->turboboost = *(float*) (char*) (a + offsetof(struct outgauge, speed));
-            simdata->fuel = *(float*) (char*) (a + offsetof(struct outgauge, speed));
+            simdata->fuel = *(float*) (char*) (a + offsetof(struct outgauge, fuel));
             simdata->gas = *(float*) (char*) (a + offsetof(struct outgauge, throttle));
-            simdata->brake = *(float*) (char*) (a + offsetof(struct outgauge, throttle));
+            simdata->brake = *(float*) (char*) (a + offsetof(struct outgauge, brake));
 
             simdata->altitude = 1;
             return;
