@@ -800,7 +800,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
 
         case SIMULATORAPI_OUTSIMOUTGAUGE :
 
-            map_outgauge_outsim_data(simdata, simmap, base);
+            map_outgauge_outsim_data(simdata, simmap, simdata->simexe, base);
             break;
     }
 
