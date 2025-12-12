@@ -16,7 +16,7 @@ static int froundint(float f)
     return trunc(nearbyint(f));
 }
 
-void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, char* base)
+void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe, char* base)
 {
     if(base != NULL)
     {
@@ -24,7 +24,7 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, char* base)
         int id = 0;
         
         id = *(uint8_t*) (char*) (a + offsetof(struct outgauge, id));
-        if(id == 2)
+        if(id == 2 || simexe == SIMULATOREXE_BEAMNG)
         {
             simdata->gear = *(uint8_t*) (char*) (a + offsetof(struct outgauge, gear));
             //int time = *(uint64_t*) (char*) (a + offsetof(struct outgauge, time));
