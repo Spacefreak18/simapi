@@ -120,6 +120,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_LIVE_FOR_SPEED;
     }
+    else if (sstrcicmp(game, "beamng") == 0)
+    {
+        sim = SIMULATOREXE_BEAMNG;
+    }
     else
     {
         sim = 0;
@@ -149,6 +153,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "et2";
         case SIMULATOREXE_LIVE_FOR_SPEED:
             return "lfs";
+        case SIMULATOREXE_BEAMNG:
+            return "beamng";
         default:
             return "default";
     }
@@ -176,6 +182,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "Euro Truck Simulator 2";
         case SIMULATOREXE_LIVE_FOR_SPEED:
             return "Live For Speed";
+        case SIMULATOREXE_BEAMNG:
+            return "beamng";
         default:
             return "default";
     }
@@ -494,6 +502,10 @@ SimulatorEXE getSimExe()
     {
         return SIMULATOREXE_LIVE_FOR_SPEED;
     }
+    if(IsProcessRunning(BEAMNG_EXE)>0)
+    {
+        return SIMULATOREXE_BEAMNG;
+    }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -605,6 +617,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             break;
 
         case SIMULATOREXE_LIVE_FOR_SPEED:
+        case SIMULATOREXE_BEAMNG:
             int error = (*setup_udp)(30000);
             error = siminitudp(simdata, simmap, SIMULATORAPI_OUTSIMOUTGAUGE);
 
@@ -621,6 +634,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 setSimInfo(&si);
                 return si;
             }
+            break;
 
         case SIMULATOREXE_RFACTOR2:
         case SIMULATOREXE_LEMANS_ULTIMATE:
