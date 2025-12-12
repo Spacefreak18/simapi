@@ -79,6 +79,7 @@ bool does_sim_need_bridge(SimulatorEXE s)
     {
         return true;
     }
+    return false;
 }
 
 int simapi_strtogame(const char* game)
@@ -547,6 +548,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.mapapi = SIMULATORAPI_SIMAPI_TEST;
                     si.simulatorexe = simdata->simexe;
                     setSimInfo(&si);
+                    si.SimUsesUDP = false;
                 }
                 return si;
             }
@@ -626,7 +628,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdata->simon = true;
                 simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
                 simdata->simexe = simexe;
-                
+               
+                simdata->simstatus = 2;
                 simdata->gear = 0;
                 simdata->velocity = 0;
                 simdata->rpms = 0;
@@ -637,6 +640,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
                 setSimInfo(&si);
+                fprintf(stderr, "set sim info\n");
                 return si;
             }
             break;
@@ -816,6 +820,7 @@ int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 {
     int error = SIMAPI_ERROR_NONE;
 
+    simdata->simapiversion = SIMAPI_VERSION;
     return error;
 }
 
