@@ -626,6 +626,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdata->simon = true;
                 simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
                 simdata->simexe = simexe;
+                
+                simdata->gear = 0;
+                simdata->velocity = 0;
+                simdata->rpms = 0;
+                simdata->altitude = 0;
 
                 si.isSimOn = true;
                 si.simulatorapi = simdata->simapi;
