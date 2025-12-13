@@ -70,7 +70,7 @@ long long timeInMilliseconds(void) {
 
 bool does_sim_need_bridge(SimulatorEXE s)
 {
-    if(s == SIMULATOREXE_ASSETTO_CORSA || s == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE || s == SIMULATOREXE_ASSETTO_CORSA_EVO)
+    if(s == SIMULATOREXE_ASSETTO_CORSA || s == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE || s == SIMULATOREXE_ASSETTO_CORSA_EVO || s == SIMULATOREXE_ASSETTO_CORSA_RALLY)
     {
         return true;
     }
@@ -96,6 +96,10 @@ int simapi_strtogame(const char* game)
     else if (sstrcicmp(game, "ace") == 0)
     {
         sim = SIMULATOREXE_ASSETTO_CORSA_EVO;
+    }
+    else if (sstrcicmp(game, "acr") == 0)
+    {
+        sim = SIMULATOREXE_ASSETTO_CORSA_RALLY;
     }
     else if (sstrcicmp(game, "rf2") == 0)
     {
@@ -142,6 +146,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "acc";
         case SIMULATOREXE_ASSETTO_CORSA_EVO:
             return "ace";
+        case SIMULATOREXE_ASSETTO_CORSA_RALLY:
+            return "acr";
         case SIMULATOREXE_RFACTOR2:
             return "rf2";
         case SIMULATOREXE_LEMANS_ULTIMATE:
@@ -171,6 +177,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "Assetto Corsa Competizione";
         case SIMULATOREXE_ASSETTO_CORSA_EVO:
             return "Assetto Corsa EVO";
+        case SIMULATOREXE_ASSETTO_CORSA_RALLY:
+            return "Assetto Corsa Rally";
         case SIMULATOREXE_RFACTOR2:
             return "RFactor2";
         case SIMULATOREXE_LEMANS_ULTIMATE:
@@ -479,6 +487,10 @@ SimulatorEXE getSimExe()
     {
         return SIMULATOREXE_ASSETTO_CORSA_EVO;
     }
+    if(IsProcessRunning(ACR_EXE)>0)
+    {
+        return SIMULATOREXE_ASSETTO_CORSA_RALLY;
+    }
     if(IsProcessRunning(RFACTOR2_EXE)>0)
     {
         return SIMULATOREXE_RFACTOR2;
@@ -573,6 +585,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         case SIMULATOREXE_ASSETTO_CORSA:
         case SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE:
         case SIMULATOREXE_ASSETTO_CORSA_EVO:
+        case SIMULATOREXE_ASSETTO_CORSA_RALLY:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa");
             if (does_sim_file_exist("/dev/shm/acpmf_physics"))
             {
