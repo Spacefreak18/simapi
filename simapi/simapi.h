@@ -40,6 +40,7 @@ typedef enum
     SIMULATOREXE_AMERICANTRUCKS               = 270880, //at
     SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 805550, //acc
     SIMULATOREXE_ASSETTO_CORSA_EVO            = 3058630, //ace
+    SIMULATOREXE_ASSETTO_CORSA_RALLY          = 3917090, //acr
     SIMULATOREXE_LEMANS_ULTIMATE              = 2399420, //lmu
     SIMULATOREXE_BEAMNG                       = 284160, //beamng
     SIMULATOREXE_LIVE_FOR_SPEED               = 0000001, //lfs

@@ -7,6 +7,7 @@
 #define AC_EXE "acs.exe"
 #define ACC_EXE "AC2-Win64-Shipping.exe"
 #define ACE_EXE "AssettoCorsaEVO.exe"
+#define ACR_EXE "acr.exe"
 
 #define AC_PHYSICS_FILE "acpmf_physics"
 #define AC_STATIC_FILE "acpmf_static"
