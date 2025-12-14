@@ -599,6 +599,13 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, temp);
                     free(temp);
                     simdatamap(simdata, simmap, NULL, SIMULATORAPI_ASSETTO_CORSA, false, NULL);
+
+                    // temporary workaround for beta data from ACEvo and ACRally
+                    if(simexe == SIMULATOREXE_ASSETTO_CORSA_EVO || simexe == SIMULATOREXE_ASSETTO_CORSA_RALLY)
+                    {
+                        simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+                    }
+
                     if (error == 0 && simdata->simstatus > 1)
                     {
                         simapi_log(SIMAPI_LOGLEVEL_DEBUG, "AC Shared memory looks good");
@@ -789,7 +796,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             return 0;
         case SIMULATORAPI_ASSETTO_CORSA :
 
-            map_assetto_corsa_data(simdata, simmap);
+            map_assetto_corsa_data(simdata, simmap, simdata->simexe);
 
             break;
 

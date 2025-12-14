@@ -79,7 +79,7 @@ int freesimcompatmap(SimCompatMap* compatmap);
 
 void SetProximityData(SimData* simdata, int cars, int8_t lr_flip);
 
-void map_assetto_corsa_data(SimData* simdata, SimMap* simmap);
+void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe);
 void map_rfactor2_data(SimData* simdata, SimMap* simmap);
 void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base);
 void map_trucks_data(SimData* simdata, SimMap* simmap);
