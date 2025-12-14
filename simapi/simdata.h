@@ -9,6 +9,14 @@
 
 typedef enum
 {
+    SIMAPI_STATUS_OFF           = 0,
+    SIMAPI_STATUS_MENU          = 1,
+    SIMAPI_STATUS_ACTIVEPLAY    = 2,
+}
+SIMAPI_STATUS;
+
+typedef enum
+{
     SIMAPI_FLAG_GREEN            = 0,
     SIMAPI_FLAG_YELLOW           = 1,
     SIMAPI_FLAG_RED              = 2,
@@ -83,7 +91,7 @@ typedef struct //SimData
 {
     uint64_t mtick;
 
-    uint32_t simstatus;
+    uint32_t simstatus; // less than 1 is off or in menu, 2 is active
     uint32_t velocity;
     uint32_t rpms;
     uint32_t gear;

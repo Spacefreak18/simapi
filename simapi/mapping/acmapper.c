@@ -76,7 +76,7 @@ int acc_get_global_flag(int yellow, int white, int chequered, int green, int red
 }
 
 
-void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
+void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe)
 {
 
     char* a;
@@ -196,7 +196,16 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap)
     {
         c = simmap->ac.graphic_map_addr;
 
-        simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
+        // temporary workaround for beta data from ACEvo and ACRally
+        if(simexe == SIMULATOREXE_ASSETTO_CORSA_EVO || simexe == SIMULATOREXE_ASSETTO_CORSA_RALLY)
+        {
+            simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+        }
+        else
+        {
+            simdata->simstatus = *(int*) (char*) (c + offsetof(struct SPageFileGraphic, status));
+        }
+
         simdata->lap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, completedLaps));
         simdata->position = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, position));
         uint32_t lastlap = *(uint32_t*) (char*) (c + offsetof(struct SPageFileGraphic, iLastTime));
