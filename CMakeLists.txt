@@ -6,8 +6,7 @@ add_library(simapi SHARED simapi/simmapper.c simapi/getpid.c simapi/mapping/acma
 set(SIMAPI_PUBLIC_HEADERS
     "simapi/simmapper.h"
     "simapi/simapi.h"
-    "simapi/simdata.h"
-    "simapi/ac.h")
+    "simapi/simdata.h")
 
 set_target_properties(simapi PROPERTIES
     VERSION ${PROJECT_VERSION}
