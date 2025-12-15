@@ -1219,14 +1219,14 @@ int opensimcompatmap(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    int res = ftruncate(compatmap->pcars2_fd, sizeof(struct pcars2APIStruct));
+    int res = ftruncate(compatmap->pcars2_fd, PCARS2_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    void* addr = mmap(NULL, sizeof(struct pcars2APIStruct), PROT_WRITE, MAP_SHARED, compatmap->pcars2_fd, 0);
+    void* addr = mmap(NULL, PCARS2_SIZE, PROT_WRITE, MAP_SHARED, compatmap->pcars2_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
@@ -1240,14 +1240,14 @@ int opensimcompatmap(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    res = ftruncate(compatmap->acphysics_fd, sizeof(struct SPageFilePhysics));
+    res = ftruncate(compatmap->acphysics_fd, AC_PHYSICS_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    addr = mmap(NULL, sizeof(struct SPageFilePhysics), PROT_WRITE, MAP_SHARED, compatmap->acphysics_fd, 0);
+    addr = mmap(NULL, AC_PHYSICS_SIZE, PROT_WRITE, MAP_SHARED, compatmap->acphysics_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
@@ -1261,14 +1261,14 @@ int opensimcompatmap(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    res = ftruncate(compatmap->acgraphics_fd, sizeof(struct SPageFileGraphic));
+    res = ftruncate(compatmap->acgraphics_fd, AC_GRAPHIC_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    addr = mmap(NULL, sizeof(struct SPageFileGraphic), PROT_WRITE, MAP_SHARED, compatmap->acgraphics_fd, 0);
+    addr = mmap(NULL, AC_GRAPHIC_SIZE, PROT_WRITE, MAP_SHARED, compatmap->acgraphics_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
@@ -1282,14 +1282,14 @@ int opensimcompatmap(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    res = ftruncate(compatmap->acstatic_fd, sizeof(struct SPageFileStatic));
+    res = ftruncate(compatmap->acstatic_fd, AC_STATIC_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    addr = mmap(NULL, sizeof(struct SPageFileStatic), PROT_WRITE, MAP_SHARED, compatmap->acstatic_fd, 0);
+    addr = mmap(NULL, AC_STATIC_SIZE, PROT_WRITE, MAP_SHARED, compatmap->acstatic_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
@@ -1303,14 +1303,14 @@ int opensimcompatmap(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    res = ftruncate(compatmap->accrew_fd, sizeof(struct SPageFileCrewChief));
+    res = ftruncate(compatmap->accrew_fd, AC_CREWCHIEF_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
         return 20;
     }
 
-    addr = mmap(NULL, sizeof(struct SPageFileCrewChief), PROT_WRITE, MAP_SHARED, compatmap->accrew_fd, 0);
+    addr = mmap(NULL, AC_CREWCHIEF_SIZE, PROT_WRITE, MAP_SHARED, compatmap->accrew_fd, 0);
     if (addr == MAP_FAILED)
     {
         printf("mmap");
@@ -1322,7 +1322,7 @@ int opensimcompatmap(SimCompatMap* compatmap)
 
 int freesimcompatmap(SimCompatMap* compatmap)
 {
-    if (munmap(compatmap->acphysics_addr, sizeof(struct SPageFilePhysics)) == -1)
+    if (munmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1)
     {
         return 100;
     }
@@ -1333,7 +1333,7 @@ int freesimcompatmap(SimCompatMap* compatmap)
         return 200;
     }
 
-    if (munmap(compatmap->acstatic_addr, sizeof(struct SPageFileStatic)) == -1)
+    if (munmap(compatmap->acstatic_addr, AC_STATIC_SIZE) == -1)
     {
         return 100;
     }
@@ -1344,7 +1344,7 @@ int freesimcompatmap(SimCompatMap* compatmap)
         return 200;
     }
 
-    if (munmap(compatmap->acgraphics_addr, sizeof(struct SPageFileGraphic)) == -1)
+    if (munmap(compatmap->acgraphics_addr, AC_GRAPHIC_SIZE) == -1)
     {
         return 100;
     }
@@ -1355,7 +1355,7 @@ int freesimcompatmap(SimCompatMap* compatmap)
         return 200;
     }
 
-    if (munmap(compatmap->accrew_addr, sizeof(struct SPageFileCrewChief)) == -1)
+    if (munmap(compatmap->accrew_addr, AC_CREWCHIEF_SIZE) == -1)
     {
         return 100;
     }
@@ -1366,7 +1366,7 @@ int freesimcompatmap(SimCompatMap* compatmap)
         return 200;
     }
 
-    if (munmap(compatmap->pcars2_addr, sizeof(struct pcars2APIStruct)) == -1)
+    if (munmap(compatmap->pcars2_addr, PCARS2_SIZE) == -1)
     {
         return 100;
     }
