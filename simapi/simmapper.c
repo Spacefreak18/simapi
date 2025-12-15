@@ -32,6 +32,7 @@
 #endif
 
 #include "getpid.h"
+#include "../include/f12018.h"
 #include "../include/acdata.h"
 #include "../include/rf2data.h"
 #include "../include/pcars2data.h"
