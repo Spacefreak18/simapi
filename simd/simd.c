@@ -332,6 +332,7 @@ void bridgeclosecallback(uv_timer_t* handle)
         f->game_pid = 0;
         uv_timer_stop(handle);
         uv_timer_stop(&datachecktimer);
+        appstate = 1;
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
         uv_timer_start(&gamefindtimer, gamefindcallback, 5, 1000);
