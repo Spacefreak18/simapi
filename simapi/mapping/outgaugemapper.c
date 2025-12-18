@@ -34,6 +34,14 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
             simdata->fuel = *(float*) (char*) (a + offsetof(struct outgauge, fuel));
             simdata->gas = *(float*) (char*) (a + offsetof(struct outgauge, throttle));
             simdata->brake = *(float*) (char*) (a + offsetof(struct outgauge, brake));
+            
+            uint8_t i = 0;
+            simdata->car[4] = '\0';
+            while(i < 3) {
+                char b = *(char*) (char*) (a + offsetof(struct outgauge, car) + i);
+                simdata->car[i] = b;
+                i++;
+            }
 
             simdata->altitude = 1;
             return;
