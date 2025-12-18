@@ -5,9 +5,12 @@
 #include <dirent.h>
 #include <libgen.h>
 #include <stdbool.h>
-#include "getpid.h"
+#include <signal.h>
+#include <errno.h>
 #include <stdint.h>
 #include <sys/types.h>
+
+#include "getpid.h"
 
 static int isMatch(const char *possibleMatch, const char *checkAgainst)
 {
@@ -30,6 +33,23 @@ static int isMatch(const char *possibleMatch, const char *checkAgainst)
     return 1;
 }
 
+int is_pid_running(pid_t pid) {
+    if (pid <= 0) return 0;
+
+    // send signal 0 (no actual signal)
+    if (kill(pid, 0) == 0) {
+        return 1;
+    } else {
+        if (errno == ESRCH) {
+            return 0;
+        } else if (errno == EPERM) {
+            return 1;
+        } else {
+            return 0;
+        }
+        return 0;
+    }
+}
 
 #define READ_DATA_INCR_BUFSIZ 65535
 
