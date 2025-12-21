@@ -1,0 +1,122 @@
+name: CMake on multiple platforms
+
+on:
+  push:
+    branches: [ "master", "setup-ci" ]
+    tags: [ "*" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build-simapi:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15
+    - uses: nicknovitski/nix-develop@9be7cfb4b10451d3390a75dc18ad0465bed4932a
+      with:
+        arguments: ".#simapi"
+
+    - name: Set build dir
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+        github_sha_hash=${{ github.sha }}
+        echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=g++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_BUILD_TYPE=Release
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: simapi-build
+        path: ${{ steps.strings.outputs.build-output-dir }}
+
+    - name: Prepare release
+      run: |
+        mkdir simapi_release
+        cp -r \
+          include \
+          build/libsimapi.so \
+          build/libsimapi.so.1 \
+          build/libsimapi.so.1.0.1 \
+          build/simapi.pc \
+          simapi_release/
+
+        cd simapi_release
+        tar -czvf simapi.tar.gz ./*
+    
+    - name: Set tarball name
+      if: github.ref_type == 'tag'
+      run: |
+        cd simapi_release
+        mv simapi.tar.gz simapi-${{ github.ref_name }}.tar.gz
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        name: SimAPI ${{ github.ref_name }}
+        fail_on_unmatched_files: true
+        files: |
+          simapi_release/simapi-${{ github.ref_name }}.tar.gz
+
+  build-simd:
+    runs-on: ubuntu-latest
+    needs: build-simapi
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: cachix/install-nix-action@4e002c8ec80594ecd40e759629461e26c8abed15
+    - uses: nicknovitski/nix-develop@9be7cfb4b10451d3390a75dc18ad0465bed4932a
+      with:
+        arguments: ".#simd"
+
+    - name: Download Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: simapi-build
+
+    - name: Set build dir
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/simd/build" >> "$GITHUB_OUTPUT"
+        github_sha_hash=${{ github.sha }}
+        echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
+    
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=g++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_BUILD_TYPE=Release
+        -S ${{ github.workspace }}/simd
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      if: github.ref_type == 'tag'
+      with:
+        name: Simd ${{ github.ref_name }}
+        fail_on_unmatched_files: true
+        files: |
+          simd/build/simd
