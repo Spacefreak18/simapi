@@ -659,7 +659,7 @@ int main(int argc, char** argv)
     }
 
 
-    int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL);
+    int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL, 0666);
     if(pid_file_fd == -1)
     {
         if( simds.poke == true )

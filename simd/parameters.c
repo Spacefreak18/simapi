@@ -6,7 +6,7 @@
 
 #include <libconfig.h>
 
-#include <argtable2.h>
+#include <argtable3.h>
 #include <regex.h>
 
 
