@@ -8,8 +8,27 @@ project(simd)
 set(CMAKE_EXE_LINKER_FLAGS "-Wl,--no-as-needed -ldl")
 #set(CMAKE_BUILD_TYPE Debug)
 
+# Argtable 3->2 fallback
+find_path(ARGTABLE3_INCLUDE_DIR argtable3.h)
+find_library(ARGTABLE3_LIBRARY argtable3)
+
+if (ARGTABLE3_INCLUDE_DIR AND ARGTABLE3_LIBRARY)
+    add_compile_definitions(HAVE_ARGTABLE3)
+    set(ARGTABLE_LIBS ${ARGTABLE3_LIBRARY})
+else()
+    find_path(ARGTABLE2_INCLUDE_DIR argtable2.h)
+    find_library(ARGTABLE2_LIBRARY argtable2)
+
+    if (ARGTABLE2_INCLUDE_DIR AND ARGTABLE2_LIBRARY)
+        add_compile_definitions(HAVE_ARGTABLE2)
+        set(ARGTABLE_LIBS ${ARGTABLE2_LIBRARY})
+    else()
+        message(FATAL_ERROR "Neither argtable3 nor argtable2 found")
+    endif()
+endif()
+
 add_executable(simd simd.c parameters.c confighelper.c dirhelper.c poke.c ../simmap/mapsimdata.c)
-target_link_libraries(simd m uv yder argtable3 config simapi)
+target_link_libraries(simd m uv yder ${ARGTABLE_LIBS} config simapi)
 
 target_include_directories(simd PUBLIC)
 

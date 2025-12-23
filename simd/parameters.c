@@ -6,8 +6,14 @@
 
 #include <libconfig.h>
 
-#include <argtable3.h>
 #include <regex.h>
+#if defined(HAVE_ARGTABLE3)
+    #include <argtable3.h>
+#elif defined(HAVE_ARGTABLE2)
+    #include <argtable2.h>
+#else
+    #error "No argtable implementation available"
+#endif
 
 
 ConfigError getParameters(int argc, char** argv, Parameters* p)
