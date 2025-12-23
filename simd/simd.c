@@ -195,8 +195,11 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         simdata->simstatus = 0;
         simdata->rpms = 0;
         simdata->velocity = 0;
-        simdatamap(simdata, NULL, simmap2, f->sim, true, NULL);
-        
+        if (simmap2 != NULL)
+        {
+            simdmap(simmap2, simdata);
+        }
+
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
         y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
@@ -322,7 +325,6 @@ void bridgeclosecallback(uv_timer_t* handle)
         f->bridge_pid = 0;
         f->game_pid = 0;
         uv_timer_stop(handle);
-        uv_timer_stop(&datachecktimer);
         appstate = 1;
         releaseloop(f, simdata, simmap);
         //int r = simfree(simdata, simmap, f->sim);
@@ -602,10 +604,10 @@ void datacheckcallback(uv_timer_t* handle)
             {
                 uv_timer_start(&datamaptimer, shmdatamapcallback, 2000, 16);
             }
+            uv_timer_stop(handle);
+            // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
+            uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
         }
-        uv_timer_stop(handle);
-        // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
-        uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
     }
 
     if (appstate == 0)
