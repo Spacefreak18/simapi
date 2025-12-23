@@ -51,9 +51,9 @@ uv_timer_t datamaptimer;
 uv_timer_t bridgeclosetimer;
 uv_udp_t recv_socket;
 
-bool doui = false;
 int appstate = 0;
 int compat_info_size = 0;
+int gamepid = 0;
 
 void shmdatamapcallback(uv_timer_t* handle);
 void datacheckcallback(uv_timer_t* handle);
@@ -129,9 +129,11 @@ static void close_walk_cb(uv_handle_t* handle, void* arg) {
 #define ASSERT(expr) expr
 void release()
 {
+    y_log_message(Y_LOG_LEVEL_INFO, "calling release method");
     uv_timer_stop(&gamefindtimer);
     uv_timer_stop(&datamaptimer);
     uv_timer_stop(&datachecktimer);
+    uv_udp_recv_stop(&recv_socket);
     uv_timer_stop(&bridgeclosetimer);
     uv_walk(uv_default_loop(), close_walk_cb, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
@@ -177,6 +179,37 @@ void handle_sigterm(int sig) {
     exit(0);
 }
 
+void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
+{
+    if(f->releasing == false)
+    {
+
+        f->releasing = true;
+        appstate = 1;
+        uv_timer_stop(&datamaptimer);
+        uv_udp_recv_stop(&recv_socket);
+        y_log_message(Y_LOG_LEVEL_INFO, "stopping data mapping, please wait");
+        f->uion = false;
+    
+        // help things spin down
+        simdata->simstatus = 0;
+        simdata->rpms = 0;
+        simdata->velocity = 0;
+        simdatamap(simdata, NULL, simmap2, f->sim, true, NULL);
+        
+        int r = simfree(simdata, simmap, f->sim);
+        y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
+        y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
+       
+        f->releasing = false;
+        if(appstate > 1)
+        {
+            appstate = 1;
+        }
+    }
+
+}
+
 void shmdatamapcallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
@@ -189,37 +222,11 @@ void shmdatamapcallback(uv_timer_t* handle)
     if (appstate == 2)
     {
         simdatamap(simdata, simmap, simmap2, f->sim, false, NULL);
-        doui = false;
     }
 
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
     {
-        if(f->releasing == false)
-        {
-            f->releasing = true;
-            uv_timer_stop(handle);
-            y_log_message(Y_LOG_LEVEL_INFO, "releasing devices, please wait");
-            f->uion = false;
-
-            // help things spin down
-            simdata->rpms = 0;
-            simdata->velocity = 0;
-            int r = simfree(simdata, simmap, f->sim);
-            y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
-            y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
-            //stopui(ms->ui_type, f);
-            // free loop data
-
-            if(appstate > 0)
-            {
-                uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
-            }
-            f->releasing = false;
-            if(appstate > 1)
-            {
-                appstate = 1;
-            }
-        }
+        releaseloop(f, simdata, simmap);
     }
 }
 
@@ -254,27 +261,7 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
 
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
     {
-        if(f->releasing == false)
-        {
-            f->releasing = true;
-            uv_udp_recv_stop(handle);
-            y_log_message(Y_LOG_LEVEL_CURRENT, "releasing devices, please wait");
-            f->uion = false;
-
-            int r = simfree(simdata, simmap, f->sim);
-            y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
-            y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
-
-            if(appstate > 0)
-            {
-                uv_timer_start(&datachecktimer, datacheckcallback, 3000, 1000);
-            }
-            f->releasing = false;
-            if(appstate > 1)
-            {
-                appstate = 1;
-            }
-        }
+        releaseloop(f, simdata, simmap);
     }
 
     free(rcvbuf->base);
@@ -327,16 +314,30 @@ void bridgeclosecallback(uv_timer_t* handle)
             system(cmd);
         }
 
-        kill(f->bridge_pid, SIGTERM);
+        if(f->bridge_pid > 0)
+        {
+            kill(f->bridge_pid, SIGTERM);
+            y_log_message(Y_LOG_LEVEL_INFO, "Sent SIGTERM to bridge pid");
+        }
         f->bridge_pid = 0;
         f->game_pid = 0;
         uv_timer_stop(handle);
         uv_timer_stop(&datachecktimer);
         appstate = 1;
-        int r = simfree(simdata, simmap, f->sim);
-        y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
-        uv_timer_start(&gamefindtimer, gamefindcallback, 5, 1000);
+        releaseloop(f, simdata, simmap);
+        //int r = simfree(simdata, simmap, f->sim);
+        //y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
 
+        if(simds.auto_bridge == true)
+        {
+            y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
+            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 1000);
+        }
+        else
+        {
+            y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Mapping Thread.");
+            uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
+        }
     }
 }
 
@@ -346,6 +347,7 @@ void gamefindcallback(uv_timer_t* handle)
     LoopData* f = (LoopData*) b;
     SimdSettings simds = f->simds;
     GameCompatInfo* game_compat_info = f->game_compat_info;
+
 
     int i = 0;
     int gamepid = -1;
@@ -364,7 +366,9 @@ void gamefindcallback(uv_timer_t* handle)
     if(gamepid <= 0 && sim <= 0)
     {
         i = -1;
-        sim = getSimExe();
+        SimInfo si;
+        sim = getSimExe(&si);
+        gamepid = si.pid;
     }
 
 
@@ -519,8 +523,6 @@ void gamefindcallback(uv_timer_t* handle)
                     y_log_message(Y_LOG_LEVEL_DEBUG, "Fork was successful looking for data next");
                     //double check that process is running
                     uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
-                    // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
-                    uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
                     uv_timer_stop(handle);
                 }
                 if(process == -1)
@@ -547,6 +549,11 @@ void gamefindcallback(uv_timer_t* handle)
             }
         }
     }
+    if (appstate == 0)
+    {
+        y_log_message(Y_LOG_LEVEL_INFO, "stopping checking for exe");
+        uv_timer_stop(handle);
+    }
 }
 
 
@@ -565,8 +572,7 @@ void datacheckcallback(uv_timer_t* handle)
     SimData* simdata = f->simdata;
     SimMap* simmap = f->simmap;
     SimMap* simmap2 = f->simmap2;
-
-
+    
     if ( appstate == 1 )
     {
         SimInfo si = getSim(simdata, simmap, false, startudp, true);
@@ -580,7 +586,7 @@ void datacheckcallback(uv_timer_t* handle)
         if ( appstate == 1 )
         {
             appstate++;
-            doui = true;
+
             //simdata->tyrediameter[0] = -1;
             //simdata->tyrediameter[1] = -1;
             //simdata->tyrediameter[2] = -1;
@@ -596,8 +602,10 @@ void datacheckcallback(uv_timer_t* handle)
             {
                 uv_timer_start(&datamaptimer, shmdatamapcallback, 2000, 16);
             }
-            uv_timer_stop(handle);
         }
+        uv_timer_stop(handle);
+        // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
+        uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
     }
 
     if (appstate == 0)
@@ -615,7 +623,7 @@ void cb(uv_poll_t* handle, int status, int events)
     scanf("%c", &ch);
     if (ch == 'q')
     {
-        if(f->releasing == false && doui == false)
+        if(f->releasing == false)
         {
             appstate--;
             y_log_message(Y_LOG_LEVEL_INFO, "User requested stop appstate is now %i", appstate);
@@ -627,6 +635,8 @@ void cb(uv_poll_t* handle, int status, int events)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "simd is exiting...");
         uv_timer_stop(&datachecktimer);
+        uv_udp_recv_stop(&recv_socket);
+        uv_timer_stop(&bridgeclosetimer);
         uv_timer_stop(&gamefindtimer);
         uv_poll_stop(handle);
     }

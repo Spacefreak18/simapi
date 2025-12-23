@@ -474,50 +474,74 @@ void hexDump(char *desc, void *addr, int len)
   printf ("  %s\n", buff);
 }
 
-SimulatorEXE getSimExe()
+SimulatorEXE getSimExe(SimInfo* si)
 {
-    if(IsProcessRunning(AC_EXE)>0)
+    int pid = 0;
+    
+    pid = IsProcessRunning(AC_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_ASSETTO_CORSA;
     }
-    if(IsProcessRunning(ACC_EXE)>0)
+    pid = IsProcessRunning(ACC_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
     }
-    if(IsProcessRunning(ACE_EXE)>0)
+    pid = IsProcessRunning(ACE_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_ASSETTO_CORSA_EVO;
     }
-    if(IsProcessRunning(ACR_EXE)>0)
+    pid = IsProcessRunning(ACR_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_ASSETTO_CORSA_RALLY;
     }
-    if(IsProcessRunning(RFACTOR2_EXE)>0)
+    pid = IsProcessRunning(RFACTOR2_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_RFACTOR2;
     }
-    if(IsProcessRunning(AMS2_EXE)>0)
+    pid = IsProcessRunning(AMS2_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_AUTOMOBILISTA2;
     }
-    if(IsProcessRunning(EUROTRUCKS2_EXE)>0)
+    pid = IsProcessRunning(EUROTRUCKS2_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_EUROTRUCKS2;
     }
-    if(IsProcessRunning(AMERICANTRUCKS_EXE)>0)
+    pid = IsProcessRunning(AMERICANTRUCKS_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_AMERICANTRUCKS;
     }
-    if(IsProcessRunning(LEMANS_ULTIMATE_EXE)>0)
+    pid = IsProcessRunning(LEMANS_ULTIMATE_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_LEMANS_ULTIMATE;
     }
-    if(IsProcessRunning(LIVE_FOR_SPEED_EXE)>0)
+    pid = IsProcessRunning(LIVE_FOR_SPEED_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_LIVE_FOR_SPEED;
     }
-    if(IsProcessRunning(BEAMNG_EXE)>0)
+    pid = IsProcessRunning(BEAMNG_EXE);
+    if(pid>0)
     {
+        si->pid = pid;
         return SIMULATOREXE_BEAMNG;
     }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
@@ -579,7 +603,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         }
     }
 
-    SimulatorEXE simexe = getSimExe();
+    SimulatorEXE simexe = getSimExe(&si);
 
     switch ( simexe )
     {
@@ -650,7 +674,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
                 simdata->simexe = simexe;
                
-                simdata->simstatus = 2;
+                simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
                 simdata->gear = 0;
                 simdata->velocity = 0;
                 simdata->rpms = 0;
@@ -661,7 +685,6 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
                 setSimInfo(&si);
-                fprintf(stderr, "set sim info\n");
                 return si;
             }
             break;
