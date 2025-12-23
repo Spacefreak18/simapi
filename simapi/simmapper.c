@@ -1177,6 +1177,7 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
     }
 
     bzero(simdata, sizeof(SimData));
+    simdata->simapiversion = SIMAPI_VERSION;
     return error;
 }
 
