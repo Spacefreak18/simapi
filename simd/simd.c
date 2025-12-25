@@ -855,9 +855,17 @@ int main(int argc, char** argv)
     uv_poll_t* poll;
     if(simds.daemon == false)
     {
-        uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
-        uv_poll_init(uv_default_loop(), &pollt, 0);
-        uv_poll_start(&pollt, UV_READABLE, cb);
+        if (isatty(0)) {
+            uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
+            int r = uv_poll_init(uv_default_loop(), &pollt, 0);
+            if (r == 0) {
+                uv_poll_start(&pollt, UV_READABLE, cb);
+            } else {
+                y_log_message(Y_LOG_LEVEL_WARNING, "Could not initialize stdin poll, interactive mode disabled");
+            }
+        } else {
+            y_log_message(Y_LOG_LEVEL_INFO, "Not a TTY, interactive mode disabled");
+        }
     }
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
