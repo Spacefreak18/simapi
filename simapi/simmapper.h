@@ -1,90 +1,98 @@
 #ifndef _SIMMAPPER_H
 #define _SIMMAPPER_H
 
-//#include "ac.h"
-//#include "rf2.h"
-//#include "pcars2.h"
-//#include "scs2.h"
+// #include "ac.h"
+// #include "rf2.h"
+// #include "pcars2.h"
+// #include "scs2.h"
 #include <signal.h>
 
-#include "simdata.h"
 #include "simapi.h"
+#include "simdata.h"
 
+typedef struct {
+  bool isSimOn;
+  bool SimUsesUDP;
+  bool SimSupportsBasicTelemetry;
+  bool SimSupportsTyreEffects;
+  bool SimSupportsRealtimeTelemetry;
+  bool SimSupportsAdvancedUI;
+  SimulatorAPI mapapi;
+  SimulatorAPI simulatorapi;
+  SimulatorEXE simulatorexe;
+  pid_t pid;
+} SimInfo;
 
-typedef struct
-{
-    bool isSimOn;
-    bool SimUsesUDP;
-    bool SimSupportsBasicTelemetry;
-    bool SimSupportsTyreEffects;
-    bool SimSupportsRealtimeTelemetry;
-    bool SimSupportsAdvancedUI;
-    SimulatorAPI mapapi;
-    SimulatorAPI simulatorapi;
-    SimulatorEXE simulatorexe;
-    pid_t pid;
-}
-SimInfo;
-
-
-//typedef struct
+// typedef struct
 //{
-//    void* addr;
-//    int fd;
-//    union
-//    {
-//        ACMap* ac;
-//        RF2Map* rf2;
-//        PCars2Map* pcars2;
-//        SCS2Map* scs2;
-//    } d;
-//}
-//SimMap;
+//     void* addr;
+//     int fd;
+//     union
+//     {
+//         ACMap* ac;
+//         RF2Map* rf2;
+//         PCars2Map* pcars2;
+//         SCS2Map* scs2;
+//     } d;
+// }
+// SimMap;
 
-//struct _simmap;
+// struct _simmap;
 typedef struct _simmap SimMap;
 
-typedef struct
-{
-    void* pcars2_addr;
-    int pcars2_fd;
-    void* acphysics_addr;
-    int acphysics_fd;
-    void* acgraphics_addr;
-    int acgraphics_fd;
-    void* acstatic_addr;
-    int acstatic_fd;
-    void* accrew_addr;
-    int accrew_fd;
-}
-SimCompatMap;
+typedef struct {
+  void *pcars2_addr;
+  int pcars2_fd;
+  void *acphysics_addr;
+  int acphysics_fd;
+  void *acgraphics_addr;
+  int acgraphics_fd;
+  void *acstatic_addr;
+  int acstatic_fd;
+  void *accrew_addr;
+  int accrew_fd;
+} SimCompatMap;
 
 bool does_sim_need_bridge(SimulatorEXE s);
-SimulatorEXE getSimExe(SimInfo* si);
-SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd);
-int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
-int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
-int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulator, bool udp, char* base);
-int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+SimulatorEXE getSimExe(SimInfo *si);
+SimInfo getSim(SimData *simdata, SimMap *simmap, bool force_udp,
+               int (*setup_udp)(int), bool simd);
+int siminit(SimData *simdata, SimMap *simmap, SimulatorAPI simulator);
+int siminitudp(SimData *simdata, SimMap *simmap, SimulatorAPI simulator);
+int simdatamap(SimData *simdata, SimMap *simmap, SimMap *simmap2,
+               SimulatorAPI simulator, bool udp, char *base);
+int simfree(SimData *simdata, SimMap *simmap, SimulatorAPI simulator);
 
-int simapi_strtogame(const char* game);
-char* simapi_gametostr(SimulatorEXE sim);
-char* simapi_gametofullstr(SimulatorEXE sim);
+int simapi_strtogame(const char *game);
+char *simapi_gametostr(SimulatorEXE sim);
+char *simapi_gametofullstr(SimulatorEXE sim);
 
-SimMap* createSimMap(void);
-void* getSimMapPtr(SimMap* simmap);
-int simdmap(SimMap* simmap, SimData* simdata);
-int opensimmap(SimMap* simmap);
-int freesimmap(SimMap* simmap, bool issimd);
-int opensimcompatmap(SimCompatMap* compatmap);
-int freesimcompatmap(SimCompatMap* compatmap);
+SimMap *createSimMap(void);
+void *getSimMapPtr(SimMap *simmap);
+int simdmap(SimMap *simmap, SimData *simdata);
+int opensimmap(SimMap *simmap);
+int freesimmap(SimMap *simmap, bool issimd);
+int opensimcompatmap(SimCompatMap *compatmap);
+int freesimcompatmap(SimCompatMap *compatmap);
 
-void SetProximityData(SimData* simdata, int cars, int8_t lr_flip);
+void SetProximityData(SimData *simdata, int cars, int8_t lr_flip);
 
-void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe);
-void map_rfactor2_data(SimData* simdata, SimMap* simmap);
-void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base);
-void map_trucks_data(SimData* simdata, SimMap* simmap);
-void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe, char* base);
+int init_scs2_map(SimData *simdata, SimMap *simmap);
+int free_scs2_map(SimData *simdata, SimMap *simmap);
+
+void map_assetto_corsa_data(SimData *simdata, SimMap *simmap,
+                            SimulatorEXE simexe);
+int init_ac_map(SimData *simdata, SimMap *simmap);
+int free_ac_map(SimData *simdata, SimMap *simmap);
+void map_rfactor2_data(SimData *simdata, SimMap *simmap);
+int init_rf2_map(SimData *simdata, SimMap *simmap);
+int free_rf2_map(SimData *simdata, SimMap *simmap);
+void map_project_cars2_data(SimData *simdata, SimMap *simmap, bool udp,
+                            char *base);
+int init_pcars2_map(SimData *simdata, SimMap *simmap);
+int free_pcars2_map(SimData *simdata, SimMap *simmap);
+void map_trucks_data(SimData *simdata, SimMap *simmap);
+void map_outgauge_outsim_data(SimData *simdata, SimMap *simmap,
+                              SimulatorEXE simexe, char *base);
 
 #endif
