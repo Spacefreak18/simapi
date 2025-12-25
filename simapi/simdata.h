@@ -130,6 +130,8 @@ typedef struct //SimData
     double tyrediameter[4];
 
     double heading;
+    double pitch;
+    double roll;
     double worldposx;
     double worldposy;
     double worldposz;
