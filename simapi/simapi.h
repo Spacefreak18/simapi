@@ -27,6 +27,7 @@ typedef enum
     SIMULATORAPI_PROJECTCARS2      = 3,
     SIMULATORAPI_SCSTRUCKSIM2      = 4,
     SIMULATORAPI_OUTSIMOUTGAUGE    = 5,
+    SIMULATORAPI_DIRT_RALLY_2      = 6,
 }
 SimulatorAPI;
 
@@ -44,6 +45,7 @@ typedef enum
     SIMULATOREXE_LEMANS_ULTIMATE              = 2399420, //lmu
     SIMULATOREXE_BEAMNG                       = 284160, //beamng
     SIMULATOREXE_LIVE_FOR_SPEED               = 0000001, //lfs
+    SIMULATOREXE_DIRT_RALLY_2                 = 690790, //dr2
 }
 SimulatorEXE;
 
