@@ -48,6 +48,9 @@ SimMap *createSimMap() {
 
 void *getSimMapPtr(SimMap *simmap) { return simmap->addr; }
 
+/**
+ * @brief Case-insensitive string comparison.
+ */
 int sstrcicmp(char const *a, char const *b) {
   for (;; a++, b++) {
     int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
@@ -56,6 +59,9 @@ int sstrcicmp(char const *a, char const *b) {
   }
 }
 
+/**
+ * @brief Returns current system time in milliseconds.
+ */
 long long timeInMilliseconds(void) {
   struct timeval tv;
 
@@ -165,18 +171,40 @@ char *simapi_gametofullstr(SimulatorEXE sim) {
   }
 }
 
+/**
+ * @brief Rounds a double to the nearest integer.
+ */
 int droundint(double d) { return trunc(nearbyint(d)); }
 
+/**
+ * @brief Rounds a float to the nearest integer.
+ */
 int froundint(float f) { return trunc(nearbyint(f)); }
 
 func_ptr_t loginfo = NULL;
 func_ptr_t logdebug = NULL;
 func_ptr_t logtrace = NULL;
 
+/**
+ * @brief Sets the callback function for INFO level logging.
+ */
 void set_simapi_log_info(func_ptr_t func) { loginfo = func; }
+
+/**
+ * @brief Sets the callback function for DEBUG level logging.
+ */
 void set_simapi_log_debug(func_ptr_t func) { logdebug = func; }
+
+/**
+ * @brief Sets the callback function for TRACE level logging.
+ */
 void set_simapi_log_trace(func_ptr_t func) { logtrace = func; }
 
+/**
+ * @brief Core logging function for the SIMAPI library.
+ * @param sll Log level (INFO, DEBUG, TRACE).
+ * @param message The message to log.
+ */
 void simapi_log(SIMAPI_LOGLEVEL sll, char *message) {
   if (message != NULL) {
     if (sll == SIMAPI_LOGLEVEL_INFO) {
@@ -269,6 +297,11 @@ void SetProximityData(SimData *simdata, int cars, int8_t lr_flip) {
   }
 }
 
+/**
+ * @brief Checks if a file exists on the filesystem.
+ * @param file Path to the file.
+ * @return True if file exists and is not a directory.
+ */
 bool does_sim_file_exist(const char *file) {
   if (file == NULL) {
     return false;
@@ -311,6 +344,12 @@ bool does_sim_file_exist(const char *file) {
 }
 
 // if this becomes more necessary i will move it into it's own file
+/**
+ * @brief Converts spline-based track position to absolute distance.
+ * @param trackLength Total length of the track.
+ * @param spLine Spline position (0.0 to 1.0).
+ * @return Distance in meters.
+ */
 float spLineLengthToDistanceRoundTrack(float trackLength, float spLine) {
   if (spLine < 0.0) {
     spLine -= 1;
@@ -318,6 +357,11 @@ float spLineLengthToDistanceRoundTrack(float trackLength, float spLine) {
   return spLine * trackLength;
 }
 
+/**
+ * @brief Sets capabilities and flags in SimInfo based on the detected API.
+ * @param si Pointer to SimInfo to update.
+ * @return 0 on success.
+ */
 int setSimInfo(SimInfo *si) {
   switch (si->simulatorapi) {
 
@@ -359,6 +403,12 @@ int setSimInfo(SimInfo *si) {
   return 0;
 }
 
+/**
+ * @brief Prints a hexadecimal dump of a memory region to stdout.
+ * @param desc Label for the dump.
+ * @param addr Start address.
+ * @param len Number of bytes to dump.
+ */
 void hexDump(char *desc, void *addr, int len) {
   int i;
   unsigned char buff[17];
@@ -805,8 +855,6 @@ int siminit(SimData *simdata, SimMap *simmap, SimulatorAPI simulator) {
 int simfree(SimData *simdata, SimMap *simmap, SimulatorAPI simulator) {
   int error = SIMAPI_ERROR_NONE;
 
-  error = free_ac_map(simdata, simmap);
-  error = free_pcars2_map(simdata, simmap);
   error = free_ac_map(simdata, simmap);
   error = free_pcars2_map(simdata, simmap);
   error = free_rf2_map(simdata, simmap);
