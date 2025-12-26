@@ -133,7 +133,10 @@ void map_dirt_rally_2_data(SimData *simdata, SimMap *simmap, char *base) {
     simdata->tyreRPS[3] = (double)packet->fields.wheelSpeedFR;
 
     // Game Status
-    if (packet->fields.runTime > 0) {
+    // DiRT Rally 2.0 extradata=3 is typically only sent when the simulation is
+    // active. We set status to ACTIVEPLAY even if runTime is 0 to support Rally
+    // Cross countdowns where telemetry starts before the clock.
+    if (packet->fields.runTime >= 0) {
       simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
     } else {
       simdata->simstatus = SIMAPI_STATUS_MENU;
@@ -169,6 +172,43 @@ void map_dirt_rally_2_data(SimData *simdata, SimMap *simmap, char *base) {
     simdata->suspension[1] = (double)packet->fields.suspRR;
     simdata->suspension[2] = (double)packet->fields.suspFL;
     simdata->suspension[3] = (double)packet->fields.suspFR;
+
+    simdata->suspvelocity[0] = (double)packet->fields.suspVelRL;
+    simdata->suspvelocity[1] = (double)packet->fields.suspVelRR;
+    simdata->suspvelocity[2] = (double)packet->fields.suspVelFL;
+    simdata->suspvelocity[3] = (double)packet->fields.suspVelFR;
+
+    simdata->distance = (double)packet->fields.distance;
+    simdata->position = (uint32_t)packet->fields.racePos;
+    simdata->numlaps = (uint32_t)packet->fields.totalLaps;
+    simdata->playerlaps = (uint32_t)packet->fields.lapsCompleted;
+    simdata->sectorindex = (uint8_t)packet->fields.sector;
+    simdata->sector1time = (double)packet->fields.sector1Time;
+    simdata->sector2time = (double)packet->fields.sector2Time;
+    simdata->fuelcapacity = (double)packet->fields.fuelCapacity;
+    simdata->idlerpm = froundint(packet->fields.idleRPM * DR2_RPM_SCALE);
+    simdata->maxgears = (uint32_t)packet->fields.maxGears;
+
+    // Timing
+    simdata->currentlapinseconds = (uint32_t)packet->fields.lapTime;
+    simdata->lastlapinseconds = (uint32_t)packet->fields.lastLapTime;
+
+    // Splitting seconds into LapTime
+    simdata->currentlap.hours = (uint32_t)(packet->fields.lapTime / 3600);
+    simdata->currentlap.minutes =
+        (uint32_t)(((int)packet->fields.lapTime % 3600) / 60);
+    simdata->currentlap.seconds = (uint32_t)((int)packet->fields.lapTime % 60);
+    simdata->currentlap.fraction =
+        (uint32_t)((packet->fields.lapTime - floor(packet->fields.lapTime)) *
+                   1000);
+
+    simdata->lastlap.hours = (uint32_t)(packet->fields.lastLapTime / 3600);
+    simdata->lastlap.minutes =
+        (uint32_t)(((int)packet->fields.lastLapTime % 3600) / 60);
+    simdata->lastlap.seconds = (uint32_t)((int)packet->fields.lastLapTime % 60);
+    simdata->lastlap.fraction = (uint32_t)((packet->fields.lastLapTime -
+                                            floor(packet->fields.lastLapTime)) *
+                                           1000);
 
     strncpy(simdata->car, "DR2", 4);
   }
