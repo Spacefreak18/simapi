@@ -1,3 +1,11 @@
+/**
+ * @file simmapper.c
+ * @brief Universal Simulator Mapping implementation.
+ *
+ * This file contains the core logic for detecting active racing simulators,
+ * initializing shared memory mappings, and translating various native simulator
+ * data structures into the universal SIMAPI SimData format.
+ */
 #include <ctype.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -225,6 +233,28 @@ void simapi_log(SIMAPI_LOGLEVEL sll, char *message) {
   }
 }
 
+/**
+ * @brief Calculates proximity data for nearby cars using vector math.
+ *
+ * This function performs the following steps:
+ * 1. Resets proximity data for the specified number of cars.
+ * 2. Checks if the player is moving; if not, skips calculation to avoid
+ * division by zero/nonsense angles.
+ * 3. Calculates the player's heading angle using world velocity vectors.
+ * 4. Iterates through all other cars:
+ *    - Calculates relative X and Y positions in world space.
+ *    - Rotates these coordinates into the player's local frame of reference
+ * (heading-alignment).
+ *    - Calculates the polar coordinates (radius and theta) in the local frame.
+ *    - Offsets the radius by the estimated car width to get "clear distance".
+ *    - Uses a simple insertion sort to keep track of the N closest cars within
+ * the max radius.
+ *
+ * @param simdata Pointer to SimData containing world positions and velocities.
+ * @param cars Total number of cars on track.
+ * @param lr_flip Local coordinate flip (typically -1 or 1 for Left/Right hand
+ * drive logic).
+ */
 void SetProximityData(SimData *simdata, int cars, int8_t lr_flip) {
   double carwidth = 1.8;
   double maxradius = 10.0;
@@ -238,10 +268,12 @@ void SetProximityData(SimData *simdata, int cars, int8_t lr_flip) {
     simdata->pd[x].radius = 0.0;
     simdata->pd[x].theta = 0.0;
   }
+  // Avoid calculation if player is stationary
   if (abs(simdata->Yvelocity) < 0.0001 && abs(simdata->Xvelocity) < 0.0001) {
     return;
   }
 
+  // Calculate player heading angle relative to world axes
   double angle =
       atan2(-1, 0) - atan2(simdata->worldYvelocity, simdata->worldXvelocity);
   double angleD = angle * 360 / (2 * M_PI);
@@ -251,12 +283,15 @@ void SetProximityData(SimData *simdata, int cars, int8_t lr_flip) {
   double sinTheta = sin(angle);
 
   for (int car = 1; car < cars; car++) {
+    // Relative position in world space
     double rawXCoordinate = simdata->cars[car].xpos - simdata->worldposx;
     double rawYCoordinate = simdata->cars[car].ypos - simdata->worldposy;
 
+    // Coordinate rotation into local car space (heading-up)
     double xscore = cosTheta * rawXCoordinate - sinTheta * rawYCoordinate;
     double yscore = sinTheta * rawXCoordinate + cosTheta * rawYCoordinate;
 
+    // Polar coordinate calculation
     double rads = atan2(yscore, xscore * lr_flip);
     double degrees = (rads * (180 / M_PI)) + 90.0;
 
@@ -266,11 +301,10 @@ void SetProximityData(SimData *simdata, int cars, int8_t lr_flip) {
     if (theta < 0) {
       theta = 360 + degrees;
     }
+    // Subtract car width to get bumper-to-bumper distance
     radius = radius - carwidth;
 
-    // fprintf(stderr, "rawx: %f, rawy: %f degs: %f mag: %f\n", rawXCoordinate,
-    // rawYCoordinate, theta, radius);
-
+    // Insertion sort to maintain the list of closest cars
     if (radius < maxradius) {
       int j = proxcars - 1;
       if ((simdata->pd[j].radius == 0) || (radius < simdata->pd[j].radius)) {
@@ -512,6 +546,25 @@ SimulatorEXE getSimExe(SimInfo *si) {
   return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
+/**
+ * @brief Main entry point to detect and initialize the active simulator.
+ *
+ * Detection Logic:
+ * 1. Daemon Check: First checks if a SIMAPI daemon is already running by
+ * looking for `/dev/shm/SIMAPI.DAT`. If found and version matches, it uses the
+ * daemon's already processed data.
+ * 2. Process Check: If no daemon is found, it scans the running process list
+ * for known racing simulators.
+ * 3. Initialization: Once a simulator is identified, it calls `siminit` to
+ * setup memory mappings and `simdatamap` to perform the first data pull.
+ *
+ * @param simdata Pointer to the SimData structure to populate.
+ * @param simmap Pointer to the SimMap structure for memory mapping.
+ * @param force_udp Force using UDP telemetry if available.
+ * @param setup_udp Function pointer for UDP socket setup.
+ * @param simd True if running as a daemon.
+ * @return SimInfo populated with detection results.
+ */
 SimInfo getSim(SimData *simdata, SimMap *simmap, bool force_udp,
                int (*setup_udp)(int), bool simd) {
 
@@ -737,6 +790,27 @@ SimInfo getSim(SimData *simdata, SimMap *simmap, bool force_udp,
   return si;
 }
 
+/**
+ * @brief Maps native simulator data into the universal SimData structure.
+ *
+ * Data Synchronization Logic:
+ * - Update mtick: Always updates the internal timestamp.
+ * - API-Specific Mapping: Calls specialized mappers (e.g.,
+ * `map_assetto_corsa_data`).
+ * - Secondary Mapping: If a daemon is running, it may use a secondary `simmap2`
+ *   to push the processed data back to another shared memory handle.
+ * - Test Mode Handling: In `SIMAPI_TEST` mode, it preserves tyre diameters
+ * before overwriting the structure with shared memory content to allow local
+ * overrides.
+ *
+ * @param simdata target data structure.
+ * @param simmap source mapping handle.
+ * @param simmap2 secondary mapping handle (optional).
+ * @param simulatorapi API type.
+ * @param udp true if source is UDP.
+ * @param base base address for some mapping types.
+ * @return 0 on success.
+ */
 int simdatamap(SimData *simdata, SimMap *simmap, SimMap *simmap2,
                SimulatorAPI simulatorapi, bool udp, char *base) {
   char *a;
@@ -806,6 +880,14 @@ int siminitudp(SimData *simdata, SimMap *simmap, SimulatorAPI simulator) {
   return error;
 }
 
+/**
+ * @brief Initializes memory mapping for a specific simulator API.
+ *
+ * Logic for SIMAPI_TEST:
+ * This case is unique as it maps the "universal" SIMAPI shared memory file
+ * instead of a simulator-native one. This is used by the SIMAPI daemon or
+ * test tools to share already-translated data.
+ */
 int siminit(SimData *simdata, SimMap *simmap, SimulatorAPI simulator) {
   // slogi("searching for simulator data...");
   int error = SIMAPI_ERROR_NONE;
@@ -911,6 +993,15 @@ int opensimmap(SimMap *simmap) {
   return 0;
 }
 
+/**
+ * @brief Opens legacy compatibility shared memory mappings.
+ *
+ * Some external plugins (like those for older dashboards or haptic devices)
+ * expect data in specific simulator formats (e.g. Assetto Corsa or PCars2).
+ * This function opens multiple shared memory handles simultaneously to allow
+ * the library to act as a bridge, pushing universal data into these legacy
+ * formats.
+ */
 int opensimcompatmap(SimCompatMap *compatmap) {
   compatmap->pcars2_fd =
       shm_open(PCARS2_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
@@ -1014,6 +1105,9 @@ int opensimcompatmap(SimCompatMap *compatmap) {
   return 0;
 }
 
+/**
+ * @brief Closes all legacy compatibility shared memory mappings.
+ */
 int freesimcompatmap(SimCompatMap *compatmap) {
   if (munmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1) {
     return 100;
