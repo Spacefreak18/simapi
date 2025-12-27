@@ -1,15 +1,13 @@
 
 --lineend=linux
---style=ansi
+--style=break
 --indent=spaces
 --convert-tabs
 --indent-switches
 
 
 --break-elseifs
---brackets=break
---delete-empty-lines
---add-brackets
+--add-braces
 
 --align-pointer=type
 --align-reference=type
