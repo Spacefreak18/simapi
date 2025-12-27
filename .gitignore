@@ -2,3 +2,7 @@
 tests/setsimdata
 simd/build
 
+.cache/
+simmapper_mixed.c
+simmapper_old.c
+tests/view_telemetry
