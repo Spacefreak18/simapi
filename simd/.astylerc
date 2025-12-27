@@ -1,0 +1,15 @@
+
+--lineend=linux
+--style=ansi
+--indent=spaces
+--convert-tabs
+--indent-switches
+
+
+--break-elseifs
+--brackets=break
+--delete-empty-lines
+--add-brackets
+
+--align-pointer=type
+--align-reference=type
