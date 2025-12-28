@@ -19,7 +19,10 @@ static LapTime pcars2_convert_to_simdata_laptime(float pcars2_laptime)
 {
     if(pcars2_laptime <= 0)
     {
-        return (LapTime){0, 0, 0};
+        return (LapTime)
+        {
+            0, 0, 0
+        };
     }
     LapTime l;
     l.seconds = floor(pcars2_laptime);

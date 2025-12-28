@@ -8,11 +8,11 @@
 
 #include <regex.h>
 #if defined(HAVE_ARGTABLE3)
-    #include <argtable3.h>
+#include <argtable3.h>
 #elif defined(HAVE_ARGTABLE2)
-    #include <argtable2.h>
+#include <argtable2.h>
 #else
-    #error "No argtable implementation available"
+#error "No argtable implementation available"
 #endif
 
 

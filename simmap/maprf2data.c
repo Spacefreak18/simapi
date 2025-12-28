@@ -13,7 +13,7 @@ int CreateRF2Map(struct Map *map, RF2Map *rf2map, int mapdata)
     {
         rf2t = rf2map->telemetry_map_addr;
         rf2s = rf2map->scoring_map_addr;
-    } 
+    }
 
 
     map[0].name = "rF2Telemetry_mVersionUpdateBegin";

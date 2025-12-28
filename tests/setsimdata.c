@@ -82,7 +82,7 @@ void parse_args(int argc, char* argv[])
                     else
                         if (!strcmp(argv[i],"-a"))
                         {
-                           if (i<argc-1)
+                            if (i<argc-1)
                             {
                                 action = argv[++i];
                                 //spring_strength =atof(argv[++i]);
@@ -104,7 +104,7 @@ void parse_args(int argc, char* argv[])
                                 {
                                     help = 1;
                                 }
-                                }
+                            }
                             else
                                 if (!strcmp(argv[i],"-o"))
                                 {
@@ -177,25 +177,28 @@ int main(int argc, char* argv[])
         struct1 = spfp;
         datasize1 = sizeof(struct SPageFilePhysics);
     }
-    else if (strcmp(mem_file, AC_GRAPHIC_FILE) == 0)
-    {
-        struct1 = spfg;
-        datasize1 = sizeof(struct SPageFileGraphic);
-    }
-    else if (strcmp(mem_file, AC_STATIC_FILE) == 0)
-    {
-        struct1 = spfs;
-        datasize1 = sizeof(struct SPageFileStatic);
-    }
-    else if (strcmp(mem_file, AC_CREWCHIEF_FILE) == 0)
-    {
-        struct1 = spfc;
-        datasize1 = sizeof(struct SPageFileCrewChief);
-    }
     else
-    {
-        printf("Unknown memory mapped file name");
-    }
+        if (strcmp(mem_file, AC_GRAPHIC_FILE) == 0)
+        {
+            struct1 = spfg;
+            datasize1 = sizeof(struct SPageFileGraphic);
+        }
+        else
+            if (strcmp(mem_file, AC_STATIC_FILE) == 0)
+            {
+                struct1 = spfs;
+                datasize1 = sizeof(struct SPageFileStatic);
+            }
+            else
+                if (strcmp(mem_file, AC_CREWCHIEF_FILE) == 0)
+                {
+                    struct1 = spfc;
+                    datasize1 = sizeof(struct SPageFileCrewChief);
+                }
+                else
+                {
+                    printf("Unknown memory mapped file name");
+                }
 
 
     ACMap* acmap = malloc(sizeof(ACMap));
@@ -223,15 +226,16 @@ int main(int argc, char* argv[])
         struct1 = rf2t;
         datasize1 = sizeof(struct rF2Telemetry);
     }
-    else if (strcmp(mem_file, RF2_SCORING_FILE) == 0)
-    {
-        struct1 = rf2s;
-        datasize1 = sizeof(struct rF2Scoring);
-    }
     else
-    {
-        printf("Unknown memory mapped file name");
-    }
+        if (strcmp(mem_file, RF2_SCORING_FILE) == 0)
+        {
+            struct1 = rf2s;
+            datasize1 = sizeof(struct rF2Scoring);
+        }
+        else
+        {
+            printf("Unknown memory mapped file name");
+        }
 
     RF2Map* rf2map = malloc(sizeof(RF2Map));
     rf2map->rf2_telemetry = *rf2t;
@@ -305,26 +309,28 @@ int main(int argc, char* argv[])
         printf("current value as float %f\n", b);
         memcpy(addr2, &new, sizeof(new));
     }
-    else if(strcmp( data_type, "double" ) == 0 )
-    {
-        double b;
-        b = *(double*) (char*) addr2;
-        double new = strtod( valuetoset, NULL );
-        printf("current value as double %f\n", b);
-        memcpy(addr2, &new, sizeof(new));
-    }
-    else if(strcmp( data_type, "integer" ) == 0 )
-    {
-        int b;
-        b = *(int*) (char*) addr2;
-        int new = atoi( valuetoset );
-        printf("current value as integer %i\n", b);
-        memcpy(addr2, &new, sizeof(new));
-    }
     else
-    {
-        printf("Unknown data type");
-    }
+        if(strcmp( data_type, "double" ) == 0 )
+        {
+            double b;
+            b = *(double*) (char*) addr2;
+            double new = strtod( valuetoset, NULL );
+            printf("current value as double %f\n", b);
+            memcpy(addr2, &new, sizeof(new));
+        }
+        else
+            if(strcmp( data_type, "integer" ) == 0 )
+            {
+                int b;
+                b = *(int*) (char*) addr2;
+                int new = atoi( valuetoset );
+                printf("current value as integer %i\n", b);
+                memcpy(addr2, &new, sizeof(new));
+            }
+            else
+            {
+                printf("Unknown data type");
+            }
 
     memcpy(addr, struct1, datasize1);
     //printf("set to value %f\n", *(float*) (char*) addr2);

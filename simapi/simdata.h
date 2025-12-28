@@ -174,7 +174,7 @@ typedef struct //SimData
     char track[128];
     char driver[128];
     char tyrecompound[128];
-    
+
     CarData cars[MAXCARS];
     ProximityData pd[PROXCARS];
 

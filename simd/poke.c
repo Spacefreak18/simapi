@@ -30,11 +30,11 @@ int poke(SimdSettings simds)
 {
     int fd = shm_open(SIMAPI_MEM_FILE, O_RDWR, S_IRUSR | S_IWUSR);
     int res = ftruncate(fd, sizeof(SimData));
-    
+
     SimData* s = mmap(NULL, sizeof(SimData), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     struct Map* map = (struct Map*) malloc((1171 + 1) * sizeof(struct Map));
     int size = CreateSimDataMap(map, s, 1);
-    
+
     void* addr;
     SimDataType sdt;
     for (int k = 0; k <= 1171; k++)
@@ -50,7 +50,7 @@ int poke(SimdSettings simds)
             break;
         }
     }
-    
+
     if(addr != NULL)
     {
         switch(sdt)

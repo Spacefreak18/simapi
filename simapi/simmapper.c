@@ -25,10 +25,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #if defined(OS_WIN)
-    #include <windows.h>
+#include <windows.h>
 #else
-    #include <dirent.h> // for *Nix directory access
-    #include <unistd.h>
+#include <dirent.h> // for *Nix directory access
+#include <unistd.h>
 #endif
 
 #include "getpid.h"
@@ -55,14 +55,18 @@ void* getSimMapPtr(SimMap* simmap)
 
 int sstrcicmp(char const *a, char const *b)
 {
-    for (;; a++, b++) {
+    for (;; a++, b++)
+    {
         int d = tolower((unsigned char)*a) - tolower((unsigned char)*b);
         if (d != 0 || !*a)
+        {
             return d;
+        }
     }
 }
 
-long long timeInMilliseconds(void) {
+long long timeInMilliseconds(void)
+{
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
@@ -90,50 +94,60 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_ASSETTO_CORSA;
     }
-    else if (sstrcicmp(game, "acc") == 0)
-    {
-        sim = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
-    }
-    else if (sstrcicmp(game, "ace") == 0)
-    {
-        sim = SIMULATOREXE_ASSETTO_CORSA_EVO;
-    }
-    else if (sstrcicmp(game, "acr") == 0)
-    {
-        sim = SIMULATOREXE_ASSETTO_CORSA_RALLY;
-    }
-    else if (sstrcicmp(game, "rf2") == 0)
-    {
-        sim = SIMULATOREXE_RFACTOR2;
-    }
-    else if (sstrcicmp(game, "ams2") == 0)
-    {
-        sim = SIMULATOREXE_AUTOMOBILISTA2;
-    }
-    else if (sstrcicmp(game, "et2") == 0)
-    {
-        sim = SIMULATOREXE_EUROTRUCKS2;
-    }
-    else if (sstrcicmp(game, "at") == 0)
-    {
-        sim = SIMULATOREXE_EUROTRUCKS2;
-    }
-    else if (sstrcicmp(game, "lmu") == 0)
-    {
-        sim = SIMULATOREXE_LEMANS_ULTIMATE;
-    }
-    else if (sstrcicmp(game, "lfs") == 0)
-    {
-        sim = SIMULATOREXE_LIVE_FOR_SPEED;
-    }
-    else if (sstrcicmp(game, "beamng") == 0)
-    {
-        sim = SIMULATOREXE_BEAMNG;
-    }
     else
-    {
-        sim = 0;
-    }
+        if (sstrcicmp(game, "acc") == 0)
+        {
+            sim = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
+        }
+        else
+            if (sstrcicmp(game, "ace") == 0)
+            {
+                sim = SIMULATOREXE_ASSETTO_CORSA_EVO;
+            }
+            else
+                if (sstrcicmp(game, "acr") == 0)
+                {
+                    sim = SIMULATOREXE_ASSETTO_CORSA_RALLY;
+                }
+                else
+                    if (sstrcicmp(game, "rf2") == 0)
+                    {
+                        sim = SIMULATOREXE_RFACTOR2;
+                    }
+                    else
+                        if (sstrcicmp(game, "ams2") == 0)
+                        {
+                            sim = SIMULATOREXE_AUTOMOBILISTA2;
+                        }
+                        else
+                            if (sstrcicmp(game, "et2") == 0)
+                            {
+                                sim = SIMULATOREXE_EUROTRUCKS2;
+                            }
+                            else
+                                if (sstrcicmp(game, "at") == 0)
+                                {
+                                    sim = SIMULATOREXE_EUROTRUCKS2;
+                                }
+                                else
+                                    if (sstrcicmp(game, "lmu") == 0)
+                                    {
+                                        sim = SIMULATOREXE_LEMANS_ULTIMATE;
+                                    }
+                                    else
+                                        if (sstrcicmp(game, "lfs") == 0)
+                                        {
+                                            sim = SIMULATOREXE_LIVE_FOR_SPEED;
+                                        }
+                                        else
+                                            if (sstrcicmp(game, "beamng") == 0)
+                                            {
+                                                sim = SIMULATOREXE_BEAMNG;
+                                            }
+                                            else
+                                            {
+                                                sim = 0;
+                                            }
     return sim;
 }
 
@@ -214,13 +228,16 @@ func_ptr_t loginfo = NULL;
 func_ptr_t logdebug = NULL;
 func_ptr_t logtrace = NULL;
 
-void set_simapi_log_info(func_ptr_t func) {
+void set_simapi_log_info(func_ptr_t func)
+{
     loginfo = func;
 }
-void set_simapi_log_debug(func_ptr_t func) {
+void set_simapi_log_debug(func_ptr_t func)
+{
     logdebug = func;
 }
-void set_simapi_log_trace(func_ptr_t func) {
+void set_simapi_log_trace(func_ptr_t func)
+{
     logtrace = func;
 }
 
@@ -280,7 +297,7 @@ void SetProximityData(SimData* simdata, int cars, int8_t lr_flip)
 
     double cosTheta = cos(angle);
     double sinTheta = sin(angle);
-    
+
     for(int car = 1; car < cars; car++)
     {
         double rawXCoordinate = simdata->cars[car].xpos - simdata->worldposx;
@@ -336,45 +353,51 @@ void SetProximityData(SimData* simdata, int cars, int8_t lr_flip)
 
 bool does_sim_file_exist(const char* file)
 {
-    if (file == NULL) { return false; }
-    #if defined(OS_WIN)
-        #if defined(WIN_API)
-            // if you want the WinAPI, versus CRT
-            if (strnlen(file, MAX_PATH+1) > MAX_PATH) {
-                // ... throw error here or ...
-                return false;
-            }
-            DWORD res = GetFileAttributesA(file);
-            return (res != INVALID_FILE_ATTRIBUTES &&
-                !(res & FILE_ATTRIBUTE_DIRECTORY));
-        #else
-            // Use Win CRT
-            struct stat fi;
-            if (_stat(file, &fi) == 0) {
-                #if defined(S_ISSOCK)
-                    // sockets come back as a 'file' on some systems
-                    // so make sure it's not a socket or directory
-                    // (in other words, make sure it's an actual file)
-                    return !(S_ISDIR(fi.st_mode)) &&
-                        !(S_ISSOCK(fi.st_mode));
-                #else
-                    return !(S_ISDIR(fi.st_mode));
-                #endif
-            }
-            return false;
-        #endif
-    #else
-        struct stat fi;
-        if (stat(file, &fi) == 0) {
-            #if defined(S_ISSOCK)
-                return !(S_ISDIR(fi.st_mode)) &&
-                    !(S_ISSOCK(fi.st_mode));
-            #else
-                return !(S_ISDIR(fi.st_mode));
-            #endif
-        }
+    if (file == NULL)
+    {
         return false;
-    #endif
+    }
+#if defined(OS_WIN)
+#if defined(WIN_API)
+    // if you want the WinAPI, versus CRT
+    if (strnlen(file, MAX_PATH+1) > MAX_PATH)
+    {
+        // ... throw error here or ...
+        return false;
+    }
+    DWORD res = GetFileAttributesA(file);
+    return (res != INVALID_FILE_ATTRIBUTES &&
+            !(res & FILE_ATTRIBUTE_DIRECTORY));
+#else
+    // Use Win CRT
+    struct stat fi;
+    if (_stat(file, &fi) == 0)
+    {
+#if defined(S_ISSOCK)
+        // sockets come back as a 'file' on some systems
+        // so make sure it's not a socket or directory
+        // (in other words, make sure it's an actual file)
+        return !(S_ISDIR(fi.st_mode)) &&
+               !(S_ISSOCK(fi.st_mode));
+#else
+        return !(S_ISDIR(fi.st_mode));
+#endif
+    }
+    return false;
+#endif
+#else
+    struct stat fi;
+    if (stat(file, &fi) == 0)
+    {
+#if defined(S_ISSOCK)
+        return !(S_ISDIR(fi.st_mode)) &&
+               !(S_ISSOCK(fi.st_mode));
+#else
+        return !(S_ISDIR(fi.st_mode));
+#endif
+    }
+    return false;
+#endif
 }
 
 
@@ -431,53 +454,64 @@ int setSimInfo(SimInfo* si)
     return 0;
 }
 
-void hexDump(char *desc, void *addr, int len)
+void hexDump(char* desc, void* addr, int len)
 {
-  int i;
-  unsigned char buff[17];
-  unsigned char *pc = (unsigned char*)addr;
+    int i;
+    unsigned char buff[17];
+    unsigned char* pc = (unsigned char*)addr;
 
-  // Output description if given.
-  if (desc != NULL)
-    printf ("%s:\n", desc);
-
-  // Process every byte in the data.
-  for (i = 0; i < len; i++) {
-    // Multiple of 16 means new line (with line offset).
-    if ((i % 16) == 0) {
-      // Just don't print ASCII for the zeroth line.
-      if (i != 0)
-        printf ("  %s\n", buff);
-
-      // Output the offset.
-      printf ("  %04x ", i);
+    // Output description if given.
+    if (desc != NULL)
+    {
+        printf ("%s:\n", desc);
     }
 
-    // Now the hex code for the specific character.
-    printf (" %02x", pc[i]);
+    // Process every byte in the data.
+    for (i = 0; i < len; i++)
+    {
+        // Multiple of 16 means new line (with line offset).
+        if ((i % 16) == 0)
+        {
+            // Just don't print ASCII for the zeroth line.
+            if (i != 0)
+            {
+                printf ("  %s\n", buff);
+            }
 
-    // And store a printable ASCII character for later.
-    if ((pc[i] < 0x20) || (pc[i] > 0x7e))
-      buff[i % 16] = '.';
-    else
-      buff[i % 16] = pc[i];
-    buff[(i % 16) + 1] = '\0';
-  }
+            // Output the offset.
+            printf ("  %04x ", i);
+        }
 
-  // Pad out last line if not exactly 16 characters.
-  while ((i % 16) != 0) {
-    printf ("   ");
-    i++;
-  }
+        // Now the hex code for the specific character.
+        printf (" %02x", pc[i]);
 
-  // And print the final ASCII bit.
-  printf ("  %s\n", buff);
+        // And store a printable ASCII character for later.
+        if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+        {
+            buff[i % 16] = '.';
+        }
+        else
+        {
+            buff[i % 16] = pc[i];
+        }
+        buff[(i % 16) + 1] = '\0';
+    }
+
+    // Pad out last line if not exactly 16 characters.
+    while ((i % 16) != 0)
+    {
+        printf ("   ");
+        i++;
+    }
+
+    // And print the final ASCII bit.
+    printf ("  %s\n", buff);
 }
 
 SimulatorEXE getSimExe(SimInfo* si)
 {
     int pid = 0;
-    
+
     pid = IsProcessRunning(AC_EXE);
     if(pid>0)
     {
@@ -673,7 +707,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 simdata->simon = true;
                 simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
                 simdata->simexe = simexe;
-               
+
                 simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
                 simdata->gear = 0;
                 simdata->velocity = 0;
@@ -1169,7 +1203,7 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
         }
 
         if (close(simmap->scs2.fd_telemetry) == -1)
-    {
+        {
             return 200;
         }
 

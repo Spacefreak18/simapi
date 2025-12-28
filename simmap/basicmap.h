@@ -4,7 +4,8 @@
 #include "../simapi/simapi.h"
 #include "../simapi/simdata.h"
 
-struct Map {
+struct Map
+{
     const char* name;
     void* value;
     SimDataType dtype;

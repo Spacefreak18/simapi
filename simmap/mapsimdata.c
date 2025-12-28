@@ -11,7 +11,7 @@ int CreateSimDataMap(struct Map *map, SimData *simdata, int mapdata)
     if (mapdata == 1)
     {
         s = simdata;
-    } 
+    }
 
 
     map[0].name = "SimData_mtick";

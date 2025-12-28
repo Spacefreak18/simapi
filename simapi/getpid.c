@@ -12,7 +12,7 @@
 
 #include "getpid.h"
 
-static int isMatch(const char *possibleMatch, const char *checkAgainst)
+static int isMatch(const char* possibleMatch, const char* checkAgainst)
 {
     size_t i;
 
@@ -22,44 +22,59 @@ static int isMatch(const char *possibleMatch, const char *checkAgainst)
         {
             /* If other string ended before we matched */
             return 0;
-        } else if ( possibleMatch[i] != checkAgainst[i] )
-        {
-            /* If current index does not match */
-            return 0;
         }
+        else
+            if ( possibleMatch[i] != checkAgainst[i] )
+            {
+                /* If current index does not match */
+                return 0;
+            }
     }
 
     /* We matched it all */
     return 1;
 }
 
-int is_pid_running(pid_t pid) {
-    if (pid <= 0) return 0;
+int is_pid_running(pid_t pid)
+{
+    if (pid <= 0)
+    {
+        return 0;
+    }
 
     // send signal 0 (no actual signal)
-    if (kill(pid, 0) == 0) {
+    if (kill(pid, 0) == 0)
+    {
         return 1;
-    } else {
-        if (errno == ESRCH) {
-            return 0;
-        } else if (errno == EPERM) {
-            return 1;
-        } else {
+    }
+    else
+    {
+        if (errno == ESRCH)
+        {
             return 0;
         }
+        else
+            if (errno == EPERM)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         return 0;
     }
 }
 
 #define READ_DATA_INCR_BUFSIZ 65535
 
-static size_t readData(char **buf, FILE *envFile)
+static size_t readData(char** buf, FILE *envFile)
 {
     size_t curSize = READ_DATA_INCR_BUFSIZ;
     size_t bytesRead;
     size_t totalBytesRead = 0;
 
-    char *cur;
+    char* cur;
 
     *buf = malloc(curSize + 1);
 
@@ -89,7 +104,7 @@ char* getEnvValueForPid(pid_t pid, const char* envName)
 {
     static char path[64] = { '/', 'p', 'r', 'o', 'c', '/', 0 };
 
-    char *buf, *cur, *val, *ret;
+    char* buf, *cur, *val, *ret;
     FILE *envFile;
     size_t idx, maxIdx, thisLen, envNameLen;
 
