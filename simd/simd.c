@@ -206,6 +206,16 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
 
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
+
+        // Properly close the UDP socket if it's open
+        if (uv_is_active((uv_handle_t*)&recv_socket))
+        {
+            uv_udp_recv_stop(&recv_socket);
+        }
+        if (!uv_is_closing((uv_handle_t*)&recv_socket))
+        {
+            uv_close((uv_handle_t*)&recv_socket, NULL);
+        }
         y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
 
         f->releasing = false;
@@ -269,7 +279,13 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
         simdatamap(simdata, simmap, simmap2, f->sim, true, a);
     }
 
-    if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
+    /*
+     * Relaxed shutdown condition: only stop mapping if explicitly requested
+     * (appstate <= 1) or if the simulation state is definitively off. We no
+     * longer shut down based on simstatus <= 1 from a single packet, as DR2 can
+     * report MENU status (runTime = 0) during countdowns in Rally Cross.
+     */
+    if (f->simstate == false || appstate <= 1)
     {
         releaseloop(f, simdata, simmap);
     }
