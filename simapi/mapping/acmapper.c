@@ -64,13 +64,21 @@ int acc_flag_to_simdata_flag(int ac_flag)
 int acc_get_global_flag(int yellow, int white, int chequered, int green, int red)
 {
     if(chequered > 0)
+    {
         return SIMAPI_FLAG_CHEQUERED;
+    }
     if(red > 0)
+    {
         return SIMAPI_FLAG_RED;
+    }
     if(yellow > 0)
+    {
         return SIMAPI_FLAG_YELLOW;
+    }
     if(white > 0)
+    {
         return SIMAPI_FLAG_WHITE;
+    }
 
     return SIMAPI_FLAG_GREEN;
 }

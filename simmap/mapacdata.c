@@ -17,7 +17,7 @@ int CreateACMap(struct Map *map, ACMap *acmap, int mapdata)
         spfg = acmap->graphic_map_addr;
         spfs = acmap->static_map_addr;
         spfc = acmap->crewchief_map_addr;
-    } 
+    }
 
 
     map[0].name = "SPageFilePhysics_packetId";

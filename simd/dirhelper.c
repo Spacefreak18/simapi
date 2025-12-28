@@ -180,7 +180,7 @@ void restrict_folders_to_cache(char* path, int cachesize)
         strcat(fullpath, "/");
 
         struct stat stbuf;
-        stat(fullpath,&stbuf);
+        stat(fullpath, &stbuf);
 
         if (S_ISDIR(stbuf.st_mode))
         {
@@ -263,27 +263,32 @@ bool does_file_exist(const char* file)
 #endif
 }
 
-char* expand_tilde(char* path) {
-    if (path[0] != '~') {
+char* expand_tilde(char* path)
+{
+    if (path[0] != '~')
+    {
         return path;
     }
 
     const char* home_dir = getenv("HOME");
-    if (!home_dir) {
+    if (!home_dir)
+    {
         return path;
     }
 
     size_t expanded_size = strlen(home_dir) + strlen(path);
     char* expanded_path = (char*)malloc(expanded_size + 1);
 
-    if (!expanded_path) {
+    if (!expanded_path)
+    {
         return path;
     }
 
     strcpy(expanded_path, home_dir);
     strcat(expanded_path, path + 1);
 
-    if (path) {
+    if (path)
+    {
         free(path);
     }
 

@@ -20,7 +20,10 @@ static LapTime rf2_convert_to_simdata_laptime(double rf2_laptime)
 {
     if(rf2_laptime <= 0)
     {
-        return (LapTime){0, 0, 0};
+        return (LapTime)
+        {
+            0, 0, 0
+        };
     }
     LapTime l;
     l.hours = rf2_laptime/60/60;
@@ -72,25 +75,31 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
     int sco = 0; // Index of player vehicle in scoring.
     int veh = 0; // Index of player vehicle in telemetry.
 
-    if (simmap->rf2.has_scoring == true) {
+    if (simmap->rf2.has_scoring == true)
+    {
         b = simmap->rf2.scoring_map_addr;
 
         int id = -1;
-        int num_scored_vehicles = *(int *)(char*)(b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mNumVehicles));
-        for (int i = 0; i < num_scored_vehicles; i++) {
+        int num_scored_vehicles = *(int*)(char*)(b + offsetof(struct rF2Scoring, mScoringInfo) + offsetof(rF2ScoringInfo, mNumVehicles));
+        for (int i = 0; i < num_scored_vehicles; i++)
+        {
             signed char control = *(signed char*)(char*)(b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mControl));
-            if (control == 0) {
+            if (control == 0)
+            {
                 sco = i;
                 id = *(int*)(char*)(b + offsetof(struct rF2Scoring, mVehicles) + (sizeof(rF2VehicleScoring) * i) + offsetof(rF2VehicleScoring, mID));
                 break;
             }
         }
 
-        if (id != -1) {
+        if (id != -1)
+        {
             int num_telemetry_vehicles = *(int*)(char*)(a + offsetof(struct rF2Telemetry, mNumVehicles));
-            for (int i = 0; i < num_telemetry_vehicles; i++) {
+            for (int i = 0; i < num_telemetry_vehicles; i++)
+            {
                 int slot_id = *(int*)(char*)(a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * i) + offsetof(rF2VehicleTelemetry, mID));
-                if (id == slot_id) {
+                if (id == slot_id)
+                {
                     veh = i;
                     break;
                 }

@@ -117,14 +117,17 @@ int set_settings(Parameters* p, SimdSettings* simds)
     }
     else
     {
-        simds->targetvalue = strdup(p->targetvalue); 
+        simds->targetvalue = strdup(p->targetvalue);
     }
     fprintf(stderr, "starting simd\n");
 }
 
-static void close_walk_cb(uv_handle_t* handle, void* arg) {
-  if (!uv_is_closing(handle))
-    uv_close(handle, NULL);
+static void close_walk_cb(uv_handle_t* handle, void* arg)
+{
+    if (!uv_is_closing(handle))
+    {
+        uv_close(handle, NULL);
+    }
 }
 #define ASSERT(expr) expr
 void release()
@@ -172,7 +175,8 @@ void release()
 }
 
 // Signal handler for SIGTERM
-void handle_sigterm(int sig) {
+void handle_sigterm(int sig)
+{
     y_log_message(Y_LOG_LEVEL_DEBUG, "SIGTERM received. Exiting gracefully...");
 
     release();
@@ -190,7 +194,7 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         uv_udp_recv_stop(&recv_socket);
         y_log_message(Y_LOG_LEVEL_INFO, "stopping data mapping, please wait");
         f->uion = false;
-    
+
         // help things spin down
         simdata->simstatus = 0;
         simdata->rpms = 0;
@@ -203,7 +207,7 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
         y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
-       
+
         f->releasing = false;
         if(appstate > 1)
         {
@@ -233,18 +237,21 @@ void shmdatamapcallback(uv_timer_t* handle)
     }
 }
 
-void on_alloc(uv_handle_t* client, size_t suggested_size, uv_buf_t* buf) {
+void on_alloc(uv_handle_t* client, size_t suggested_size, uv_buf_t* buf)
+{
     buf->base = malloc(suggested_size);
     buf->len = suggested_size;
     bzero(buf->base, suggested_size);
 }
 
-static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf, const struct sockaddr* addr, unsigned flags) {
+static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf, const struct sockaddr* addr, unsigned flags)
+{
 
     //if (nread > 0) {
     //    slogt("udp data received");
     //}
-    if (nread <= 0) {
+    if (nread <= 0)
+    {
         free(rcvbuf->base);
         return;
     }
@@ -281,20 +288,33 @@ int startudp(int port)
     return err;
 }
 
-int is_pid_running(pid_t pid) {
-    if (pid <= 0) return 0;
+int is_pid_running(pid_t pid)
+{
+    if (pid <= 0)
+    {
+        return 0;
+    }
 
     // send signal 0 (no actual signal)
-    if (kill(pid, 0) == 0) {
+    if (kill(pid, 0) == 0)
+    {
         return 1;
-    } else {
-        if (errno == ESRCH) {
-            return 0;
-        } else if (errno == EPERM) {
-            return 1;
-        } else {
+    }
+    else
+    {
+        if (errno == ESRCH)
+        {
             return 0;
         }
+        else
+            if (errno == EPERM)
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         return 0;
     }
 }
@@ -574,7 +594,7 @@ void datacheckcallback(uv_timer_t* handle)
     SimData* simdata = f->simdata;
     SimMap* simmap = f->simmap;
     SimMap* simmap2 = f->simmap2;
-    
+
     if ( appstate == 1 )
     {
         SimInfo si = getSim(simdata, simmap, false, startudp, true);
@@ -680,7 +700,7 @@ int main(int argc, char** argv)
             poke(simds);
         }
         fprintf(stderr, "simd daemon already running, please remove /tmp/simd.pid if this is not the case.\n");
-        
+
         goto cleanup_final;
     }
     close(pid_file_fd);
@@ -731,15 +751,21 @@ int main(int argc, char** argv)
 
         /* An error occurred */
         if (pid < 0)
+        {
             exit(EXIT_FAILURE);
+        }
 
         /* Success: Let the parent terminate */
         if (pid > 0)
+        {
             exit(EXIT_SUCCESS);
+        }
 
         /* On success: The child process becomes session leader */
         if (setsid() < 0)
+        {
             exit(EXIT_FAILURE);
+        }
 
         /* Catch, ignore and handle signals */
         //TODO: Implement a working signal handler */
@@ -751,11 +777,15 @@ int main(int argc, char** argv)
 
         /* An error occurred */
         if (pid < 0)
+        {
             exit(EXIT_FAILURE);
+        }
 
         /* Success: Let the parent terminate */
         if (pid > 0)
+        {
             exit(EXIT_SUCCESS);
+        }
 
         /* Set new file permissions */
         umask(0);

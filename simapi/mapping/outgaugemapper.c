@@ -22,7 +22,7 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
     {
         char* a = base;
         int id = 0;
-        
+
         id = *(uint8_t*) (char*) (a + offsetof(struct outgauge, id));
         if(id == 2 || simexe == SIMULATOREXE_BEAMNG)
         {
@@ -34,10 +34,11 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
             simdata->fuel = *(float*) (char*) (a + offsetof(struct outgauge, fuel));
             simdata->gas = *(float*) (char*) (a + offsetof(struct outgauge, throttle));
             simdata->brake = *(float*) (char*) (a + offsetof(struct outgauge, brake));
-            
+
             uint8_t i = 0;
             simdata->car[4] = '\0';
-            while(i < 3) {
+            while(i < 3)
+            {
                 char b = *(char*) (char*) (a + offsetof(struct outgauge, car) + i);
                 simdata->car[i] = b;
                 i++;
@@ -47,7 +48,7 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
             return;
         }
         id = 0;
-      
+
         id = *(uint8_t*) (char*) (a + offsetof(struct outsim, ID));
         if(id == 1)
         {
