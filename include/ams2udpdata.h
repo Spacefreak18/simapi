@@ -1,6 +1,7 @@
 #include <stdint.h>
 
-struct ams2UDPData {
+struct ams2UDPData
+{
     // starts with packet base (0-12)
     uint32_t mPacketNumber;               // 0 counter reflecting all the packets that have been sent during the game run
     uint32_t mCategoryPacketNumber;       // 4 counter of the packet groups belonging to the given category

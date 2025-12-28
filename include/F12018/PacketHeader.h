@@ -2,7 +2,8 @@
 #define __PacketHeader_h__
 
 
-enum PacketID: uint8_t {
+enum PacketID: uint8_t
+{
     PACKET_ID_MOTION = 0,
     PACKET_ID_SESSION = 1,
     PACKET_ID_LAP_DATA = 2,
@@ -13,7 +14,8 @@ enum PacketID: uint8_t {
     PACKET_ID_CAR_STATUS = 7,
 };
 
-static const char * const PacketID_name[] = {
+static const char* const PacketID_name[] =
+{
     "MOTION", "SESSION", "LAP_DATA", "EVENT", "PARTICIPANTS", "CAR_SETUPS",
     "CAR_TELEMETRY", "CAR_STATUS",
 };

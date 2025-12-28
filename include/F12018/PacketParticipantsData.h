@@ -2,7 +2,8 @@
 #define __PacketParticipantsData_h__
 
 
-enum DriverID: uint8_t {
+enum DriverID: uint8_t
+{
     DRIVER_ID_CARLOS_SAINZ = 0,
     // EMPTY = 1,
     DRIVER_ID_DANIEL_RICCIARDO = 2,
@@ -76,7 +77,8 @@ enum DriverID: uint8_t {
     DRIVER_ID_RASHID_NAIR = 70,
     DRIVER_ID_JACK_TREMBLAY = 71,
 };
-static const char * const DriverID_name[] = {
+static const char* const DriverID_name[] =
+{
     "CARLOS_SAINZ", NULL, "DANIEL_RICCIARDO", "FERNANDO_ALONSO", NULL, NULL, "KIMI_RAIKKONEN",
     "LEWIS_HAMILTON", "MARCUS_ERICSSON", "MAX_VERSTAPPEN", "NICO_HULKENBURG", "KEVIN_MAGNUSSEN",
     "ROMAIN_GROSJEAN", "SEBASTIAN_VETTEL", "SERGIO_PEREZ", "VALTTERI_BOTTAS", NULL,
@@ -91,7 +93,8 @@ static const char * const DriverID_name[] = {
     "RUBEN_MEIJER", "RASHID_NAIR", "JACK_TREMBLAY",
 };
 
-enum TeamID: uint8_t {
+enum TeamID: uint8_t
+{
     TEAM_ID_MERCEDES = 0,
     TEAM_ID_FERRARI = 1,
     TEAM_ID_RED_BULL = 2,
@@ -125,7 +128,8 @@ enum TeamID: uint8_t {
 };
 static const char
 * const TeamID_name[]
-= {
+=
+{
     "MERCEDES", "FERRARI", "RED_BULL", "WILLIAMS", "FORCE_INDIA", "RENAULT", "TORO_ROSSO",
     "HAAS", "MCLAREN", "SAUBER", "MCLAREN_1988", "MCLAREN_1991", "WILLIAMS_1992", "FERRARI_1995",
     "WILLIAMS_1996", "MCLAREN_1998", "FERRARI_2002", "FERRARI_2004", "RENAULT_2006",
@@ -133,7 +137,8 @@ static const char
     "LOTUS_1972", "FERRARI_1979", "MCLAREN_1982", "WILLIAMS_2003", "BRAWN_2009", "LOTUS_1978"
 };
 
-enum Nationality: uint8_t {
+enum Nationality: uint8_t
+{
     NATIONALITY_AMERICAN = 1,
     NATIONALITY_ARGENTINEAN = 2,
     NATIONALITY_AUSTRALIAN = 3,
@@ -222,7 +227,8 @@ enum Nationality: uint8_t {
     NATIONALITY_VENEZUELAN = 86,
     NATIONALITY_WELSH = 87
 };
-static const char * const Nationality_name[] = {
+static const char* const Nationality_name[] =
+{
     NULL, "AMERICAN", "ARGENTINEAN", "AUSTRALIAN", "AUSTRIAN", "AZERBAIJANI", "BAHRAINI",
     "BELGIAN", "BOLIVIAN", "BRAZILIAN", "BRITISH", "BULGARIAN", "CAMEROONIAN", "CANADIAN",
     "CHILEAN", "CHINESE", "COLOMBIAN", "COSTA_RICAN", "CROATIAN", "CYPRIOT", "CZECH",
@@ -246,7 +252,7 @@ typedef struct //ParticipantData
     uint8_t    m_raceNumber;             // Race number of the car
     uint8_t    m_nationality;            // Nationality of the driver
     char       m_name[48];               // Name of participant in UTF-8 format – null terminated
-                                         // Will be truncated with … (U+2026) if too long
+    // Will be truncated with … (U+2026) if too long
 
     wchar_t    m_name_w[24];             // wide character duplicate of m_name
 

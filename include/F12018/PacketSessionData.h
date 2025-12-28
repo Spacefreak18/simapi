@@ -8,7 +8,8 @@ typedef struct //MarshalZone
 
 } MarshalZone;
 
-enum Weather: uint8_t {
+enum Weather: uint8_t
+{
     WEATHER_CLEAR = 0,
     WEATHER_LIGHT_CLOUD = 1,
     WEATHER_OVERCAST = 2,
@@ -17,11 +18,13 @@ enum Weather: uint8_t {
     WEATHER_STORM = 5
 };
 
-static const char * const Weather_name[] = {
+static const char* const Weather_name[] =
+{
     "CLEAR", "LIGHT_CLOUD", "OVERCAST", "LIGHT_RAIN", "HEAVY_RAIN", "STORM",
 };
 
-enum SessionType: uint8_t {
+enum SessionType: uint8_t
+{
     SESSION_TYPE_UNKNOWN = 0,
     SESSION_TYPE_P1 = 1,
     SESSION_TYPE_P2 = 2,
@@ -37,12 +40,14 @@ enum SessionType: uint8_t {
     SESSION_TYPE_TIME_TRIAL = 12
 };
 
-static const char * const SessionType_name[] = {
+static const char* const SessionType_name[] =
+{
     "UNKNOWN", "P1", "P2", "P3", "SHORT_P", "Q1", "Q2", "Q3", "SHORT_Q", "OSQ",
     "R", "R2", "TIME_TRIAL",
 };
 
-enum TrackID: uint8_t {
+enum TrackID: uint8_t
+{
     TRACK_ID_MELBOURNE = 0,
     TRACK_ID_PAUL_RICARD = 1,
     TRACK_ID_SHANGHAI = 2,
@@ -70,69 +75,78 @@ enum TrackID: uint8_t {
     TRACK_ID_SUZUKA_SHORT = 24
 };
 
-static const char * const TrackID_name[] = {
+static const char* const TrackID_name[] =
+{
     "MELBOURNE", "PAUL_RICARD", "SHANGHAI", "SAKHIR", "CATALUNYA", "MONACO", "MONTREAL",
     "SILVERSTONE", "HOCKENHEIM", "HUNGARORING", "SPA", "MONZA", "SINGAPORE", "SUZUKA",
     "ABU_DHABI", "TEXAS", "BRAZIL", "AUSTRIA", "SOCHI", "MEXICO", "BAKU", "SAKHIR_SHORT",
     "SILVERSTONE_SHORT", "TEXAS_SHORT", "SUZUKA_SHORT"
 };
 
-enum Era: uint8_t {
+enum Era: uint8_t
+{
     ERA_MODERN = 0, ERA_CLASSIC = 1,
 };
 
-static const char * const Era_name[] = {
+static const char* const Era_name[] =
+{
     "MODERN", "CLASSIC",
 };
 
-enum SLIProNativeSupport: uint8_t {
+enum SLIProNativeSupport: uint8_t
+{
     SLIP_PRO_NATIVE_SUPPORT_INACTIVE = 0, SLIP_PRO_NATIVE_SUPPORT_ACTIVE = 1,
 };
 
-static const char * const SLIProNativeSupport_name[] = {
+static const char* const SLIProNativeSupport_name[] =
+{
     "INACTIVE", "ACTIVE",
 };
 
-enum SafetyCarStatus: uint8_t {
+enum SafetyCarStatus: uint8_t
+{
     NO_SAFETY_CAR = 0, FULL_SAFETY_CAR = 1, VIRTUAL_SAFETY_CAR = 2,
 };
 
-static const char * const SafetyCarStatus_name[] = {
+static const char* const SafetyCarStatus_name[] =
+{
     "NO_SAFETY_CAR", "FULL_SAFETY_CAR", "VIRTUAL_SAFETY_CAR"
 };
 
-enum NetworkGame: uint8_t {
+enum NetworkGame: uint8_t
+{
     NETWORK_GAME_OFFLINE = 0, NETWORK_GAME_ONLINE = 1,
 };
 
-static const char * const NetworkGame_name[] = {
+static const char* const NetworkGame_name[] =
+{
     "OFFLINE", "ONLINE",
 };
 
 struct PacketSessionData
 {
     uint8_t         m_weather;              // Weather - 0 = clear, 1 = light cloud, 2 = overcast
-                                            // 3 = light rain, 4 = heavy rain, 5 = storm
-    int8_t          m_trackTemperature;    	// Track temp. in degrees celsius
-    int8_t          m_airTemperature;      	// Air temp. in degrees celsius
-    uint8_t         m_totalLaps;           	// Total number of laps in this race
+    // 3 = light rain, 4 = heavy rain, 5 = storm
+    int8_t          m_trackTemperature;     // Track temp. in degrees celsius
+    int8_t          m_airTemperature;       // Air temp. in degrees celsius
+    uint8_t         m_totalLaps;            // Total number of laps in this race
     uint16_t        m_trackLength;          // Track length in metres
-    uint8_t         m_sessionType;         	// 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P
-                                            // 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ
-                                            // 10 = R, 11 = R2, 12 = Time Trial
-    int8_t          m_trackId;         		// -1 for unknown, 0-21 for tracks, see appendix
+    uint8_t         m_sessionType;          // 0 = unknown, 1 = P1, 2 = P2, 3 = P3, 4 = Short P
+    // 5 = Q1, 6 = Q2, 7 = Q3, 8 = Short Q, 9 = OSQ
+    // 10 = R, 11 = R2, 12 = Time Trial
+    int8_t          m_trackId;              // -1 for unknown, 0-21 for tracks, see appendix
     uint8_t         m_era;                  // Era, 0 = modern, 1 = classic
-    uint16_t        m_sessionTimeLeft;    	// Time left in session in seconds
-    uint16_t        m_sessionDuration;     	// Session duration in seconds
-    uint8_t         m_pitSpeedLimit;      	// Pit speed limit in kilometres per hour
+    uint16_t        m_sessionTimeLeft;      // Time left in session in seconds
+    uint16_t        m_sessionDuration;      // Session duration in seconds
+    uint8_t         m_pitSpeedLimit;        // Pit speed limit in kilometres per hour
     uint8_t         m_gamePaused;           // Whether the game is paused
-    uint8_t         m_isSpectating;        	// Whether the player is spectating
-    uint8_t         m_spectatorCarIndex;  	// Index of the car being spectated
-    uint8_t         m_sliProNativeSupport;	// SLI Pro support, 0 = inactive, 1 = active
+    uint8_t         m_isSpectating;         // Whether the player is spectating
+    uint8_t         m_spectatorCarIndex;    // Index of the car being spectated
+    uint8_t         m_sliProNativeSupport;  // SLI Pro support, 0 = inactive, 1 = active
     uint8_t         m_numMarshalZones;      // Number of marshal zones to follow
     MarshalZone     m_marshalZones[21];     // List of marshal zones – max 21
     uint8_t         m_safetyCarStatus;      // 0 = no safety car, 1 = full safety car
-                                            // 2 = virtual safety car
+    // 2 = virtual safety car
     uint8_t        m_networkGame;           // 0 = offline, 1 = online
 
 };
