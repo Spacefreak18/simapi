@@ -15,6 +15,7 @@ find_library(ARGTABLE3_LIBRARY argtable3)
 if (ARGTABLE3_INCLUDE_DIR AND ARGTABLE3_LIBRARY)
     add_compile_definitions(HAVE_ARGTABLE3)
     set(ARGTABLE_LIBS ${ARGTABLE3_LIBRARY})
+    set(ARGTABLE_INCLUDE_DIR ${ARGTABLE3_INCLUDE_DIR})
 else()
     find_path(ARGTABLE2_INCLUDE_DIR argtable2.h)
     find_library(ARGTABLE2_LIBRARY argtable2)
@@ -22,6 +23,7 @@ else()
     if (ARGTABLE2_INCLUDE_DIR AND ARGTABLE2_LIBRARY)
         add_compile_definitions(HAVE_ARGTABLE2)
         set(ARGTABLE_LIBS ${ARGTABLE2_LIBRARY})
+        set(ARGTABLE_INCLUDE_DIR ${ARGTABLE2_INCLUDE_DIR})
     else()
         message(FATAL_ERROR "Neither argtable3 nor argtable2 found")
     endif()
@@ -30,7 +32,7 @@ endif()
 add_executable(simd simd.c parameters.c confighelper.c dirhelper.c poke.c ../simmap/mapsimdata.c)
 target_link_libraries(simd m uv yder ${ARGTABLE_LIBS} config simapi)
 
-target_include_directories(simd PUBLIC)
+target_include_directories(simd PRIVATE ${ARGTABLE_INCLUDE_DIR})
 
 # used for enabling additional compiler options if supported
 include(CheckCXXCompilerFlag)
@@ -63,7 +65,7 @@ else() # GCC/Clang warning option
 
     if(analyze)
         message("-- Analyzer is on")
-        target_compile_options(monocoque PRIVATE -fanalyzer -Wno-analyzer-possible-null-argument -Wno-analyzer-possible-null-dereference)
+        target_compile_options(simd PRIVATE -fanalyzer -Wno-analyzer-possible-null-argument -Wno-analyzer-possible-null-dereference)
     endif()
 
     enable_cxx_compiler_flag_if_supported("-Wall")
