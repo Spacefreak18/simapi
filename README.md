@@ -9,12 +9,14 @@ use the functions within simmapper.c to open and map the memory mapped file.
 ## Building
 
 To compile the shared library with the CMakeLists.txt in the root of the repo...
+```bash
+cmake -B build
+cmake --build build
 ```
-mkdir build; cd build
-cmake ..
-make clean; make; make install
+You will need sudo to install, which will place the library and public headers into `/usr/local`:
+```bash
+sudo cmake --install build
 ```
-You will need sudo for the make install, which will place the dll and public headers into /usr/local.
 
 ## Supported Sims
 the closest to documentation found for each sim
