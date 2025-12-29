@@ -55,7 +55,7 @@ int appstate = 0;
 int compat_info_size = 0;
 int gamepid = 0;
 
-void shmdatamapcallback(uv_timer_t *handle);
+void shmdatamapcallback(uv_timer_t* handle);
 void datacheckcallback(uv_timer_t* handle);
 void gamefindcallback(uv_timer_t* handle);
 void bridgeclosecallback(uv_timer_t* handle);
@@ -682,9 +682,9 @@ void cb(uv_poll_t* handle, int status, int events)
 
 /**
  * @brief Main entry point of the program.
- * 
+ *
  * This function initializes the application and starts the main loop.
- * 
+ *
  * @return Exit status of the program.
  */
 int main(int argc, char** argv)
