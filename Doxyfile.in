@@ -1,0 +1,7 @@
+PROJECT_NAME =  SIMAPI
+INPUT = ..//include/ \
+        ..//simd/ \
+        ../simapi/
+
+
+EXTRACT_ALL = YES

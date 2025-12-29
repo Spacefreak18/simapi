@@ -1,0 +1,15 @@
+DOXYFILE = Doxyfile.in
+
+
+#---------------------------------------------------------------------------
+# Doxygen Configuration
+#---------------------------------------------------------------------------
+
+# These variables have to be redefined since codedocs cannot run CMake
+PROJECT_NAME = "SIMAPI"
+PROJECT_NUMBER = 0.1.0
+PROJECT_BRIEF = "Cross Platform Libraries for Racing Sims"
+OUTPUT_DIRECTORY = doc/
+INPUT = doc/ include/ simapi/ simd/
+#USE_MDFILE_AS_MAINPAGE = doc/main_page.md
+EXTRACT_ALL = YES
