@@ -1,7 +1,6 @@
 {
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    self.submodules = true;
   };
 
   outputs = { nixpkgs, ... }:
@@ -14,8 +13,12 @@
 
       src = ./.;
 
-      buildInputs = [
+      nativeBuildInputs = [
         pkgs.cmake
+      ];
+
+      cmakeFlags = [
+        "-DBUILD_SIMD=OFF"
       ];
     };
 
@@ -29,10 +32,13 @@
         cd simd
       '';
 
+      nativeBuildInputs = [
+        pkgs.cmake
+      ];
+
       buildInputs = [
         simapi
 
-        pkgs.cmake
         pkgs.libuv
         pkgs.yder
         pkgs.libconfig
