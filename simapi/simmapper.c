@@ -146,9 +146,14 @@ int simapi_strtogame(const char* game)
                                                 sim = SIMULATOREXE_BEAMNG;
                                             }
                                             else
-                                            {
-                                                sim = 0;
-                                            }
+                                                if (sstrcicmp(game, "dr2") == 0)
+                                                {
+                                                    sim = SIMULATOREXE_DIRT_RALLY_2;
+                                                }
+                                                else
+                                                {
+                                                    sim = 0;
+                                                }
     return sim;
 }
 
@@ -178,6 +183,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "lfs";
         case SIMULATOREXE_BEAMNG:
             return "beamng";
+        case SIMULATOREXE_DIRT_RALLY_2:
+            return "dr2";
         default:
             return "default";
     }
@@ -209,6 +216,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "Live For Speed";
         case SIMULATOREXE_BEAMNG:
             return "beamng";
+        case SIMULATOREXE_DIRT_RALLY_2:
+            return "DiRT Rally 2.0";
         default:
             return "default";
     }
@@ -586,6 +595,12 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_BEAMNG;
     }
+    pid = IsProcessRunning(DIRT_RALLY_2_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_DIRT_RALLY_2;
+    }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -832,9 +847,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             break;
         case SIMULATOREXE_DIRT_RALLY_2:
-            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Dirt Rally 2");
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for DiRT Rally 2.0");
             int dr2_error = (*setup_udp)(20777);
-            dr2_error = siminitudp(simdata, simmap, SIMULATORAPI_DIRT_RALLY_2);
+            if (dr2_error == 0)
+            {
+                dr2_error = siminitudp(simdata, simmap, SIMULATORAPI_DIRT_RALLY_2);
+            }
 
             if (dr2_error == 0)
             {

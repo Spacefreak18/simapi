@@ -21,6 +21,7 @@
 #include <simapi.h>
 #include <simdata.h>
 #include <simmapper.h>
+#include <simmap.h>
 #include "../simapi/test.h"
 #include "../simmap/basicmap.h"
 
@@ -256,15 +257,17 @@ void on_alloc(uv_handle_t* client, size_t suggested_size, uv_buf_t* buf)
 
 static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf, const struct sockaddr* addr, unsigned flags)
 {
-
-    //if (nread > 0) {
-    //    slogt("udp data received");
-    //}
     if (nread <= 0)
     {
         free(rcvbuf->base);
         return;
     }
+
+    if (nread > 0)
+    {
+        y_log_message(Y_LOG_LEVEL_DEBUG, "UDP packet received: %zd bytes", nread);
+    }
+
     char* a;
     a = rcvbuf->base;
 
@@ -277,6 +280,10 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
     if (appstate == 2)
     {
         simdatamap(simdata, simmap, simmap2, f->sim, true, a);
+    }
+    else
+    {
+        y_log_message(Y_LOG_LEVEL_DEBUG, "UDP packet received but appstate is %d (expected 2)", appstate);
     }
 
     /*
@@ -295,11 +302,15 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
 
 int startudp(int port)
 {
+    if (uv_is_active((uv_handle_t*)&recv_socket) || uv_is_closing((uv_handle_t*)&recv_socket))
+    {
+        return 0;
+    }
     uv_udp_init(uv_default_loop(), &recv_socket);
     struct sockaddr_in recv_addr;
     uv_ip4_addr("0.0.0.0", port, &recv_addr);
     int err = uv_udp_bind(&recv_socket, (const struct sockaddr *) &recv_addr, UV_UDP_REUSEADDR);
-    y_log_message(Y_LOG_LEVEL_DEBUG, "initial udp error is %i", err);
+    y_log_message(Y_LOG_LEVEL_DEBUG, "initial udp error is %i for port %i", err, port);
 
     return err;
 }
@@ -605,6 +616,7 @@ void udpstart(LoopData* f, SimData* simdata, SimMap* simmap)
 
 void datacheckcallback(uv_timer_t* handle)
 {
+    y_log_message(Y_LOG_LEVEL_DEBUG, "datacheckcallback triggered");
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
@@ -858,6 +870,14 @@ int main(int argc, char** argv)
     }
 
     opensimmap(simmap2);
+    if (simmap2->fd != -1)
+    {
+        y_log_message(Y_LOG_LEVEL_INFO, "Successfully opened universal shared memory (fd: %d)", simmap2->fd);
+    }
+    else
+    {
+        y_log_message(Y_LOG_LEVEL_ERROR, "Failed to open universal shared memory!");
+    }
 
     simdata->simapiversion = SIMAPI_VERSION;
     simdmap(simmap2, simdata);
