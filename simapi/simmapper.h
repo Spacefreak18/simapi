@@ -86,5 +86,6 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap);
 void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base);
 void map_trucks_data(SimData* simdata, SimMap* simmap);
 void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe, char* base);
+void map_dirt_rally_2_data(SimData* simdata, SimMap* simmap, char* base);
 
 #endif

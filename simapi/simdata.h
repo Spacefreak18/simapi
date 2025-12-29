@@ -97,6 +97,8 @@ typedef struct //SimData
     uint32_t gear;
     uint32_t pulses;
     uint32_t maxrpm;
+    uint32_t idlerpm;
+    uint32_t maxgears;
     uint32_t altitude;
     uint32_t lap;
     uint32_t position;
@@ -116,6 +118,7 @@ typedef struct //SimData
     double gas;
     double brake;
     double fuel;
+    double fuelcapacity;
     double clutch;
     double steer;
     double handbrake;
@@ -128,8 +131,11 @@ typedef struct //SimData
     double brakebias;
     double tyreRPS[4];
     double tyrediameter[4];
+    double distance;
 
     double heading;
+    double pitch;
+    double roll;
     double worldposx;
     double worldposy;
     double worldposz;
@@ -148,6 +154,7 @@ typedef struct //SimData
     double tracktemp;
 
     double suspension[4];
+    double suspvelocity[4];
 
     double trackdistancearound;
     double playerspline;
@@ -164,6 +171,8 @@ typedef struct //SimData
     LapTime sessiontime;
     uint8_t session;
     uint8_t sectorindex;
+    double sector1time;
+    double sector2time;
     uint32_t lastsectorinms;
     uint8_t courseflag;
     uint8_t playerflag;
