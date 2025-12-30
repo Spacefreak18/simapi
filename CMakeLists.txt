@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 project(simapi VERSION 1.0.1 DESCRIPTION "Telemetry Mapping Library for Racing Sims")
 include(GNUInstallDirs)
-add_library(simapi SHARED simapi/simmapper.c simapi/getpid.c simapi/mapping/acmapper.c simapi/mapping/pcars2mapper.c simapi/mapping/rf2mapper.c simapi/mapping/scs2mapper.c simapi/mapping/outgaugemapper.c)
+add_library(simapi SHARED simapi/simmapper.c simapi/getpid.c simapi/mapping/acmapper.c simapi/mapping/pcars2mapper.c simapi/mapping/rf2mapper.c simapi/mapping/scs2mapper.c simapi/mapping/outgaugemapper.c simapi/mapping/dirt2mapper.c)
 
 set(SIMAPI_PUBLIC_HEADERS
     "simapi/simmapper.h"
@@ -25,3 +25,6 @@ option(BUILD_SIMD "Build the simd tool" ON)
 if(BUILD_SIMD)
     add_subdirectory(simd)
 endif()
+
+add_executable(view_telemetry tests/view_telemetry.c)
+target_link_libraries(view_telemetry simapi m)

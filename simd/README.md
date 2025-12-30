@@ -19,11 +19,10 @@ mapped filed can be found at /dev/shm/SIMAPI.DAT.
 simd and simapi are both available in the [AUR](https://aur.archlinux.org/packages/simd-git)
 be sure to install [simapi](https://aur.archlinux.org/packages/simapi-git) first
 
-To build first compile and install simapi as a dll using the instructions at the root of the repo, then compile simd with cmake:
-```
-mkdir build; cd build
-cmake ..
-make
+To build first compile and install simapi using the instructions at the root of the repo, then compile simd with cmake:
+```bash
+cmake -B build
+cmake --build build
 ```
 
 ## Usage
