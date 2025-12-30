@@ -21,7 +21,7 @@
 #include <simapi.h>
 #include <simdata.h>
 #include <simmapper.h>
-#include <simmap.h>
+#include "../simapi/simmap.h"
 #include "../simapi/test.h"
 #include "../simmap/basicmap.h"
 
