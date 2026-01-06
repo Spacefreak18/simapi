@@ -3,7 +3,7 @@ if you have not yet built simd, see the [readme](https://github.com/Spacefreak18
 
 The first step is to compile (or download from releases) the shared memory compatibility [binaries](https://github.com/spacefreak18/simshmbridge?tab=readme-ov-file#compilation).
 
-if you wish to use the automatic bridging mode (recommended), first copy the config file from [here](https://github.com/Spacefreak18/simapi/blob/master/simd/conf/simd.config) to ~/.config/simd/simd.configand
+if you wish to use the automatic bridging mode (recommended), first copy the config file from [here](https://github.com/Spacefreak18/simapi/blob/master/simd/conf/simd.config) to ~/.config/simd/simd.config
 
 next, add the appropriate [bridge](https://github.com/spacefreak18/simshmbridge) exe to your steam launch command like this:
 ```
