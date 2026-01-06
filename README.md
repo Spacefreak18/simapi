@@ -18,8 +18,8 @@ You will need sudo to install, which will place the library and public headers i
 sudo cmake --install build
 ```
 
-## Supported Sims
-the closest to documentation found for each sim
+## [Supported Sims](https://spacefreak18.github.io/simapi/supportedsims)
+the closest to documentation found for each sim (not exhaustive)
 ### Assetto Corsa / Assetto Corsa Competizione
 [acsharedmemorydocumentation](https://www.overtake.gg/attachments/acsharedmemorydocumentation-pdf.667802)
 ### RFactor2
