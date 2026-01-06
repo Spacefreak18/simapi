@@ -14,8 +14,8 @@
 | Euro Truck Simulator 2 | Truck Simulator | shm | [scs-sdk-plugin](https://github.com/alxwk/scs-sdk-plugin) | Silver | |
 
 
-shm = Shared Memory
-Platinum = All Current Monocoque and Simmonitor features are supported
-Gold = Most Features are supported
-Silver = Minimal features are supported, either because they have yet to be implemented or the simulator does not support them
-Bronze = Very minimal features are supported
+shm = Shared Memory <br>
+Platinum = All Current Monocoque and Simmonitor features are supported <br>
+Gold = Most Features are supported <br>
+Silver = Minimal features are supported, either because they have yet to be implemented or the simulator does not support them <br>
+Bronze = Very minimal features are supported <br>
