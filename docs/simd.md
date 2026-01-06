@@ -1,5 +1,5 @@
 # simd
-To jump right into how to use simd visit this [page](https://spacefreak18.github.io/simapi/simd).
+To jump right into how to use simd visit this [page](https://spacefreak18.github.io/simapi/simd_usage).
 
 Applications such as monocoque and simmonitor, being sim-agnostic in nature, require some sort of
 common mapping of the telemetry the different titles are making available.
