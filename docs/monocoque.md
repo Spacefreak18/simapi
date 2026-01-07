@@ -6,4 +6,4 @@
 
 ## [Arduino (serial)](/simapi/serial)
 
-## Third Party Devices
+## [Third Party Devices](/simapi/thirdpartydevices)
