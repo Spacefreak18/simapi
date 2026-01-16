@@ -1438,6 +1438,18 @@ int opensimcompatmap(SimCompatMap* compatmap)
     return 0;
 }
 
+int simcompatmapclear(SimCompatMap* compatmap)
+{
+    memset(compatmap->acphysics_addr, 0, AC_PHYSICS_SIZE);
+    memset(compatmap->acphysics_addr, 0, AC_STATIC_SIZE);
+    memset(compatmap->acphysics_addr, 0, AC_GRAPHIC_SIZE);
+    memset(compatmap->acphysics_addr, 0, AC_CREWCHIEF_SIZE);
+    memset(compatmap->pcars2_addr, 0, PCARS2_SIZE);
+
+    return 0;
+}
+
+
 int freesimcompatmap(SimCompatMap* compatmap)
 {
     if (munmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1)

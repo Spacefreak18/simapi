@@ -78,6 +78,7 @@ int opensimmap(SimMap* simmap);
 int freesimmap(SimMap* simmap, bool issimd);
 int opensimcompatmap(SimCompatMap* compatmap);
 int freesimcompatmap(SimCompatMap* compatmap);
+int simcompatmapclear(SimCompatMap* compatmap);
 
 void SetProximityData(SimData* simdata, int cars, int8_t lr_flip);
 
