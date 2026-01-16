@@ -254,7 +254,18 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simex
     if (simmap->ac.has_static == true )
     {
         b = simmap->ac.static_map_addr;
-        simdata->maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
+        uint32_t maxrpm = *(uint32_t*) (char*) (b + offsetof(struct SPageFileStatic, maxRpm));
+        if(maxrpm > 0)
+        {
+            simdata->maxrpm = maxrpm;
+        }
+        else
+        {
+            if(simdata->rpms > 0 && simdata->rpms > simdata->maxrpm)
+            {
+                simdata->maxrpm = simdata->rpms;
+            }
+        }
         simdata->maxturbo = *(float*) (char*) (b + offsetof(struct SPageFileStatic, MaxTurboBoost));
 
         simdata->tyrediameter[0] = *(float*) (char*) (b + offsetof(struct SPageFileStatic, tyreRadius) + (sizeof(float) * 0));

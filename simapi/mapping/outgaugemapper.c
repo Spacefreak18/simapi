@@ -29,6 +29,10 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
             simdata->gear = *(uint8_t*) (char*) (a + offsetof(struct outgauge, gear));
             //int time = *(uint64_t*) (char*) (a + offsetof(struct outgauge, time));
             simdata->rpms = froundint( *(float*) (char*) (a + offsetof(struct outgauge, rpm)) );
+            if(simdata->rpms > 0 && simdata->rpms > simdata->maxrpm)
+            {
+                simdata->maxrpm = simdata->rpms;
+            }
             simdata->velocity = froundint( (*(float*) (char*) (a + offsetof(struct outgauge, speed))) * 3.6 );
             simdata->turboboost = *(float*) (char*) (a + offsetof(struct outgauge, turbo));
             simdata->fuel = *(float*) (char*) (a + offsetof(struct outgauge, fuel));
