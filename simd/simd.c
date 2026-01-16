@@ -214,6 +214,11 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
 
+        if(simds.auto_memmap == true)
+        {
+            simcompatmapclear(compatmap);
+            y_log_message(Y_LOG_LEVEL_DEBUG, "cleared memory mapped files");
+        }
 
         y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
 
