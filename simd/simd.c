@@ -186,13 +186,14 @@ void handle_sigterm(int sig)
 
 void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
 {
+    SimdSettings simds = f->simds;
+
     if(f->releasing == false)
     {
 
         f->releasing = true;
         appstate = 1;
         uv_timer_stop(&datamaptimer);
-        uv_udp_recv_stop(&recv_socket);
         y_log_message(Y_LOG_LEVEL_INFO, "stopping data mapping, please wait");
         f->uion = false;
 
@@ -204,19 +205,16 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         {
             simdmap(simmap2, simdata);
         }
-
-        int r = simfree(simdata, simmap, f->sim);
-        y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
-
         // Properly close the UDP socket if it's open
         if (uv_is_active((uv_handle_t*)&recv_socket))
         {
             uv_udp_recv_stop(&recv_socket);
         }
-        if (!uv_is_closing((uv_handle_t*)&recv_socket))
-        {
-            uv_close((uv_handle_t*)&recv_socket, NULL);
-        }
+
+        int r = simfree(simdata, simmap, f->sim);
+        y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
+
+
         y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
 
         f->releasing = false;
