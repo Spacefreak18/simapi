@@ -3,7 +3,6 @@ name: CMake on multiple platforms
 on:
   push:
     tags: [ "*" ]
-    branches: [ "master" ]
 
 jobs:
 
@@ -47,15 +46,16 @@ jobs:
     
     - name: Build debian package
       run: |
-        mkdir PKG_SOURCE
-        mkdir -p PKG_SOURCE/DEBIAN
-        mkdir -p PKG_SOURCE/usr/lib/x86_64-linux-gnu/
-        cp ./tools/distro/debian/dpkg/simapi_control ./PKG_SOURCE/DEBIAN/control
+        rm -rf SIMAPI_PKG_SOURCE
+        mkdir SIMAPI_PKG_SOURCE
+        mkdir -p SIMAPI_PKG_SOURCE/DEBIAN
+        mkdir -p SIMAPI_PKG_SOURCE/usr/lib/x86_64-linux-gnu/
+        cp ./tools/distro/debian/dpkg/simapi_control ./SIMAPI_PKG_SOURCE/DEBIAN/control
         cp -r \
           build/libsimapi.so \
           build/libsimapi.so.1 \
           build/libsimapi.so.1.0.1 \
-          PKG_SOURCE/usr/lib/x86_64-linux-gnu/
+          SIMAPI_PKG_SOURCE/usr/lib/x86_64-linux-gnu/
         dpkg-deb --build PKG_SOURCE simapi-${{ matrix.os }}.deb
     
     - name: Install Lib for build
@@ -93,12 +93,13 @@ jobs:
 
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
-        mkdir PKG_SOURCE
-        mkdir -p PKG_SOURCE/DEBIAN
-        mkdir -p PKG_SOURCE/usr/bin/
-        cp ./tools/distro/debian/dpkg/simd_control ./PKG_SOURCE/DEBIAN/control
-        cp simd/build/simd ./PKG_SOURCE/usr/bin/simd
-        dpkg-deb --build PKG_SOURCE simd-${{ matrix.os }}.deb
+        rm -rf SIMD_PKG_SOURCE
+        mkdir SIMD_PKG_SOURCE
+        mkdir -p SIMD_PKG_SOURCE/DEBIAN
+        mkdir -p SIMD_PKG_SOURCE/usr/bin/
+        cp ./tools/distro/debian/dpkg/simd_control ./SIMD_PKG_SOURCE/DEBIAN/control
+        cp simd/build/simd ./SIMD_PKG_SOURCE/usr/bin/simd
+        dpkg-deb --build SIMD_PKG_SOURCE simd-${{ matrix.os }}.deb
 
     - name: Release the Package
       uses: softprops/action-gh-release@v1
