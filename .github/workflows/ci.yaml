@@ -56,7 +56,7 @@ jobs:
           build/libsimapi.so.1 \
           build/libsimapi.so.1.0.1 \
           SIMAPI_PKG_SOURCE/usr/lib/x86_64-linux-gnu/
-        dpkg-deb --build PKG_SOURCE simapi-${{ matrix.os }}.deb
+        dpkg-deb --build SIMAPI_PKG_SOURCE simapi-${{ matrix.os }}.deb
     
     - name: Install Lib for build
       run: |
