@@ -3,6 +3,7 @@ name: CMake on multiple platforms
 on:
   push:
     tags: [ "*" ]
+    branch: [ "master" ]
 
 jobs:
 
@@ -75,9 +76,13 @@ jobs:
         github_sha_hash=${{ github.sha }}
         echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
     
+    - name: Install Lib for build
+      run: |
+        rm ${{ steps.strings.outputs.build-output-dir }}
+    
     - name: Configure CMake
       run: >
-        cmake --clean-first -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=g++
         -DCMAKE_C_COMPILER=gcc
         -DCMAKE_BUILD_TYPE=Release
