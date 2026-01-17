@@ -43,30 +43,11 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
-
+    
     - name: Install Lib for build
       run: |
         cd ${{ steps.strings.outputs.build-output-dir }}
         sudo make install
-    
-    - name: Set build dir
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/simd/build" >> "$GITHUB_OUTPUT"
-        github_sha_hash=${{ github.sha }}
-        echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
-    
-    - name: Configure CMake
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=g++
-        -DCMAKE_C_COMPILER=gcc
-        -DCMAKE_BUILD_TYPE=Release
-        -S ${{ github.workspace }}/simd
-
-    - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
     
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
@@ -85,6 +66,25 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: simapi-${{ matrix.os }}.deb
+    
+    - name: Set build dir
+      id: strings2
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/simd/build" >> "$GITHUB_OUTPUT"
+        github_sha_hash=${{ github.sha }}
+        echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
+    
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_CXX_COMPILER=g++
+        -DCMAKE_C_COMPILER=gcc
+        -DCMAKE_BUILD_TYPE=Release
+        -S ${{ github.workspace }}/simd
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
