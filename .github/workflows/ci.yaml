@@ -47,7 +47,7 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: simapi-build
+        name: simapi-debian-build
         path: ${{ steps.strings.outputs.build-output-dir }}
     
     - name: Copy script files around to stop .github from being added to the package then build the package
@@ -100,15 +100,6 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
-
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      if: github.ref_type == 'tag'
-      with:
-        name: Simd ${{ github.ref_name }}
-        fail_on_unmatched_files: true
-        files: |
-          simd/build/simd
 
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
