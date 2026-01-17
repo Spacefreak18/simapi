@@ -49,38 +49,6 @@ jobs:
         cd ${{ steps.strings.outputs.build-output-dir }}
         sudo make install
     
-    - name: Copy script files around to stop .github from being added to the package then build the package
-      run: |
-        mkdir PKG_SOURCE
-        mkdir -p PKG_SOURCE/DEBIAN
-        mkdir -p PKG_SOURCE/usr/lib/x86_64-linux-gnu/
-        cp ./tools/distro/debian/dpkg/simapi_control ./PKG_SOURCE/DEBIAN/control
-        cp -r \
-          build/libsimapi.so \
-          build/libsimapi.so.1 \
-          build/libsimapi.so.1.0.1 \
-          PKG_SOURCE/usr/lib/x86_64-linux-gnu/
-        dpkg-deb --build PKG_SOURCE simapi-${{ matrix.os }}.deb
-
-    - name: Release the Package
-      uses: softprops/action-gh-release@v1
-      with:
-        files: simapi-${{ matrix.os }}.deb
-
-  build-simd:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, debian-latest, debian-stable]
-    runs-on: ${{ matrix.os }}
-    needs: build-simapi
-
-    steps:
-    - uses: actions/checkout@v4
-    - name: Update apt
-      run: sudo apt update
-    - name: Install Dependencies
-      run: sudo apt install -y libuv1-dev libargtable2-dev libconfig-dev libyder-dev
-
     - name: Set build dir
       id: strings
       shell: bash
@@ -100,10 +68,23 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
     
-    - name: Install Lib for build
+    - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
-        cd ${{ steps.strings.outputs.build-output-dir }}
-        sudo make install
+        mkdir PKG_SOURCE
+        mkdir -p PKG_SOURCE/DEBIAN
+        mkdir -p PKG_SOURCE/usr/lib/x86_64-linux-gnu/
+        cp ./tools/distro/debian/dpkg/simapi_control ./PKG_SOURCE/DEBIAN/control
+        cp -r \
+          build/libsimapi.so \
+          build/libsimapi.so.1 \
+          build/libsimapi.so.1.0.1 \
+          PKG_SOURCE/usr/lib/x86_64-linux-gnu/
+        dpkg-deb --build PKG_SOURCE simapi-${{ matrix.os }}.deb
+
+    - name: Release the Package
+      uses: softprops/action-gh-release@v1
+      with:
+        files: simapi-${{ matrix.os }}.deb
 
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
@@ -118,6 +99,7 @@ jobs:
       uses: softprops/action-gh-release@v1
       with:
         files: simd-${{ matrix.os }}.deb
+
 
   build-simapi-nix:
     runs-on: ubuntu-latest
