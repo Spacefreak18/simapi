@@ -65,7 +65,7 @@ jobs:
         mkdir -p SIMD_PKG_SOURCE/DEBIAN
         mkdir -p SIMD_PKG_SOURCE/usr/bin/
         cp ./tools/distro/debian/dpkg/simd_control ./SIMD_PKG_SOURCE/DEBIAN/control
-        cp build/simd ./SIMD_PKG_SOURCE/usr/bin/simd
+        cp build/simd/simd ./SIMD_PKG_SOURCE/usr/bin/simd
         dpkg-deb --build SIMD_PKG_SOURCE simd-${{ matrix.os }}.deb
 
     - name: Release the Package
