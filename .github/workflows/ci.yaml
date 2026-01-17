@@ -3,7 +3,7 @@ name: CMake on multiple platforms
 on:
   push:
     tags: [ "*" ]
-    branch: [ "master" ]
+    branches: [ "master" ]
 
 jobs:
 
