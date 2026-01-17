@@ -99,6 +99,11 @@ jobs:
 
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+    
+    - name: Install Lib for build
+      run: |
+        cd ${{ steps.strings.outputs.build-output-dir }}
+        sudo make install
 
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
