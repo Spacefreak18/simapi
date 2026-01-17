@@ -58,9 +58,9 @@ jobs:
         github_sha_hash=${{ github.sha }}
         echo "github-sha-short=${github_sha_hash:0:7}" >> $GITHUB_OUTPUT
     
-    - name: Install Lib for build
+    - name: Remove old build dir
       run: |
-        rm ${{ steps.strings.outputs.build-output-dir }}
+        rm -rf ${{ steps.strings.outputs.build-output-dir }}
     
     - name: Configure CMake
       run: >
