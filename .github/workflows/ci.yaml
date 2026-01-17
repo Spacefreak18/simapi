@@ -44,11 +44,6 @@ jobs:
     - name: Build
       run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: simapi-debian-build
-        path: ${{ steps.strings.outputs.build-output-dir }}
     
     - name: Copy script files around to stop .github from being added to the package then build the package
       run: |
