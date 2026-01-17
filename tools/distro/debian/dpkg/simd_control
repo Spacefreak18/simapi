@@ -1,0 +1,8 @@
+Package: simd
+Version: 1
+Section: misc
+Priority: optional
+Architecture: amd64
+Maintainer: Paul Jones <paul@spacefreak18.xyz>
+Description: Racing Simulator Telemetry Mapping Daemon
+Depends: libsimapi,libconfig11,libargtable2-0,libuv1t64,libyder2.0,liborcania2.3
