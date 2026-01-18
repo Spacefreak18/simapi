@@ -180,26 +180,6 @@ jobs:
         files: |
           simapi_release/simapi-${{ github.ref_name }}.tar.gz
 
-    - name: Copy script files around to stop .github from being added to the package then build the package
-      run: |
-        mkdir PKG_SOURCE
-        mkdir -p PKG_SOURCE/DEBIAN
-        mkdir -p PKG_SOURCE/usr/bin/
-        cp ./tools/distro/debian/dpkg/simapi_control ./PKG_SOURCE/DEBIAN/control
-        cp -r \
-          include \
-          build/libsimapi.so \
-          build/libsimapi.so.1 \
-          build/libsimapi.so.1.0.1 \
-          build/simapi.pc \
-          PKG_SOURCE/
-        dpkg-deb --build PKG_SOURCE simapi-${{ matrix.os }}.deb
-
-    - name: Release the Package
-      uses: softprops/action-gh-release@v1
-      with:
-        files: simapi-${{ matrix.os }}.deb
-
   build-simd-nix:
     runs-on: ubuntu-latest
     needs: build-simapi
@@ -244,18 +224,4 @@ jobs:
         fail_on_unmatched_files: true
         files: |
           simd/build/simd
-
-    - name: Copy script files around to stop .github from being added to the package then build the package
-      run: |
-        mkdir PKG_SOURCE
-        mkdir -p PKG_SOURCE/DEBIAN
-        mkdir -p PKG_SOURCE/usr/bin/
-        cp ./tools/distro/debian/dpkg/simd_control ./PKG_SOURCE/DEBIAN/control
-        cp simd/build/simd ./PKG_SOURCE/usr/bin/simd
-        dpkg-deb --build PKG_SOURCE simd-${{ matrix.os }}.deb
-
-    - name: Release the Package
-      uses: softprops/action-gh-release@v1
-      with:
-        files: simd-${{ matrix.os }}.deb
 
