@@ -1,4 +1,5 @@
 #dnf install argtable-devel libconfig-devel libuv-devel
+%global __brp_check_rpaths %{nil}
 Summary: Racing Simulator Libraries
 Name: simd
 Version: 0.0.5
