@@ -78,6 +78,38 @@ jobs:
       with:
         files: simd-${{ matrix.os }}.deb
 
+  build-simapi-rpms:
+    strategy:
+      matrix:
+        os: [fedora-43]
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+
+    - name: create rpmbuild dirs
+      run: mkdir -p ~/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS}
+    - name: get spec file
+      run: curl -o ~/simapi.spec https://raw.githubusercontent.com/Spacefreak18/simapi/refs/heads/master/tools/distro/fedora/rpm/simapi.spec
+    - name: run spec file
+      run: rpmbuild -ba ~/simapi.spec
+    - name: rename file
+      run: cp ~/rpmbuild/RPMS/x86_64/libsimapi-0.0.5-1.x86_64.rpm $GITHUB_WORKSPACE/libsimapi-${{ matrix.os }}.rpm
+    - name: get spec file
+      run: curl -o ~/simd.spec https://raw.githubusercontent.com/Spacefreak18/simapi/refs/heads/master/tools/distro/fedora/rpm/simd.spec
+    - name: run spec file
+      run: rpmbuild -ba ~/simd.spec
+    - name: rename file
+      run: cp ~/rpmbuild/RPMS/x86_64/simd-0.0.5-1.x86_64.rpm $GITHUB_WORKSPACE/simd-${{ matrix.os }}.rpm
+    - name: Release libsimapi Package
+      uses: softprops/action-gh-release@v1
+      with:
+        files: libsimapi-${{ matrix.os }}.rpm
+    - name: Release simd Package
+      uses: softprops/action-gh-release@v1
+      with:
+        files: simd-${{ matrix.os }}.rpm
+
 
   build-simapi-nix:
     runs-on: ubuntu-latest
