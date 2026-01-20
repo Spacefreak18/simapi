@@ -220,27 +220,30 @@ int* pidof (char* pname)
                 fgets(read_buf, sizeof read_buf, fp);
                 //fscanf (fp, "%s", read_buf);
                 fp2= fopen (cmdline, "r");
-                fgets(read_buf2, sizeof read_buf2, fp2);
-                //fscanf (fp2, "%s", read_buf2);
-                char* i = strcasestr(read_buf, pname);
-                char* j = strcasestr(read_buf2, pname);
-                //fprintf(stderr, "from %s searching for %s in %s from cmdline %s occurs at %s or %s\n", path, pname, read_buf, read_buf2, i, j);
-                if(i>0 || j>0)
+                if(fp2 != NULL)
                 {
-                    /* add to list and expand list if needed */
-                    pidlist[pidlist_index++] = atoi (entry->d_name);
-                    if (pidlist_index == PID_LIST_BLOCK* pidlist_realloc_count)
+                    fgets(read_buf2, sizeof read_buf2, fp2);
+                    //fscanf (fp2, "%s", read_buf2);
+                    char* i = strcasestr(read_buf, pname);
+                    char* j = strcasestr(read_buf2, pname);
+                    //fprintf(stderr, "from %s searching for %s in %s from cmdline %s occurs at %s or %s\n", path, pname, read_buf, read_buf2, i, j);
+                    if(i>0 || j>0)
                     {
-                        pidlist_realloc_count++;
-                        pidlist = realloc (pidlist, sizeof (int) * PID_LIST_BLOCK* pidlist_realloc_count);  //Error check todo
-                        if (pidlist == NULL)
+                        /* add to list and expand list if needed */
+                        pidlist[pidlist_index++] = atoi (entry->d_name);
+                        if (pidlist_index == PID_LIST_BLOCK* pidlist_realloc_count)
                         {
-                            return NULL;
+                            pidlist_realloc_count++;
+                            pidlist = realloc (pidlist, sizeof (int) * PID_LIST_BLOCK* pidlist_realloc_count);  //Error check todo
+                            if (pidlist == NULL)
+                            {
+                                return NULL;
+                            }
                         }
                     }
+                    fclose(fp2);
                 }
                 fclose(fp);
-                fclose(fp2);
             }
         }
     }
