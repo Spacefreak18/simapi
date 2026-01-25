@@ -21,6 +21,7 @@
 #include "scs2.h"
 #include "outgauge.h"
 #include "dirt2.h"
+#include "f1.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -151,9 +152,14 @@ int simapi_strtogame(const char* game)
                                                     sim = SIMULATOREXE_DIRT_RALLY_2;
                                                 }
                                                 else
-                                                {
-                                                    sim = 0;
-                                                }
+                                                    if (sstrcicmp(game, "f1") == 0)
+                                                    {
+                                                        sim = SIMULATOREXE_F1_2022;
+                                                    }
+                                                    else
+                                                    {
+                                                        sim = 0;
+                                                    }
     return sim;
 }
 
@@ -185,6 +191,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "beamng";
         case SIMULATOREXE_DIRT_RALLY_2:
             return "dr2";
+        case SIMULATOREXE_F1_2022:
+            return "f122";
         default:
             return "default";
     }
@@ -218,6 +226,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "beamng";
         case SIMULATOREXE_DIRT_RALLY_2:
             return "DiRT Rally 2.0";
+        case SIMULATOREXE_F1_2022:
+            return "F1 2022";
         default:
             return "default";
     }
@@ -464,6 +474,13 @@ int setSimInfo(SimInfo* si)
             si->SimSupportsRealtimeTelemetry = true;
             si->SimSupportsAdvancedUI = false;
             break;
+        case SIMULATORAPI_F1_2018:
+            si->SimUsesUDP = true;
+            si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = true;
+            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsAdvancedUI = false;
+            break;
         default:
             si->SimSupportsBasicTelemetry = true;
     }
@@ -601,6 +618,12 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_DIRT_RALLY_2;
     }
+    pid = IsProcessRunning(F1_2022_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_F1_2022;
+    }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -729,6 +752,31 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 simdata->simon = true;
                 simdata->simapi = SIMULATORAPI_OUTSIMOUTGAUGE;
+                simdata->simexe = simexe;
+
+                simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+                simdata->gear = 0;
+                simdata->velocity = 0;
+                simdata->rpms = 0;
+                simdata->altitude = 0;
+
+                si.isSimOn = true;
+                si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
+                si.simulatorexe = simdata->simexe;
+                setSimInfo(&si);
+                return si;
+            }
+            break;
+
+        case SIMULATOREXE_F1_2022:
+            int error1 = (*setup_udp)(20777);
+            error1 = siminitudp(simdata, simmap, SIMULATORAPI_F1_2018);
+
+            if(error1 == 0)
+            {
+                simdata->simon = true;
+                simdata->simapi = SIMULATORAPI_F1_2018;
                 simdata->simexe = simexe;
 
                 simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
@@ -933,6 +981,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
         case SIMULATORAPI_DIRT_RALLY_2 :
 
             map_dirt_rally_2_data(simdata, simmap, base);
+            break;
+
+        case SIMULATORAPI_F1_2018 :
+
+            map_f1_2018_data(simdata, simmap, base);
             break;
     }
 
