@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#define MAXCARS 24
+#define MAXCARS 128
 #define PROXCARS 6
 
 typedef enum

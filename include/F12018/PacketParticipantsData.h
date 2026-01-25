@@ -254,7 +254,8 @@ typedef struct //ParticipantData
     char       m_name[48];               // Name of participant in UTF-8 format – null terminated
     // Will be truncated with … (U+2026) if too long
 
-    wchar_t    m_name_w[24];             // wide character duplicate of m_name
+    // i do not believe this actually exists
+    //wchar_t    m_name_w[24];             // wide character duplicate of m_name
 
 } ParticipantData;
 
