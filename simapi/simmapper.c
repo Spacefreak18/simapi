@@ -745,7 +745,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
         case SIMULATOREXE_LIVE_FOR_SPEED:
         case SIMULATOREXE_BEAMNG:
-            int error = (*setup_udp)(30000);
+            int error = 0;
+            if(*setup_udp != NULL)
+            {
+                error = (*setup_udp)(30000);
+            }
             error = siminitudp(simdata, simmap, SIMULATORAPI_OUTSIMOUTGAUGE);
 
             if(error == 0)
@@ -770,7 +774,11 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             break;
 
         case SIMULATOREXE_F1_2022:
-            int error1 = (*setup_udp)(20777);
+            int error1 = 0;
+            if(*setup_udp != NULL)
+            {
+                error1 = (*setup_udp)(30000);
+            }
             error1 = siminitudp(simdata, simmap, SIMULATORAPI_F1_2018);
 
             if(error1 == 0)
