@@ -96,70 +96,58 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_ASSETTO_CORSA;
     }
+    else if (sstrcicmp(game, "acc") == 0)
+    {
+        sim = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
+    }
+    else if (sstrcicmp(game, "ace") == 0)
+    {
+        sim = SIMULATOREXE_ASSETTO_CORSA_EVO;
+    }
+    else if (sstrcicmp(game, "acr") == 0)
+    {
+        sim = SIMULATOREXE_ASSETTO_CORSA_RALLY;
+    }
+    else if (sstrcicmp(game, "rf2") == 0)
+    {
+        sim = SIMULATOREXE_RFACTOR2;
+    }
+    else if (sstrcicmp(game, "ams2") == 0)
+    {
+        sim = SIMULATOREXE_AUTOMOBILISTA2;
+    }
+    else if (sstrcicmp(game, "et2") == 0)
+    {
+        sim = SIMULATOREXE_EUROTRUCKS2;
+    }
+    else if (sstrcicmp(game, "at") == 0)
+    {
+        sim = SIMULATOREXE_EUROTRUCKS2;
+    }
+    else if (sstrcicmp(game, "lmu") == 0)
+    {
+        sim = SIMULATOREXE_LEMANS_ULTIMATE;
+    }
+    else if (sstrcicmp(game, "lfs") == 0)
+    {
+        sim = SIMULATOREXE_LIVE_FOR_SPEED;
+    }
+    else if (sstrcicmp(game, "beamng") == 0)
+    {
+        sim = SIMULATOREXE_BEAMNG;
+    }
+    else if (sstrcicmp(game, "dr2") == 0)
+    {
+        sim = SIMULATOREXE_DIRT_RALLY_2;
+    }
+    else if (sstrcicmp(game, "f1") == 0)
+    {
+        sim = SIMULATOREXE_F1_2022;
+    }
     else
-        if (sstrcicmp(game, "acc") == 0)
-        {
-            sim = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
-        }
-        else
-            if (sstrcicmp(game, "ace") == 0)
-            {
-                sim = SIMULATOREXE_ASSETTO_CORSA_EVO;
-            }
-            else
-                if (sstrcicmp(game, "acr") == 0)
-                {
-                    sim = SIMULATOREXE_ASSETTO_CORSA_RALLY;
-                }
-                else
-                    if (sstrcicmp(game, "rf2") == 0)
-                    {
-                        sim = SIMULATOREXE_RFACTOR2;
-                    }
-                    else
-                        if (sstrcicmp(game, "ams2") == 0)
-                        {
-                            sim = SIMULATOREXE_AUTOMOBILISTA2;
-                        }
-                        else
-                            if (sstrcicmp(game, "et2") == 0)
-                            {
-                                sim = SIMULATOREXE_EUROTRUCKS2;
-                            }
-                            else
-                                if (sstrcicmp(game, "at") == 0)
-                                {
-                                    sim = SIMULATOREXE_EUROTRUCKS2;
-                                }
-                                else
-                                    if (sstrcicmp(game, "lmu") == 0)
-                                    {
-                                        sim = SIMULATOREXE_LEMANS_ULTIMATE;
-                                    }
-                                    else
-                                        if (sstrcicmp(game, "lfs") == 0)
-                                        {
-                                            sim = SIMULATOREXE_LIVE_FOR_SPEED;
-                                        }
-                                        else
-                                            if (sstrcicmp(game, "beamng") == 0)
-                                            {
-                                                sim = SIMULATOREXE_BEAMNG;
-                                            }
-                                            else
-                                                if (sstrcicmp(game, "dr2") == 0)
-                                                {
-                                                    sim = SIMULATOREXE_DIRT_RALLY_2;
-                                                }
-                                                else
-                                                    if (sstrcicmp(game, "f1") == 0)
-                                                    {
-                                                        sim = SIMULATOREXE_F1_2022;
-                                                    }
-                                                    else
-                                                    {
-                                                        sim = 0;
-                                                    }
+    {
+        sim = 0;
+    }
     return sim;
 }
 
