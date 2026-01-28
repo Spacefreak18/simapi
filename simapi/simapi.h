@@ -29,6 +29,9 @@ typedef enum
     SIMULATORAPI_OUTSIMOUTGAUGE    = 5,
     SIMULATORAPI_DIRT_RALLY_2      = 6,
     SIMULATORAPI_F1_2018           = 7,
+    SIMULATORAPI_RACE_ROOM         = 8,
+    SIMULATORAPI_FORZA             = 9,
+    SIMULATORAPI_LMU               = 10,
 }
 SimulatorAPI;
 
@@ -48,6 +51,8 @@ typedef enum
     SIMULATOREXE_LIVE_FOR_SPEED               = 0000001, //lfs
     SIMULATOREXE_DIRT_RALLY_2                 = 690790, //dr2
     SIMULATOREXE_F1_2022                      = 1692250, //f122
+    SIMULATOREXE_RACE_ROOM                    = 211500, //r3e
+    SIMULATOREXE_FORZA_HORIZON_5              = 1551360, //fh5
 }
 SimulatorEXE;
 
