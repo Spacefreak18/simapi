@@ -140,9 +140,17 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_DIRT_RALLY_2;
     }
-    else if (sstrcicmp(game, "f1") == 0)
+    else if (sstrcicmp(game, "f122") == 0)
     {
         sim = SIMULATOREXE_F1_2022;
+    }
+    else if (sstrcicmp(game, "fh5") == 0)
+    {
+        sim = SIMULATOREXE_FORZA_HORIZON_5;
+    }
+    else if (sstrcicmp(game, "r3e") == 0)
+    {
+        sim = SIMULATOREXE_RACE_ROOM;
     }
     else
     {
@@ -181,6 +189,10 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "dr2";
         case SIMULATOREXE_F1_2022:
             return "f122";
+        case SIMULATOREXE_FORZA_HORIZON_5:
+            return "fh5";
+        case SIMULATOREXE_RACE_ROOM:
+            return "r3e";
         default:
             return "default";
     }
@@ -216,6 +228,10 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "DiRT Rally 2.0";
         case SIMULATOREXE_F1_2022:
             return "F1 2022";
+        case SIMULATOREXE_FORZA_HORIZON_5:
+            return "Forza Horizon 5";
+        case SIMULATOREXE_RACE_ROOM:
+            return "Race Room";
         default:
             return "default";
     }
@@ -612,6 +628,18 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_F1_2022;
     }
+    //pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
+    //if(pid>0)
+    //{
+    //    si->pid = pid;
+    //    return SIMULATOREXE_FORZA_HORIZON_5;
+    //}
+    //pid = IsProcessRunning(RACE_ROOM_EXE);
+    //if(pid>0)
+    //{
+    //    si->pid = pid;
+    //    return SIMULATOREXE_RACE_ROOM;
+    //}
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -916,6 +944,9 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 return si;
             }
             break;
+        case SIMULATOREXE_RACE_ROOM:
+        case SIMULATOREXE_FORZA_HORIZON_5:
+            break;
     }
     return si;
 }
@@ -982,6 +1013,13 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
         case SIMULATORAPI_F1_2018 :
 
             map_f1_2018_data(simdata, simmap, base);
+            break;
+
+        case SIMULATORAPI_FORZA:
+            break;
+        case SIMULATORAPI_RACE_ROOM:
+            break;
+        case SIMULATORAPI_LMU:
             break;
     }
 
