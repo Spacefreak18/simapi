@@ -51,6 +51,8 @@ uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
 uv_timer_t bridgeclosetimer;
 uv_udp_t recv_socket;
+bool recv_socket_initialized = false;
+bool recv_socket_bound = false;
 
 int appstate = 0;
 int compat_info_size = 0;
@@ -137,7 +139,10 @@ void release()
     uv_timer_stop(&gamefindtimer);
     uv_timer_stop(&datamaptimer);
     uv_timer_stop(&datachecktimer);
-    uv_udp_recv_stop(&recv_socket);
+    if (recv_socket_initialized)
+    {
+        uv_udp_recv_stop(&recv_socket);
+    }
     uv_timer_stop(&bridgeclosetimer);
     uv_walk(uv_default_loop(), close_walk_cb, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
@@ -206,7 +211,7 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
             simdmap(simmap2, simdata);
         }
         // Properly close the UDP socket if it's open
-        if (uv_is_active((uv_handle_t*)&recv_socket))
+        if (recv_socket_initialized && uv_is_active((uv_handle_t*)&recv_socket))
         {
             uv_udp_recv_stop(&recv_socket);
         }
@@ -305,15 +310,31 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
 
 int startudp(int port)
 {
-    if (uv_is_active((uv_handle_t*)&recv_socket) || uv_is_closing((uv_handle_t*)&recv_socket))
+    // Already bound successfully - nothing to do
+    if (recv_socket_bound)
     {
         return 0;
     }
-    uv_udp_init(uv_default_loop(), &recv_socket);
+    // Socket active or closing - wait for it to settle
+    if (recv_socket_initialized && (uv_is_active((uv_handle_t*)&recv_socket) || uv_is_closing((uv_handle_t*)&recv_socket)))
+    {
+        return 0;
+    }
+    if (!recv_socket_initialized)
+    {
+        uv_udp_init(uv_default_loop(), &recv_socket);
+        uv_handle_set_data((uv_handle_t*) &recv_socket, (void*) baton);
+        recv_socket_initialized = true;
+    }
     struct sockaddr_in recv_addr;
     uv_ip4_addr("0.0.0.0", port, &recv_addr);
     int err = uv_udp_bind(&recv_socket, (const struct sockaddr *) &recv_addr, UV_UDP_REUSEADDR);
-    y_log_message(Y_LOG_LEVEL_DEBUG, "initial udp error is %i for port %i", err, port);
+    y_log_message(Y_LOG_LEVEL_DEBUG, "udp bind result is %i for port %i", err, port);
+
+    if (err == 0)
+    {
+        recv_socket_bound = true;
+    }
 
     return err;
 }
@@ -688,7 +709,10 @@ void cb(uv_poll_t* handle, int status, int events)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "simd is exiting...");
         uv_timer_stop(&datachecktimer);
-        uv_udp_recv_stop(&recv_socket);
+        if (recv_socket_initialized)
+        {
+            uv_udp_recv_stop(&recv_socket);
+        }
         uv_timer_stop(&bridgeclosetimer);
         uv_timer_stop(&gamefindtimer);
         uv_poll_stop(handle);
@@ -902,18 +926,17 @@ int main(int argc, char** argv)
     baton->req.data = (void*) baton;
 
 
-    uv_handle_set_data((uv_handle_t*) &gamefindtimer, (void*) baton);
-    uv_handle_set_data((uv_handle_t*) &bridgeclosetimer, (void*) baton);
-    uv_handle_set_data((uv_handle_t*) &datachecktimer, (void*) baton);
-    uv_handle_set_data((uv_handle_t*) &datamaptimer, (void*) baton);
-    uv_handle_set_data((uv_handle_t*) &recv_socket, (void*) baton);
-
     appstate = 1;
     y_log_message(Y_LOG_LEVEL_DEBUG, "setting initial app state");
     uv_timer_init(uv_default_loop(), &gamefindtimer);
     uv_timer_init(uv_default_loop(), &bridgeclosetimer);
     uv_timer_init(uv_default_loop(), &datachecktimer);
     uv_timer_init(uv_default_loop(), &datamaptimer);
+
+    uv_handle_set_data((uv_handle_t*) &gamefindtimer, (void*) baton);
+    uv_handle_set_data((uv_handle_t*) &bridgeclosetimer, (void*) baton);
+    uv_handle_set_data((uv_handle_t*) &datachecktimer, (void*) baton);
+    uv_handle_set_data((uv_handle_t*) &datamaptimer, (void*) baton);
 
     y_log_message(Y_LOG_LEVEL_INFO, "Searching for sim data... Press q to quit...\n");
     if(simds.auto_bridge == true)
@@ -927,11 +950,10 @@ int main(int argc, char** argv)
         uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
     }
 
-    uv_poll_t* poll;
     if(simds.daemon == false)
     {
-        uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
         uv_poll_init(uv_default_loop(), &pollt, 0);
+        uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
         uv_poll_start(&pollt, UV_READABLE, cb);
     }
 
