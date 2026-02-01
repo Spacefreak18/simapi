@@ -34,6 +34,23 @@ target_link_libraries(simd m uv yder ${ARGTABLE_LIBS} config simapi)
 
 target_include_directories(simd PRIVATE ${ARGTABLE_INCLUDE_DIR})
 
+# User-level installation
+install(TARGETS simd RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+# Install systemd user service file to ~/.config/systemd/user/
+option(INSTALL_SYSTEMD_SERVICE "Install systemd user service file" ON)
+if(INSTALL_SYSTEMD_SERVICE)
+    set(SYSTEMD_USER_UNIT_DIR "$ENV{HOME}/.config/systemd/user" CACHE PATH "Systemd user unit directory")
+    install(FILES conf/simd.service DESTINATION ${SYSTEMD_USER_UNIT_DIR})
+endif()
+
+# Install default config file to ~/.config/simd/
+option(INSTALL_DEFAULT_CONFIG "Install default configuration file" ON)
+if(INSTALL_DEFAULT_CONFIG)
+    set(SIMD_CONFIG_DIR "$ENV{HOME}/.config/simd" CACHE PATH "simd configuration directory")
+    install(FILES conf/simd.config DESTINATION ${SIMD_CONFIG_DIR})
+endif()
+
 # used for enabling additional compiler options if supported
 include(CheckCXXCompilerFlag)
 

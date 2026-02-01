@@ -25,6 +25,41 @@ cmake -B build
 cmake --build build
 ```
 
+## User-Level Installation
+
+To install simd as a user-level systemd service:
+
+```bash
+# Build and install to ~/.local (includes binary, service file, and config)
+cmake -B build -DCMAKE_INSTALL_PREFIX=$HOME/.local
+cmake --build build
+cmake --install build
+
+# Reload systemd user daemon and enable the service
+systemctl --user daemon-reload
+systemctl --user enable --now simd
+```
+
+This installs:
+- Binary to `~/.local/bin/simd`
+- Systemd service to `~/.config/systemd/user/simd.service`
+- Config file to `~/.config/simd/simd.config`
+
+To manage the service:
+```bash
+systemctl --user status simd    # Check status
+systemctl --user stop simd      # Stop the service
+systemctl --user restart simd   # Restart the service
+journalctl --user -u simd -f    # View logs
+```
+
+To disable installation of specific components:
+```bash
+cmake -B build -DCMAKE_INSTALL_PREFIX=$HOME/.local \
+    -DINSTALL_SYSTEMD_SERVICE=OFF \
+    -DINSTALL_DEFAULT_CONFIG=OFF
+```
+
 ## Usage
 if you wish to use the automatic bridging mode, first copy the config file from [here](https://github.com/Spacefreak18/simapi/blob/master/simd/conf/simd.config) to ~/.config/simd/simd.config and add the appropriate
 [bridge](https://github.com/spacefreak18/simshmbridge) exe to your steam launch command like this:
