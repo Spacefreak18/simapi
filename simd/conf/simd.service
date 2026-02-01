@@ -1,0 +1,18 @@
+[Unit]
+Description=SimAPI Daemon - Racing Simulator Telemetry Service
+Documentation=https://github.com/Spacefreak18/simapi
+After=default.target
+
+[Service]
+Type=simple
+Environment="LD_LIBRARY_PATH=%h/.local/lib"
+ExecStart=%h/.local/bin/simd --nodaemon
+Restart=on-failure
+RestartSec=5
+
+# Logging goes to journald
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

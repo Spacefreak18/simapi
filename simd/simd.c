@@ -803,6 +803,7 @@ int main(int argc, char** argv)
     }
 
     struct termios newsettings, canonicalmode;
+    int stdin_is_tty = 0;
     if(simds.daemon == true)
     {
         pid_t pid;
@@ -864,15 +865,18 @@ int main(int argc, char** argv)
     }
     else
     {
-
-        tcgetattr(0, &canonicalmode);
-        newsettings = canonicalmode;
-        newsettings.c_lflag &= (~ICANON & ~ECHO);
-        newsettings.c_cc[VMIN] = 1;
-        newsettings.c_cc[VTIME] = 0;
-        tcsetattr(0, TCSANOW, &newsettings);
-        char ch;
-        struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
+        stdin_is_tty = isatty(STDIN_FILENO);
+        if(stdin_is_tty)
+        {
+            tcgetattr(0, &canonicalmode);
+            newsettings = canonicalmode;
+            newsettings.c_lflag &= (~ICANON & ~ECHO);
+            newsettings.c_cc[VMIN] = 1;
+            newsettings.c_cc[VTIME] = 0;
+            tcsetattr(0, TCSANOW, &newsettings);
+            char ch;
+            struct pollfd mypoll = { STDIN_FILENO, POLLIN|POLLPRI };
+        }
     }
 
     set_simapi_log_info(simapilib_loginfo);
@@ -950,7 +954,7 @@ int main(int argc, char** argv)
         uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
     }
 
-    if(simds.daemon == false)
+    if(simds.daemon == false && stdin_is_tty)
     {
         uv_poll_init(uv_default_loop(), &pollt, 0);
         uv_handle_set_data((uv_handle_t*) &pollt, (void*) baton);
@@ -959,7 +963,7 @@ int main(int argc, char** argv)
 
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
 
-    if(simds.daemon==false)
+    if(simds.daemon==false && stdin_is_tty)
     {
         fflush(stdout);
         tcsetattr(0, TCSANOW, &canonicalmode);
