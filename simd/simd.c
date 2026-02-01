@@ -751,6 +751,12 @@ int main(int argc, char** argv)
         ylog_mode = Y_LOG_MODE_CONSOLE;
     }
 
+    int ylog_level = Y_LOG_LEVEL_INFO;
+    if(p->verbosity_count > 0)
+    {
+        ylog_level = Y_LOG_LEVEL_DEBUG;
+    }
+
 
     int pid_file_fd = open(PID_FILE, O_WRONLY | O_CREAT | O_EXCL, 0666);
     if(pid_file_fd == -1)
@@ -766,7 +772,7 @@ int main(int argc, char** argv)
     }
     close(pid_file_fd);
 
-    y_init_logs("simd", ylog_mode, Y_LOG_LEVEL_DEBUG, "/tmp/simd.log", "Initializing logs mode: file, logs level: debug");
+    y_init_logs("simd", ylog_mode, ylog_level, "/tmp/simd.log", "Initializing logs");
     y_log_message(Y_LOG_LEVEL_INFO, "Started. Found home directory and interpreted parameters.\n");
 
     // config file
