@@ -89,5 +89,6 @@ void map_trucks_data(SimData* simdata, SimMap* simmap);
 void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe, char* base);
 void map_dirt_rally_2_data(SimData* simdata, SimMap* simmap, char* base);
 void map_f1_2018_data(SimData* simdata, SimMap* simmap, char* base);
+void map_wreckfest2_data(SimData* simdata, SimMap* simmap, char* base);
 
 #endif
