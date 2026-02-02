@@ -45,6 +45,9 @@ SimCompatMap* compatmap;
 GameCompatInfo* game_compat_info;
 SimdSettings simds;
 
+struct termios canonicalmode;
+int stdin_is_tty = 0;
+
 uv_poll_t pollt;
 uv_timer_t gamefindtimer;
 uv_timer_t datachecktimer;
@@ -186,6 +189,12 @@ void handle_sigterm(int sig)
     const char* signame = (sig == SIGTERM) ? "SIGTERM" : "SIGINT";
     y_log_message(Y_LOG_LEVEL_DEBUG, "%s received. Exiting gracefully...", signame);
 
+    // Restore terminal settings if we modified them
+    if (stdin_is_tty)
+    {
+        tcsetattr(0, TCSANOW, &canonicalmode);
+    }
+
     release();
     exit(0);
 }
@@ -212,9 +221,19 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
             simdmap(simmap2, simdata);
         }
         // Properly close the UDP socket if it's open
-        if (recv_socket_initialized && uv_is_active((uv_handle_t*)&recv_socket))
+        if (recv_socket_initialized)
         {
-            uv_udp_recv_stop(&recv_socket);
+            if (uv_is_active((uv_handle_t*)&recv_socket))
+            {
+                uv_udp_recv_stop(&recv_socket);
+            }
+            // Close the socket handle so it can be reinitialized with a different port
+            if (!uv_is_closing((uv_handle_t*)&recv_socket))
+            {
+                uv_close((uv_handle_t*)&recv_socket, NULL);
+            }
+            recv_socket_initialized = false;
+            recv_socket_bound = false;
         }
 
         int r = simfree(simdata, simmap, f->sim);
@@ -809,8 +828,7 @@ int main(int argc, char** argv)
         y_log_message(Y_LOG_LEVEL_INFO, "Successfullly loaded configuration file");
     }
 
-    struct termios newsettings, canonicalmode;
-    int stdin_is_tty = 0;
+    struct termios newsettings;
 
     /* Register signal handlers for clean shutdown (both daemon and non-daemon modes) */
     signal(SIGTERM, handle_sigterm);
