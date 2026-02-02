@@ -180,10 +180,11 @@ void release()
     y_close_logs();
 }
 
-// Signal handler for SIGTERM
+// Signal handler for SIGTERM and SIGINT
 void handle_sigterm(int sig)
 {
-    y_log_message(Y_LOG_LEVEL_DEBUG, "SIGTERM received. Exiting gracefully...");
+    const char* signame = (sig == SIGTERM) ? "SIGTERM" : "SIGINT";
+    y_log_message(Y_LOG_LEVEL_DEBUG, "%s received. Exiting gracefully...", signame);
 
     release();
     exit(0);
@@ -810,6 +811,11 @@ int main(int argc, char** argv)
 
     struct termios newsettings, canonicalmode;
     int stdin_is_tty = 0;
+
+    /* Register signal handlers for clean shutdown (both daemon and non-daemon modes) */
+    signal(SIGTERM, handle_sigterm);
+    signal(SIGINT, handle_sigterm);
+
     if(simds.daemon == true)
     {
         pid_t pid;
@@ -839,7 +845,6 @@ int main(int argc, char** argv)
         //TODO: Implement a working signal handler */
         signal(SIGCHLD, SIG_IGN);
         signal(SIGHUP, SIG_IGN);
-        signal(SIGTERM, handle_sigterm);
         /* Fork off for the second time*/
         pid = fork();
 
