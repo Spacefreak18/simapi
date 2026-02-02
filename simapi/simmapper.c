@@ -22,6 +22,7 @@
 #include "outgauge.h"
 #include "dirt2.h"
 #include "f1.h"
+#include "wreckfest2.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -152,6 +153,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_RACE_ROOM;
     }
+    else if (sstrcicmp(game, "wf2") == 0)
+    {
+        sim = SIMULATOREXE_WRECKFEST2;
+    }
     else
     {
         sim = 0;
@@ -193,6 +198,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "fh5";
         case SIMULATOREXE_RACE_ROOM:
             return "r3e";
+        case SIMULATOREXE_WRECKFEST2:
+            return "wf2";
         default:
             return "default";
     }
@@ -232,6 +239,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "Forza Horizon 5";
         case SIMULATOREXE_RACE_ROOM:
             return "Race Room";
+        case SIMULATOREXE_WRECKFEST2:
+            return "Wreckfest 2";
         default:
             return "default";
     }
@@ -628,6 +637,12 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_F1_2022;
     }
+    pid = IsProcessRunning(WRECKFEST2_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_WRECKFEST2;
+    }
     //pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
     //if(pid>0)
     //{
@@ -944,6 +959,36 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 return si;
             }
             break;
+        case SIMULATOREXE_WRECKFEST2:
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Wreckfest 2");
+            int wf2_error = 0;
+            if (*setup_udp != NULL)
+            {
+                wf2_error = (*setup_udp)(23123);
+            }
+
+            if (wf2_error == 0)
+            {
+                wf2_error = siminitudp(simdata, simmap, SIMULATORAPI_WRECKFEST2);
+            }
+
+            if (wf2_error == 0)
+            {
+                simdata->simon = true;
+                simdata->simapi = SIMULATORAPI_WRECKFEST2;
+                simdata->simexe = simexe;
+                simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+
+                si.isSimOn = true;
+                si.SimUsesUDP = true;
+                si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
+                si.simulatorexe = simdata->simexe;
+                setSimInfo(&si);
+
+                return si;
+            }
+            break;
         case SIMULATOREXE_RACE_ROOM:
         case SIMULATOREXE_FORZA_HORIZON_5:
             break;
@@ -1013,6 +1058,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
         case SIMULATORAPI_F1_2018 :
 
             map_f1_2018_data(simdata, simmap, base);
+            break;
+
+        case SIMULATORAPI_WRECKFEST2 :
+
+            map_wreckfest2_data(simdata, simmap, base);
             break;
 
         case SIMULATORAPI_FORZA:
