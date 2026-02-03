@@ -23,6 +23,7 @@
 #include "dirt2.h"
 #include "f1.h"
 #include "wreckfest2.h"
+#include "rbr.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -157,6 +158,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_WRECKFEST2;
     }
+    else if (sstrcicmp(game, "rbr") == 0)
+    {
+        sim = SIMULATOREXE_RICHARD_BURNS_RALLY;
+    }
     else
     {
         sim = 0;
@@ -200,6 +205,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "r3e";
         case SIMULATOREXE_WRECKFEST2:
             return "wf2";
+        case SIMULATOREXE_RICHARD_BURNS_RALLY:
+            return "rbr";
         default:
             return "default";
     }
@@ -241,6 +248,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "Race Room";
         case SIMULATOREXE_WRECKFEST2:
             return "Wreckfest 2";
+        case SIMULATOREXE_RICHARD_BURNS_RALLY:
+            return "Richard Burns Rally";
         default:
             return "default";
     }
@@ -494,6 +503,13 @@ int setSimInfo(SimInfo* si)
             si->SimSupportsRealtimeTelemetry = false;
             si->SimSupportsAdvancedUI = false;
             break;
+        case SIMULATORAPI_RICHARD_BURNS_RALLY:
+            si->SimUsesUDP = true;
+            si->SimSupportsBasicTelemetry = true;
+            si->SimSupportsTyreEffects = true;
+            si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsAdvancedUI = false;
+            break;
         default:
             si->SimSupportsBasicTelemetry = true;
     }
@@ -642,6 +658,12 @@ SimulatorEXE getSimExe(SimInfo* si)
     {
         si->pid = pid;
         return SIMULATOREXE_WRECKFEST2;
+    }
+    pid = IsProcessRunning(RICHARD_BURNS_RALLY_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_RICHARD_BURNS_RALLY;
     }
     //pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
     //if(pid>0)
@@ -989,6 +1011,36 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 return si;
             }
             break;
+        case SIMULATOREXE_RICHARD_BURNS_RALLY:
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Richard Burns Rally");
+            int rbr_error = 0;
+            if (*setup_udp != NULL)
+            {
+                rbr_error = (*setup_udp)(6776);
+            }
+
+            if (rbr_error == 0)
+            {
+                rbr_error = siminitudp(simdata, simmap, SIMULATORAPI_RICHARD_BURNS_RALLY);
+            }
+
+            if (rbr_error == 0)
+            {
+                simdata->simon = true;
+                simdata->simapi = SIMULATORAPI_RICHARD_BURNS_RALLY;
+                simdata->simexe = simexe;
+                simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+
+                si.isSimOn = true;
+                si.SimUsesUDP = true;
+                si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
+                si.simulatorexe = simdata->simexe;
+                setSimInfo(&si);
+
+                return si;
+            }
+            break;
         case SIMULATOREXE_RACE_ROOM:
         case SIMULATOREXE_FORZA_HORIZON_5:
             break;
@@ -1063,6 +1115,11 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
         case SIMULATORAPI_WRECKFEST2 :
 
             map_wreckfest2_data(simdata, simmap, base);
+            break;
+
+        case SIMULATORAPI_RICHARD_BURNS_RALLY :
+
+            map_richard_burns_rally_data(simdata, simmap, base);
             break;
 
         case SIMULATORAPI_FORZA:

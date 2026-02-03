@@ -33,6 +33,7 @@ typedef enum
     SIMULATORAPI_FORZA             = 9,
     SIMULATORAPI_LMU               = 10,
     SIMULATORAPI_WRECKFEST2        = 11,
+    SIMULATORAPI_RICHARD_BURNS_RALLY = 12,
 }
 SimulatorAPI;
 
@@ -55,6 +56,7 @@ typedef enum
     SIMULATOREXE_RACE_ROOM                    = 211500, //r3e
     SIMULATOREXE_FORZA_HORIZON_5              = 1551360, //fh5
     SIMULATOREXE_WRECKFEST2                   = 1203190, //wf2
+    SIMULATOREXE_RICHARD_BURNS_RALLY          = 0000002, //rbr
 }
 SimulatorEXE;
 

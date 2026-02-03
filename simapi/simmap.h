@@ -7,6 +7,7 @@
 #include "scs2.h"
 #include "dirt2.h"
 #include "wreckfest2.h"
+#include "rbr.h"
 
 struct _simmap
 {
@@ -20,6 +21,7 @@ struct _simmap
     SCS2Map scs2;
     Dirt2Map dirt2;
     Wreckfest2Map wf2;
+    RBRMap rbr;
 };
 
 #endif
