@@ -4,7 +4,7 @@
 
 Clubsport Elite V3 Pedals
 
-Moza R5
+[Moza R5](https://spacefreak18.github.io/simapi/mozar5)
 
 Cammus C5
 
