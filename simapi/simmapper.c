@@ -24,6 +24,7 @@
 #include "f1.h"
 #include "wreckfest2.h"
 #include "rbr.h"
+#include "forzadef.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -665,12 +666,12 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_RICHARD_BURNS_RALLY;
     }
-    //pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
-    //if(pid>0)
-    //{
-    //    si->pid = pid;
-    //    return SIMULATOREXE_FORZA_HORIZON_5;
-    //}
+    pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_FORZA_HORIZON_5;
+    }
     //pid = IsProcessRunning(RACE_ROOM_EXE);
     //if(pid>0)
     //{
@@ -1042,7 +1043,36 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             break;
         case SIMULATOREXE_RACE_ROOM:
+            break;
         case SIMULATOREXE_FORZA_HORIZON_5:
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Forza");
+            int forza_error = 0;
+            if (*setup_udp != NULL)
+            {
+                forza_error = (*setup_udp)(5685);
+            }
+
+            if (forza_error == 0)
+            {
+                forza_error = siminitudp(simdata, simmap, SIMULATORAPI_FORZA);
+            }
+
+            if (forza_error == 0)
+            {
+                simdata->simon = true;
+                simdata->simapi = SIMULATORAPI_FORZA;
+                simdata->simexe = simexe;
+                simdata->simstatus = SIMAPI_STATUS_ACTIVEPLAY;
+
+                si.isSimOn = true;
+                si.SimUsesUDP = true;
+                si.simulatorapi = simdata->simapi;
+                si.mapapi = si.simulatorapi;
+                si.simulatorexe = simdata->simexe;
+                setSimInfo(&si);
+
+                return si;
+            }
             break;
     }
     return si;
@@ -1123,6 +1153,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             break;
 
         case SIMULATORAPI_FORZA:
+            map_forza_data(simdata, simmap, base);
             break;
         case SIMULATORAPI_RACE_ROOM:
             break;
