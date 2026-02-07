@@ -129,6 +129,7 @@ typedef struct //SimData
 
     double abs;
     double brakebias;
+    /* Wheel angular velocity. Units: radians per second (rad/s) */
     double tyreRPS[4];
     double tyrediameter[4];
     double distance;
