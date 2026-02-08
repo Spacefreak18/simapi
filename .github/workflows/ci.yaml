@@ -50,7 +50,7 @@ jobs:
         mkdir SIMAPI_PKG_SOURCE
         mkdir -p SIMAPI_PKG_SOURCE/DEBIAN
         mkdir -p SIMAPI_PKG_SOURCE/usr/lib/x86_64-linux-gnu/
-        cp ./tools/distro/debian/dpkg/simapi_control ./SIMAPI_PKG_SOURCE/DEBIAN/control
+        cp ./tools/distro/debian/dpkg/${{ matrix.os }}/simapi_control ./SIMAPI_PKG_SOURCE/DEBIAN/control
         cp -r \
           build/libsimapi.so \
           build/libsimapi.so.1 \
@@ -64,7 +64,7 @@ jobs:
         mkdir SIMD_PKG_SOURCE
         mkdir -p SIMD_PKG_SOURCE/DEBIAN
         mkdir -p SIMD_PKG_SOURCE/usr/bin/
-        cp ./tools/distro/debian/dpkg/simd_control ./SIMD_PKG_SOURCE/DEBIAN/control
+        cp ./tools/distro/debian/dpkg/${{ matrix.os }}/simd_control ./SIMD_PKG_SOURCE/DEBIAN/control
         cp build/simd/simd ./SIMD_PKG_SOURCE/usr/bin/simd
         dpkg-deb --build SIMD_PKG_SOURCE simd-${{ matrix.os }}.deb
 
