@@ -831,7 +831,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             int error1 = 0;
             if(*setup_udp != NULL)
             {
-                error1 = (*setup_udp)(30000);
+                error1 = (*setup_udp)(20777);
             }
             error1 = siminitudp(simdata, simmap, SIMULATORAPI_F1_2018);
 
