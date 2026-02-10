@@ -30,13 +30,11 @@ void map_forza_data(SimData* simdata, SimMap* simmap, char* base)
         simdata->simstatus = SIMAPI_STATUS_MENU;
     }
 
-    simdata->mtick = *(uint32_t*)(a + offsetof(Forza_Dash, TimestampMS));
 
     /* ---------------- Engine / drivetrain ---------------- */
 
     simdata->rpms = *(float*)(a + offsetof(Forza_Dash, CurrentEngineRpm));
     simdata->maxrpm = *(float*)(a + offsetof(Forza_Dash, EngineMaxRpm));
-    simdata->idlerpm = *(float*)(a + offsetof(Forza_Dash, EngineIdleRpm));
 
     uint8_t gear = *(uint8_t*)(a + offsetof(Forza_Dash, Gear));
     simdata->gear = gear + 1;
@@ -108,9 +106,6 @@ void map_forza_data(SimData* simdata, SimMap* simmap, char* base)
     float last = *(float*)(a + offsetof(Forza_Dash, LastLap));
     float current = *(float*)(a + offsetof(Forza_Dash, CurrentLap));
 
-    simdata->bestlap.seconds = (uint32_t)best;
-    simdata->lastlap.seconds = (uint32_t)last;
-    simdata->currentlap.seconds = (uint32_t)current;
 
     simdata->lap = *(uint16_t*)(a + offsetof(Forza_Dash, LapNumber));
     simdata->position = *(uint8_t*)(a + offsetof(Forza_Dash, RacePosition));
