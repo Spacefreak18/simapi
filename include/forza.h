@@ -1,5 +1,5 @@
-#pragma once
-#pragma pack(push, 1)
+#pragma pack(push)
+#pragma pack(1)
 
 #include <stdint.h>
 
@@ -171,6 +171,10 @@ typedef struct
     int32_t CarPerformanceIndex;
     int32_t DrivetrainType;
     int32_t NumCylinders;
+
+    int32_t HorizonPlaceholder1;
+    uint32_t HorizonPlaceholder2;
+    uint32_t HorizonPlaceholder3;
 
     // Dash-only fields
     float PositionX;
