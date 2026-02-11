@@ -8,6 +8,11 @@
 
 #include "../../include/forza.h"
 
+static uint32_t froundint(float f)
+{
+    return trunc(nearbyint(f));
+}
+
 void map_forza_data(SimData* simdata, SimMap* simmap, char* base)
 {
     if(base == NULL)
@@ -42,7 +47,7 @@ void map_forza_data(SimData* simdata, SimMap* simmap, char* base)
     /* ---------------- Speed & velocity ---------------- */
 
     float speed_ms = *(float*)(a + offsetof(Forza_Dash, Speed));
-    simdata->velocity = (uint32_t)(speed_ms * 3.6f);
+    simdata->velocity = froundint(speed_ms * 3.6f);
 
     simdata->Xvelocity = *(float*)(a + offsetof(Forza_Dash, VelocityX));
     simdata->Yvelocity = *(float*)(a + offsetof(Forza_Dash, VelocityY));
