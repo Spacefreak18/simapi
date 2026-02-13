@@ -131,6 +131,9 @@ static void map_main_packet(SimData* simdata, SimMap* simmap, char* base)
     // Note: Wreckfest uses different order than some sims
     for (int i = 0; i < 4; i++) {
         simdata->tyreRPS[i] = (double)packet->carPlayer.tires[i].rps;
+        simdata->tyreslipratio[i] = (double)packet->carPlayer.tires[i].slipRatio;
+        simdata->tyreslipangle[i] = (double)packet->carPlayer.tires[i].slipAngle;
+        simdata->tyrediameter[i] = (double)packet->carPlayer.tires[i].radiusUnloaded * 2.0;
 
         // Temperature - convert Kelvin to Celsius if available
         float temp_tread = packet->carPlayer.tires[i].temperatureTread;
