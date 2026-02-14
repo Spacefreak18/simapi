@@ -2,8 +2,7 @@
 
 #include <stdint.h>
 
-
-#define R3E_SHARED_MEMORY_NAME "$R3E"
+#define R3E_SIZE 16000
 
 enum
 {

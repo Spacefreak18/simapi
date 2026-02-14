@@ -56,6 +56,8 @@ typedef struct
     int acstatic_fd;
     void* accrew_addr;
     int accrew_fd;
+    void* r3e_addr;
+    int r3e_fd;
 }
 SimCompatMap;
 
@@ -92,5 +94,6 @@ void map_f1_2018_data(SimData* simdata, SimMap* simmap, char* base);
 void map_wreckfest2_data(SimData* simdata, SimMap* simmap, char* base);
 void map_richard_burns_rally_data(SimData* simdata, SimMap* simmap, char* base);
 void map_forza_data(SimData* simdata, SimMap* simmap, char* base);
+void map_r3e_data(SimData* simdata, SimMap* simmap);
 
 #endif
