@@ -238,14 +238,12 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
 
         int r = simfree(simdata, simmap, f->sim);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
-
         if(simds.auto_memmap == true)
         {
             simcompatmapclear(compatmap);
             y_log_message(Y_LOG_LEVEL_DEBUG, "cleared memory mapped files");
         }
-
-        y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
+        //y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
 
         f->releasing = false;
         if(appstate > 1)
@@ -273,6 +271,8 @@ void shmdatamapcallback(uv_timer_t* handle)
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
     {
         releaseloop(f, simdata, simmap);
+        y_log_message(Y_LOG_LEVEL_INFO, "Restarting Data Check Thread.");
+        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
     }
 }
 
@@ -399,6 +399,7 @@ void bridgeclosecallback(uv_timer_t* handle)
 
     if(is_pid_running(f->game_pid) == 0)
     {
+
         y_log_message(Y_LOG_LEVEL_INFO, "No longer detected game pid %i, so closing bridge pid %i", f->game_pid, f->bridge_pid);;
 
         if(simds.notify == true)
@@ -415,11 +416,15 @@ void bridgeclosecallback(uv_timer_t* handle)
         }
         f->bridge_pid = 0;
         f->game_pid = 0;
-        uv_timer_stop(handle);
+
         appstate = 1;
         releaseloop(f, simdata, simmap);
+
+        uv_timer_stop(handle);
+        uv_timer_stop(&datachecktimer);
         //int r = simfree(simdata, simmap, f->sim);
         //y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
+
 
         if(simds.auto_bridge == true)
         {
@@ -428,7 +433,7 @@ void bridgeclosecallback(uv_timer_t* handle)
         }
         else
         {
-            y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Mapping Thread.");
+            y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Check Thread.");
             uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
         }
     }
