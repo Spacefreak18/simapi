@@ -8,6 +8,7 @@
 #include "dirt2.h"
 #include "wreckfest2.h"
 #include "rbr.h"
+#include "r3edef.h"
 
 struct _simmap
 {
@@ -18,6 +19,7 @@ struct _simmap
     ACMap ac;
     RF2Map rf2;
     PCars2Map pcars2;
+    R3EMap r3e;
     SCS2Map scs2;
     Dirt2Map dirt2;
     Wreckfest2Map wf2;

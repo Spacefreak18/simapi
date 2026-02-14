@@ -25,6 +25,7 @@
 #include "wreckfest2.h"
 #include "rbr.h"
 #include "forzadef.h"
+#include "r3edef.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -86,6 +87,11 @@ bool does_sim_need_bridge(SimulatorEXE s)
     }
 
     if(s == SIMULATOREXE_AUTOMOBILISTA2)
+    {
+        return true;
+    }
+
+    if(s == SIMULATOREXE_RACE_ROOM)
     {
         return true;
     }
@@ -672,12 +678,12 @@ SimulatorEXE getSimExe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_FORZA_HORIZON_5;
     }
-    //pid = IsProcessRunning(RACE_ROOM_EXE);
-    //if(pid>0)
-    //{
-    //    si->pid = pid;
-    //    return SIMULATOREXE_RACE_ROOM;
-    //}
+    pid = IsProcessRunning(RACE_ROOM_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_RACE_ROOM;
+    }
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
@@ -1300,6 +1306,29 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 
             break;
 
+        case SIMULATORAPI_RACE_ROOM :
+
+            if(simmap->r3e.has_telemetry == true)
+            {
+                return 0;
+            }
+            simmap->r3e.has_telemetry=false;
+            simmap->r3e.fd_telemetry = shm_open(PCARS2_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
+            if (simmap->r3e.fd_telemetry == -1)
+            {
+                //slogd("could not open Assetto Corsa physics engine");
+                return SIMAPI_ERROR_NODATA;
+            }
+            simmap->r3e.telemetry_map_addr = mmap(NULL, sizeof(simmap->r3e.r3e_telemetry), PROT_READ, MAP_SHARED, simmap->r3e.fd_telemetry, 0);
+            if (simmap->r3e.telemetry_map_addr == MAP_FAILED)
+            {
+                //slogd("could not retrieve Assetto Corsa physics data");
+                return 30;
+            }
+            simmap->r3e.has_telemetry=true;
+
+            break;
+
         case SIMULATORAPI_RFACTOR2 :
 
             if(simmap->rf2.has_telemetry == true)
@@ -1445,6 +1474,21 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
         simmap->pcars2.has_telemetry = false;
     }
 
+    if(simmap->r3e.has_telemetry==true)
+    {
+        if (munmap(simmap->r3e.telemetry_map_addr, sizeof(simmap->r3e.r3e_telemetry)) == -1)
+        {
+            return 0301100;
+        }
+
+        if (close(simmap->r3e.fd_telemetry) == -1)
+        {
+            return 0301200;
+        }
+
+        simmap->r3e.has_telemetry = false;
+    }
+
     if(simmap->rf2.has_telemetry==true)
     {
         if (munmap(simmap->rf2.telemetry_map_addr, sizeof(simmap->rf2.rf2_telemetry)) == -1)
@@ -1576,6 +1620,27 @@ int opensimcompatmap(SimCompatMap* compatmap)
         return 30;
     }
     compatmap->pcars2_addr = addr;
+
+    compatmap->r3e_fd = shm_open(R3E_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->r3e_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    res = ftruncate(compatmap->r3e_fd, R3E_SIZE);
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    addr = mmap(NULL, R3E_SIZE, PROT_WRITE, MAP_SHARED, compatmap->r3e_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->r3e_addr = addr;
 
     compatmap->acphysics_fd = shm_open(AC_PHYSICS_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->acphysics_fd == -1)
