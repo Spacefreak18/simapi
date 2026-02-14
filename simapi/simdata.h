@@ -132,6 +132,8 @@ typedef struct //SimData
     /* Wheel angular velocity. Units: radians per second (rad/s) */
     double tyreRPS[4];
     double tyrediameter[4];
+    double tyreslipratio[4];
+    double tyreslipangle[4];
     double distance;
 
     double heading;
