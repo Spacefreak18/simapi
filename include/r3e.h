@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#define R3E_SIZE 16000
+#define R3E_SIZE 64000
 
 enum
 {
