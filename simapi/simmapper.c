@@ -1049,6 +1049,28 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             }
             break;
         case SIMULATOREXE_RACE_ROOM:
+            simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for RaceRoom Racing Experience");
+            if (does_sim_file_exist("/dev/shm/$R3E"))
+            {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found shared memory file for RaceRoom Racing Experience");
+                si.simulatorapi = SIMULATORAPI_RACE_ROOM;
+                int race_room_error = siminit(simdata, simmap, SIMULATORAPI_RACE_ROOM);
+                simdatamap(simdata, simmap, NULL, SIMULATORAPI_RACE_ROOM, false, NULL);
+                if (race_room_error == 0)
+                {
+                    simdata->simon = true;
+                    simdata->simapi = SIMULATORAPI_RACE_ROOM;
+                    simdata->simexe = simexe;
+
+                    si.isSimOn = true;
+                    si.simulatorapi = simdata->simapi;
+                    si.mapapi = si.simulatorapi;
+                    si.simulatorexe = simdata->simexe;
+                    setSimInfo(&si);
+
+                    return si;
+                }
+            }
             break;
         case SIMULATOREXE_FORZA_HORIZON_5:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Forza");
@@ -1162,6 +1184,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             map_forza_data(simdata, simmap, base);
             break;
         case SIMULATORAPI_RACE_ROOM:
+            //map_r3e_data(simdata, simmap);
             break;
         case SIMULATORAPI_LMU:
             break;
@@ -1793,6 +1816,17 @@ int freesimcompatmap(SimCompatMap* compatmap)
     shm_unlink(PCARS2_FILE);
 
     if (close(compatmap->pcars2_fd) == -1)
+    {
+        return 200;
+    }
+
+    if (munmap(compatmap->r3e_addr, R3E_SIZE) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(R3E_FILE);
+
+    if (close(compatmap->r3e_fd) == -1)
     {
         return 200;
     }
