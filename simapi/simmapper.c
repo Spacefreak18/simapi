@@ -1184,9 +1184,12 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             map_forza_data(simdata, simmap, base);
             break;
         case SIMULATORAPI_RACE_ROOM:
-            //map_r3e_data(simdata, simmap);
+           
+            map_r3e_data(simdata, simmap);
             break;
+
         case SIMULATORAPI_LMU:
+
             break;
     }
 
