@@ -8,6 +8,7 @@
    Constants
    ========================= */
 
+#define LMU_SIZE 250000
 #define LMU_MAX_MAPPED_VEHICLES 104
 #define LMU_MAX_PATH_LENGTH     260
 
