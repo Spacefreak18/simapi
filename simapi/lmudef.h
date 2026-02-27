@@ -5,6 +5,8 @@
 #include "../include/lmu.h"
 
 
+#define LMU_FILE "LMU_Data"
+
 typedef struct
 {
     bool has_telemetry;
