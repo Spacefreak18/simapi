@@ -1760,6 +1760,7 @@ int simcompatmapclear(SimCompatMap* compatmap)
     memset(compatmap->acphysics_addr, 0, AC_STATIC_SIZE);
     memset(compatmap->acphysics_addr, 0, AC_GRAPHIC_SIZE);
     memset(compatmap->acphysics_addr, 0, AC_CREWCHIEF_SIZE);
+    memset(compatmap->r3e_addr, 0, AC_CREWCHIEF_SIZE);
     memset(compatmap->pcars2_addr, 0, PCARS2_SIZE);
 
     return 0;
