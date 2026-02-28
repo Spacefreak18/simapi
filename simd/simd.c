@@ -636,6 +636,9 @@ void gamefindcallback(uv_timer_t* handle)
             uv_timer_stop(handle);
         }
 
+        // start a timer to check if this game stops so we can start looking for a running game again if it does
+        uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
+
         if(err == 0)
         {
             if(simds.notify == true)
@@ -702,8 +705,6 @@ void datacheckcallback(uv_timer_t* handle)
                 uv_timer_start(&datamaptimer, shmdatamapcallback, 2000, 16);
             }
             uv_timer_stop(handle);
-            // i can make this more frequent but i need to be conscious of resources, don't want to trash anyone's frame rates
-            uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
         }
     }
 
