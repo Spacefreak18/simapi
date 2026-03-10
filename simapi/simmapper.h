@@ -61,28 +61,27 @@ typedef struct
 }
 SimCompatMap;
 
-bool does_sim_need_bridge(SimulatorEXE s);
-SimulatorEXE getSimExe(SimInfo* si);
-SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd);
-int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
-int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
-int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulator, bool udp, char* base);
-int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+bool simapi_does_sim_need_bridge(SimulatorEXE s);
+SimulatorEXE simapi_get_sim_exe(SimInfo* si);
+SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd);
 
 int simapi_strtogame(const char* game);
 char* simapi_gametostr(SimulatorEXE sim);
 char* simapi_gametofullstr(SimulatorEXE sim);
 
-SimMap* createSimMap(void);
-void* getSimMapPtr(SimMap* simmap);
-int simdmap(SimMap* simmap, SimData* simdata);
-int opensimmap(SimMap* simmap);
-int freesimmap(SimMap* simmap, bool issimd);
-int opensimcompatmap(SimCompatMap* compatmap);
-int freesimcompatmap(SimCompatMap* compatmap);
-int simcompatmapclear(SimCompatMap* compatmap);
+SimMap* simapi_simmap_create(void);
 
-void SetProximityData(SimData* simdata, int cars, int8_t lr_flip);
+int simapi_init(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+int simapi_initudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+int simapi_datamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool udp, char* base);
+int simapi_sim_clear(SimData* simdata, SimMap* simmap);
+int simapi_universalmap_open(SimMap* simmap, SimData* simdata);
+int simapi_universalmap_free(SimMap* simmap, bool issimd);
+int simapi_compatmap_open(SimCompatMap* compatmap);
+int simapi_compatmap_free(SimCompatMap* compatmap);
+int simapi_compatmap_clear(SimCompatMap* compatmap);
+
+void simapi_set_proximity_data(SimData* simdata, int cars, int8_t lr_flip);
 
 void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe);
 void map_rfactor2_data(SimData* simdata, SimMap* simmap);
@@ -95,5 +94,6 @@ void map_wreckfest2_data(SimData* simdata, SimMap* simmap, char* base);
 void map_richard_burns_rally_data(SimData* simdata, SimMap* simmap, char* base);
 void map_forza_data(SimData* simdata, SimMap* simmap, char* base);
 void map_r3e_data(SimData* simdata, SimMap* simmap);
+
 
 #endif

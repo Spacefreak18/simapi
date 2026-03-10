@@ -286,7 +286,7 @@ void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* ba
         simdata->worldposy = *(float*) (char*) (a + offsetof(struct pcars2APIStruct, mParticipantInfo) + offsetof(ParticipantInfo, mWorldPosition) + (sizeof(float) * 2));
 
 
-        SetProximityData(simdata, numcars, 1);
+        simapi_set_proximity_data(simdata, numcars, 1);
         return;
     }
     else

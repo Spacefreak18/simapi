@@ -45,8 +45,13 @@
 #include "../include/outgauge.h"
 #include "../include/scs2data.h"
 
+static bool does_sim_file_exist(const char* file);
+static int simdmap(SimMap* simmap, SimData* simdata);
 
-SimMap* createSimMap()
+
+
+
+SimMap* simapi_simmap_create()
 {
     SimMap* ptr = malloc(sizeof(SimMap));
     ptr->fd = -1;
@@ -54,10 +59,6 @@ SimMap* createSimMap()
     return ptr;
 }
 
-void* getSimMapPtr(SimMap* simmap)
-{
-    return simmap->addr;
-}
 
 int sstrcicmp(char const *a, char const *b)
 {
@@ -79,7 +80,7 @@ long long timeInMilliseconds(void)
     return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 }
 
-bool does_sim_need_bridge(SimulatorEXE s)
+bool simapi_does_sim_need_bridge(SimulatorEXE s)
 {
     if(s == SIMULATOREXE_ASSETTO_CORSA || s == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE || s == SIMULATOREXE_ASSETTO_CORSA_EVO || s == SIMULATOREXE_ASSETTO_CORSA_RALLY)
     {
@@ -277,15 +278,15 @@ func_ptr_t loginfo = NULL;
 func_ptr_t logdebug = NULL;
 func_ptr_t logtrace = NULL;
 
-void set_simapi_log_info(func_ptr_t func)
+void simapi_set_log_info(func_ptr_t func)
 {
     loginfo = func;
 }
-void set_simapi_log_debug(func_ptr_t func)
+void simapi_set_log_debug(func_ptr_t func)
 {
     logdebug = func;
 }
-void set_simapi_log_trace(func_ptr_t func)
+void simapi_set_log_trace(func_ptr_t func)
 {
     logtrace = func;
 }
@@ -318,7 +319,7 @@ void simapi_log(SIMAPI_LOGLEVEL sll, char* message)
     }
 }
 
-void SetProximityData(SimData* simdata, int cars, int8_t lr_flip)
+void simapi_set_proximity_data(SimData* simdata, int cars, int8_t lr_flip)
 {
     double carwidth = 1.8;
     double maxradius = 10.0;
@@ -400,7 +401,7 @@ void SetProximityData(SimData* simdata, int cars, int8_t lr_flip)
 }
 
 
-bool does_sim_file_exist(const char* file)
+static bool does_sim_file_exist(const char* file)
 {
     if (file == NULL)
     {
@@ -460,7 +461,7 @@ float spLineLengthToDistanceRoundTrack(float trackLength, float spLine)
     return spLine * trackLength;
 }
 
-int setSimInfo(SimInfo* si)
+static int set_sim_info(SimInfo* si)
 {
     switch ( si->simulatorapi )
     {
@@ -578,7 +579,7 @@ void hexDump(char* desc, void* addr, int len)
     printf ("  %s\n", buff);
 }
 
-SimulatorEXE getSimExe(SimInfo* si)
+SimulatorEXE simapi_get_sim_exe(SimInfo* si)
 {
     int pid = 0;
 
@@ -688,7 +689,7 @@ SimulatorEXE getSimExe(SimInfo* si)
 }
 
 
-SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd)
+SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd)
 {
 
     SimInfo si;
@@ -707,13 +708,13 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     {
         if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
         {
-            int e = siminit(simdata, simmap, SIMULATORAPI_SIMAPI_TEST);
-            simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
+            int e = simapi_init(simdata, simmap, SIMULATORAPI_SIMAPI_TEST);
+            simapi_datamap(simdata, simmap, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             char* temp;
             asprintf(&temp, "found running simapi daemon simint error %i", e);
             simapi_log(SIMAPI_LOGLEVEL_TRACE, temp);
             free(temp);
-            //simdatamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
+            //simapi_datamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             if(simdata->simapiversion == SIMAPI_VERSION)
             {
                 if (simdata->simon == 1)
@@ -724,7 +725,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorexe = simdata->simexe;
                     si.mapapi = SIMULATORAPI_SIMAPI_TEST;
                     si.simulatorexe = simdata->simexe;
-                    setSimInfo(&si);
+                    set_sim_info(&si);
                     si.SimUsesUDP = false;
                 }
                 return si;
@@ -743,7 +744,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
         }
     }
 
-    SimulatorEXE simexe = getSimExe(&si);
+    SimulatorEXE simexe = simapi_get_sim_exe(&si);
 
     switch ( simexe )
     {
@@ -758,12 +759,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 {
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                     si.simulatorapi = SIMULATORAPI_ASSETTO_CORSA;
-                    int error = siminit(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA);
+                    int error = simapi_init(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA);
                     char* temp;
-                    asprintf(&temp, "siminit error %i", error);
+                    asprintf(&temp, "simapi_init error %i", error);
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, temp);
                     free(temp);
-                    simdatamap(simdata, simmap, NULL, SIMULATORAPI_ASSETTO_CORSA, false, NULL);
+                    simapi_datamap(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA, false, NULL);
 
                     // temporary workaround for beta data from ACEvo and ACRally
                     if(simexe == SIMULATOREXE_ASSETTO_CORSA_EVO || simexe == SIMULATOREXE_ASSETTO_CORSA_RALLY)
@@ -782,7 +783,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                         si.simulatorapi = simdata->simapi;
                         si.mapapi = si.simulatorapi;
                         si.simulatorexe = simdata->simexe;
-                        setSimInfo(&si);
+                        set_sim_info(&si);
                         if(simexe == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE)
                         {
                             // support will have to be revisited for this sim
@@ -810,7 +811,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 error = (*setup_udp)(30000);
             }
-            error = siminitudp(simdata, simmap, SIMULATORAPI_OUTSIMOUTGAUGE);
+            error = simapi_initudp(simdata, simmap, SIMULATORAPI_OUTSIMOUTGAUGE);
 
             if(error == 0)
             {
@@ -828,7 +829,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
                 return si;
             }
             break;
@@ -839,7 +840,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 error1 = (*setup_udp)(20777);
             }
-            error1 = siminitudp(simdata, simmap, SIMULATORAPI_F1_2018);
+            error1 = simapi_initudp(simdata, simmap, SIMULATORAPI_F1_2018);
 
             if(error1 == 0)
             {
@@ -857,7 +858,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
                 return si;
             }
             break;
@@ -868,8 +869,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "RFactor2 telemetry file found");
                 si.simulatorapi = SIMULATORAPI_RFACTOR2;
-                int error = siminit(simdata, simmap, SIMULATORAPI_RFACTOR2);
-                simdatamap(simdata, simmap, NULL, SIMULATORAPI_RFACTOR2, false, NULL);
+                int error = simapi_init(simdata, simmap, SIMULATORAPI_RFACTOR2);
+                simapi_datamap(simdata, simmap, SIMULATORAPI_RFACTOR2, false, NULL);
                 if (error == 0)
                 {
                     //slogi("found Assetto Corsa, starting application...");
@@ -882,7 +883,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorapi = simdata->simapi;
                     si.mapapi = si.simulatorapi;
                     si.simulatorexe = simdata->simexe;
-                    setSimInfo(&si);
+                    set_sim_info(&si);
 
                     return si;
                 }
@@ -895,8 +896,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 if (does_sim_file_exist("/dev/shm/$pcars2$"))
                 {
                     si.simulatorapi = SIMULATORAPI_PROJECTCARS2;
-                    int error = siminit(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
-                    simdatamap(simdata, simmap, NULL, SIMULATORAPI_PROJECTCARS2, false, NULL);
+                    int error = simapi_init(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
+                    simapi_datamap(simdata, simmap, SIMULATORAPI_PROJECTCARS2, false, NULL);
                     if (error == 0)
                     {
                         simdata->simon = true;
@@ -907,7 +908,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                         si.simulatorapi = simdata->simapi;
                         si.mapapi = si.simulatorapi;
                         si.simulatorexe = simdata->simexe;
-                        setSimInfo(&si);
+                        set_sim_info(&si);
 
                         return si;
                     }
@@ -916,12 +917,12 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             else
             {
                 int error = (*setup_udp)(5606);
-                error = siminitudp(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
+                error = simapi_initudp(simdata, simmap, SIMULATORAPI_PROJECTCARS2);
                 if (error == 0)
                 {
                     si.simulatorapi = SIMULATORAPI_PROJECTCARS2;
                     si.SimUsesUDP = true;
-                    simdatamap(simdata, simmap, NULL, SIMULATORAPI_PROJECTCARS2, true, NULL);
+                    simapi_datamap(simdata, simmap, SIMULATORAPI_PROJECTCARS2, true, NULL);
                 }
                 if (error == 0 && simdata->simstatus > 1)
                 {
@@ -933,7 +934,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorapi = simdata->simapi;
                     si.mapapi = si.simulatorapi;
                     si.simulatorexe = simdata->simexe;
-                    setSimInfo(&si);
+                    set_sim_info(&si);
 
                     return si;
                 }
@@ -944,8 +945,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
             {
                 si.simulatorapi = SIMULATORAPI_SCSTRUCKSIM2;
-                int error = siminit(simdata, simmap, SIMULATORAPI_SCSTRUCKSIM2);
-                simdatamap(simdata, simmap, NULL, SIMULATORAPI_SCSTRUCKSIM2, false, NULL);
+                int error = simapi_init(simdata, simmap, SIMULATORAPI_SCSTRUCKSIM2);
+                simapi_datamap(simdata, simmap, SIMULATORAPI_SCSTRUCKSIM2, false, NULL);
                 if (error == 0)
                 {
                     simdata->simon = true;
@@ -956,7 +957,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorapi = simdata->simapi;
                     si.mapapi = si.simulatorapi;
                     si.simulatorexe = simdata->simexe;
-                    setSimInfo(&si);
+                    set_sim_info(&si);
 
                     return si;
                 }
@@ -967,7 +968,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             int dr2_error = (*setup_udp)(20777);
             if (dr2_error == 0)
             {
-                dr2_error = siminitudp(simdata, simmap, SIMULATORAPI_DIRT_RALLY_2);
+                dr2_error = simapi_initudp(simdata, simmap, SIMULATORAPI_DIRT_RALLY_2);
             }
 
             if (dr2_error == 0)
@@ -983,7 +984,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
 
                 return si;
             }
@@ -998,7 +999,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
             if (wf2_error == 0)
             {
-                wf2_error = siminitudp(simdata, simmap, SIMULATORAPI_WRECKFEST2);
+                wf2_error = simapi_initudp(simdata, simmap, SIMULATORAPI_WRECKFEST2);
             }
 
             if (wf2_error == 0)
@@ -1013,7 +1014,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
 
                 return si;
             }
@@ -1028,7 +1029,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
             if (rbr_error == 0)
             {
-                rbr_error = siminitudp(simdata, simmap, SIMULATORAPI_RICHARD_BURNS_RALLY);
+                rbr_error = simapi_initudp(simdata, simmap, SIMULATORAPI_RICHARD_BURNS_RALLY);
             }
 
             if (rbr_error == 0)
@@ -1043,7 +1044,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
 
                 return si;
             }
@@ -1054,8 +1055,8 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found shared memory file for RaceRoom Racing Experience");
                 si.simulatorapi = SIMULATORAPI_RACE_ROOM;
-                int race_room_error = siminit(simdata, simmap, SIMULATORAPI_RACE_ROOM);
-                simdatamap(simdata, simmap, NULL, SIMULATORAPI_RACE_ROOM, false, NULL);
+                int race_room_error = simapi_init(simdata, simmap, SIMULATORAPI_RACE_ROOM);
+                simapi_datamap(simdata, simmap, SIMULATORAPI_RACE_ROOM, false, NULL);
                 if (race_room_error == 0)
                 {
                     simdata->simon = true;
@@ -1066,7 +1067,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                     si.simulatorapi = simdata->simapi;
                     si.mapapi = si.simulatorapi;
                     si.simulatorexe = simdata->simexe;
-                    setSimInfo(&si);
+                    set_sim_info(&si);
 
                     return si;
                 }
@@ -1082,7 +1083,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
 
             if (forza_error == 0)
             {
-                forza_error = siminitudp(simdata, simmap, SIMULATORAPI_FORZA);
+                forza_error = simapi_initudp(simdata, simmap, SIMULATORAPI_FORZA);
             }
 
             if (forza_error == 0)
@@ -1097,7 +1098,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
                 si.simulatorapi = simdata->simapi;
                 si.mapapi = si.simulatorapi;
                 si.simulatorexe = simdata->simexe;
-                setSimInfo(&si);
+                set_sim_info(&si);
 
                 return si;
             }
@@ -1106,7 +1107,7 @@ SimInfo getSim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp
     return si;
 }
 
-int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI simulatorapi, bool udp, char* base)
+int simapi_datamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulatorapi, bool udp, char* base)
 {
     char* a;
     char* b;
@@ -1184,7 +1185,7 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             map_forza_data(simdata, simmap, base);
             break;
         case SIMULATORAPI_RACE_ROOM:
-           
+
             map_r3e_data(simdata, simmap);
             break;
 
@@ -1193,19 +1194,19 @@ int simdatamap(SimData* simdata, SimMap* simmap, SimMap* simmap2, SimulatorAPI s
             break;
     }
 
-    if (simmap2 != NULL && simmap2->addr != NULL)
+    if (simmap->addr != NULL)
     {
-        simdmap(simmap2, simdata);
+        simdmap(simmap, simdata);
     }
 
 }
 
-int simdmap(SimMap* simmap, SimData* simdata)
+static int simdmap(SimMap* simmap, SimData* simdata)
 {
     memcpy(simmap->addr, simdata, sizeof(SimData));
 }
 
-int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
+int simapi_initudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 {
     int error = SIMAPI_ERROR_NONE;
 
@@ -1214,7 +1215,7 @@ int siminitudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 }
 
 
-int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
+int simapi_init(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 {
     //slogi("searching for simulator data...");
     int error = SIMAPI_ERROR_NONE;
@@ -1422,7 +1423,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 }
 
 
-int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
+int simapi_sim_clear(SimData* simdata, SimMap* simmap)
 {
     int error = SIMAPI_ERROR_NONE;
 
@@ -1564,12 +1565,16 @@ int simfree(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
         simmap->dirt2.has_telemetry = false;
     }
 
-    bzero(simdata, sizeof(SimData));
-    simdata->simapiversion = SIMAPI_VERSION;
+    if (simmap != NULL && simmap->addr != NULL)
+    {
+        memset(simdata, 0, sizeof(SimData));
+        simdata->simapiversion = SIMAPI_VERSION;
+        simdmap(simmap, simdata);
+    }
     return error;
 }
 
-int freesimmap(SimMap* simmap, bool issimd)
+int simapi_universalmap_free(SimMap* simmap, bool issimd)
 {
     simapi_log(SIMAPI_LOGLEVEL_INFO, "Freeing universal shared memory");
 
@@ -1593,11 +1598,10 @@ int freesimmap(SimMap* simmap, bool issimd)
         return 200;
     }
     simmap->hasSimApiDat = false;
-    free(simmap);
     return 0;
 }
 
-int opensimmap(SimMap* simmap)
+int simapi_universalmap_open(SimMap* simmap, SimData* simdata)
 {
     simmap->fd = shm_open(SIMAPI_MEM_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     simapi_log(SIMAPI_LOGLEVEL_INFO, "Opening universal shared memory");
@@ -1620,11 +1624,15 @@ int opensimmap(SimMap* simmap)
         return 30;
     }
     simmap->addr = addr;
+
+    simdata->simapiversion = SIMAPI_VERSION;
+    simdmap(simmap, simdata);
+
     return 0;
 }
 
 
-int opensimcompatmap(SimCompatMap* compatmap)
+int simapi_compatmap_open(SimCompatMap* compatmap)
 {
     compatmap->pcars2_fd = shm_open(PCARS2_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->pcars2_fd == -1)
@@ -1754,7 +1762,7 @@ int opensimcompatmap(SimCompatMap* compatmap)
     return 0;
 }
 
-int simcompatmapclear(SimCompatMap* compatmap)
+int simapi_compatmap_clear(SimCompatMap* compatmap)
 {
     memset(compatmap->acphysics_addr, 0, AC_PHYSICS_SIZE);
     memset(compatmap->acstatic_addr, 0, AC_STATIC_SIZE);
@@ -1767,7 +1775,7 @@ int simcompatmapclear(SimCompatMap* compatmap)
 }
 
 
-int freesimcompatmap(SimCompatMap* compatmap)
+int simapi_compatmap_free(SimCompatMap* compatmap)
 {
     if (munmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1)
     {
