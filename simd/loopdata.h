@@ -47,8 +47,6 @@ typedef struct
     pid_t game_pid;
     GameCompatInfo* game_compat_info;
     SimData* simdata;
-    SimMap* simmap;
-    SimMap* simmap2;
 }
 LoopData;
 

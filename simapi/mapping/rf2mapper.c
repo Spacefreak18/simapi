@@ -382,7 +382,7 @@ void map_rfactor2_data(SimData* simdata, SimMap* simmap)
         simdata->worldposz = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 1 ));
         simdata->worldposy = *(double*) (char*) (a + offsetof(struct rF2Telemetry, mVehicles) + (sizeof(rF2VehicleTelemetry) * veh) + offsetof(rF2VehicleTelemetry, mPos) + (sizeof(double) * 2 ));
 
-        SetProximityData(simdata, numcars, 1);
+        simapi_set_proximity_data(simdata, numcars, 1);
     }
 
 }

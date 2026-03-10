@@ -6,9 +6,9 @@
 typedef void (*func_ptr_t)(char* message);
 //func_ptr_t logfunc;
 
-void set_simapi_log_info(func_ptr_t logfunc);
-void set_simapi_log_debug(func_ptr_t logfunc);
-void set_simapi_log_trace(func_ptr_t logfunc);
+void simapi_set_log_info(func_ptr_t logfunc);
+void simapi_set_log_debug(func_ptr_t logfunc);
+void simapi_set_log_trace(func_ptr_t logfunc);
 
 
 typedef enum

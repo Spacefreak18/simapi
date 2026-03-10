@@ -40,7 +40,6 @@ Parameters* p;
 LoopData* baton;
 SimData* simdata;
 SimMap* simmap;
-SimMap* simmap2;
 SimCompatMap* compatmap;
 GameCompatInfo* game_compat_info;
 SimdSettings simds;
@@ -149,17 +148,18 @@ void release()
     uv_timer_stop(&bridgeclosetimer);
     uv_walk(uv_default_loop(), close_walk_cb, NULL);
     uv_run(uv_default_loop(), UV_RUN_DEFAULT);
-    ASSERT(0 == uv_loop_close(uv_default_loop()));
+    uv_loop_close(uv_default_loop());
     uv_library_shutdown();
 
     if(compatmemmap == true)
     {
-        freesimcompatmap(compatmap);
+        simapi_compatmap_free(compatmap);
         free(compatmap);
     }
 
-    freesimmap(simmap, true);
-    freesimmap(simmap2, true);
+    simapi_sim_clear(simdata, simmap);
+    simapi_universalmap_free(simmap, true);
+    free(simmap);
 
     free(baton);
     free(simdata);
@@ -216,10 +216,6 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         simdata->simstatus = 0;
         simdata->rpms = 0;
         simdata->velocity = 0;
-        if (simmap2 != NULL)
-        {
-            simdmap(simmap2, simdata);
-        }
         // Properly close the UDP socket if it's open
         if (recv_socket_initialized)
         {
@@ -236,11 +232,11 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
             recv_socket_bound = false;
         }
 
-        int r = simfree(simdata, simmap, f->sim);
+        int r = simapi_sim_clear(simdata, simmap);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
         if(simds.auto_memmap == true)
         {
-            simcompatmapclear(compatmap);
+            simapi_compatmap_clear(compatmap);
             y_log_message(Y_LOG_LEVEL_DEBUG, "cleared memory mapped files");
         }
         //y_log_message(Y_LOG_LEVEL_INFO, "stopped mapping data, press q again to quit");
@@ -259,13 +255,11 @@ void shmdatamapcallback(uv_timer_t* handle)
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
-    SimMap* simmap = f->simmap;
-    SimMap* simmap2 = f->simmap2;
     SimdSettings simds = f->simds;
     //appstate = 2;
     if (appstate == 2)
     {
-        simdatamap(simdata, simmap, simmap2, f->sim, false, NULL);
+        simapi_datamap(simdata, simmap, f->sim, false, NULL);
     }
 
     if (f->simstate == false || simdata->simstatus <= 1 || appstate <= 1)
@@ -302,12 +296,10 @@ static void on_udp_recv(uv_udp_t* handle, ssize_t nread, const uv_buf_t* rcvbuf,
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
-    SimMap* simmap = f->simmap;
-    SimMap* simmap2 = f->simmap2;
 
     if (appstate == 2)
     {
-        simdatamap(simdata, simmap, simmap2, f->sim, true, a);
+        simapi_datamap(simdata, simmap, f->sim, true, a);
     }
     else
     {
@@ -395,7 +387,6 @@ void bridgeclosecallback(uv_timer_t* handle)
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
-    SimMap* simmap = f->simmap;
 
     if(is_pid_running(f->game_pid) == 0)
     {
@@ -422,6 +413,8 @@ void bridgeclosecallback(uv_timer_t* handle)
 
         uv_timer_stop(handle);
         uv_timer_stop(&datachecktimer);
+
+        //simfree is called by releaseloop
         //int r = simfree(simdata, simmap, f->sim);
         //y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i.", r);
 
@@ -465,7 +458,7 @@ void gamefindcallback(uv_timer_t* handle)
     {
         i = -1;
         SimInfo si;
-        sim = getSimExe(&si);
+        sim = simapi_get_sim_exe(&si);
         gamepid = si.pid;
     }
 
@@ -477,7 +470,7 @@ void gamefindcallback(uv_timer_t* handle)
 
 
         f->game_pid = gamepid;
-        if(does_sim_need_bridge(sim) == true && err == 0 && i > -1)
+        if(simapi_does_sim_need_bridge(sim) == true && err == 0 && i > -1)
         {
 
             pid_t pid = gamepid;
@@ -662,7 +655,7 @@ void udpstart(LoopData* f, SimData* simdata, SimMap* simmap)
 {
     if (appstate == 2)
     {
-        simdatamap(simdata, NULL, simmap2, f->sim, true, NULL);
+        simapi_datamap(simdata, simmap, f->sim, true, NULL);
     }
 }
 
@@ -672,12 +665,10 @@ void datacheckcallback(uv_timer_t* handle)
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
-    SimMap* simmap = f->simmap;
-    SimMap* simmap2 = f->simmap2;
 
     if ( appstate == 1 )
     {
-        SimInfo si = getSim(simdata, simmap, false, startudp, true);
+        SimInfo si = simapi_get_sim(simdata, simmap, false, startudp, true);
         //TODO: move all this to a siminfo struct in loop_data
         f->simstate = si.isSimOn;
         f->sim = si.simulatorapi;
@@ -914,44 +905,40 @@ int main(int argc, char** argv)
         }
     }
 
-    set_simapi_log_info(simapilib_loginfo);
+    simapi_set_log_info(simapilib_loginfo);
     if(p->verbosity_count>0)
     {
-        set_simapi_log_debug(simapilib_logdebug);
-        set_simapi_log_trace(simapilib_logtrace);
+        simapi_set_log_debug(simapilib_logdebug);
+        simapi_set_log_trace(simapilib_logtrace);
     }
 
     simdata = malloc(sizeof(SimData));
     bzero(simdata, sizeof(SimData));
 
-    simmap = createSimMap();
-    simmap2 = createSimMap();
+    simmap = simapi_simmap_create();
+
+    simapi_universalmap_open(simmap, simdata);
+    if (simmap->fd != -1)
+    {
+        y_log_message(Y_LOG_LEVEL_INFO, "Successfully opened universal shared memory (fd: %d)", simmap->fd);
+    }
+    else
+    {
+        y_log_message(Y_LOG_LEVEL_ERROR, "Failed to open universal shared memory!");
+    }
+    y_log_message(Y_LOG_LEVEL_INFO, "SimApi Version: %i\n", simdata->simapiversion);
 
     compatmemmap = false;
     if(simds.auto_memmap == true)
     {
         compatmemmap = true;
         compatmap = malloc(sizeof(SimCompatMap));
-        opensimcompatmap(compatmap);
+        simapi_compatmap_open(compatmap);
     }
 
-    opensimmap(simmap2);
-    if (simmap2->fd != -1)
-    {
-        y_log_message(Y_LOG_LEVEL_INFO, "Successfully opened universal shared memory (fd: %d)", simmap2->fd);
-    }
-    else
-    {
-        y_log_message(Y_LOG_LEVEL_ERROR, "Failed to open universal shared memory!");
-    }
 
-    simdata->simapiversion = SIMAPI_VERSION;
-    simdmap(simmap2, simdata);
-    y_log_message(Y_LOG_LEVEL_INFO, "SimApi Version: %i\n", simdata->simapiversion);
 
     baton = (LoopData*) malloc(sizeof(LoopData));
-    baton->simmap = simmap;
-    baton->simmap2 = simmap2;
     baton->simdata = simdata;
     baton->simstate = false;
     baton->uion = false;
