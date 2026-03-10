@@ -1339,7 +1339,7 @@ int siminit(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
                 return 0;
             }
             simmap->r3e.has_telemetry=false;
-            simmap->r3e.fd_telemetry = shm_open(PCARS2_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
+            simmap->r3e.fd_telemetry = shm_open(R3E_FILE, O_RDWR|O_CREAT, S_IRUSR | S_IWUSR);
             if (simmap->r3e.fd_telemetry == -1)
             {
                 //slogd("could not open Assetto Corsa physics engine");
@@ -1757,9 +1757,9 @@ int opensimcompatmap(SimCompatMap* compatmap)
 int simcompatmapclear(SimCompatMap* compatmap)
 {
     memset(compatmap->acphysics_addr, 0, AC_PHYSICS_SIZE);
-    memset(compatmap->acphysics_addr, 0, AC_STATIC_SIZE);
-    memset(compatmap->acphysics_addr, 0, AC_GRAPHIC_SIZE);
-    memset(compatmap->acphysics_addr, 0, AC_CREWCHIEF_SIZE);
+    memset(compatmap->acstatic_addr, 0, AC_STATIC_SIZE);
+    memset(compatmap->acgraphics_addr, 0, AC_GRAPHIC_SIZE);
+    memset(compatmap->accrew_addr, 0, AC_CREWCHIEF_SIZE);
     memset(compatmap->r3e_addr, 0, AC_CREWCHIEF_SIZE);
     memset(compatmap->pcars2_addr, 0, PCARS2_SIZE);
 
