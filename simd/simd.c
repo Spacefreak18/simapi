@@ -157,8 +157,8 @@ void release()
         free(compatmap);
     }
 
-    simapi_sim_clear(simdata, simmap);
-    simapi_universalmap_free(simmap, true);
+    simapi_sim_clear(simdata, simmap, true);
+    simapi_universalmap_free(simmap);
     free(simmap);
 
     free(baton);
@@ -232,7 +232,7 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
             recv_socket_bound = false;
         }
 
-        int r = simapi_sim_clear(simdata, simmap);
+        int r = simapi_sim_clear(simdata, simmap, true);
         y_log_message(Y_LOG_LEVEL_DEBUG, "simfree returned %i", r);
         if(simds.auto_memmap == true)
         {

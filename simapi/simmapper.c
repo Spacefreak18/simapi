@@ -1423,7 +1423,7 @@ int simapi_init(SimData* simdata, SimMap* simmap, SimulatorAPI simulator)
 }
 
 
-int simapi_sim_clear(SimData* simdata, SimMap* simmap)
+int simapi_sim_clear(SimData* simdata, SimMap* simmap, bool issimd)
 {
     int error = SIMAPI_ERROR_NONE;
 
@@ -1565,7 +1565,7 @@ int simapi_sim_clear(SimData* simdata, SimMap* simmap)
         simmap->dirt2.has_telemetry = false;
     }
 
-    if (simmap != NULL && simmap->addr != NULL)
+    if (issimd == true && simmap != NULL && simmap->addr != NULL)
     {
         memset(simdata, 0, sizeof(SimData));
         simdata->simapiversion = SIMAPI_VERSION;
@@ -1574,7 +1574,7 @@ int simapi_sim_clear(SimData* simdata, SimMap* simmap)
     return error;
 }
 
-int simapi_universalmap_free(SimMap* simmap, bool issimd)
+int simapi_universalmap_free(SimMap* simmap)
 {
     simapi_log(SIMAPI_LOGLEVEL_INFO, "Freeing universal shared memory");
 
@@ -1588,10 +1588,7 @@ int simapi_universalmap_free(SimMap* simmap, bool issimd)
     {
         return 100;
     }
-    if(issimd == true)
-    {
-        shm_unlink(SIMAPI_MEM_FILE);
-    }
+    shm_unlink(SIMAPI_MEM_FILE);
 
     if (close(simmap->fd) == -1)
     {
