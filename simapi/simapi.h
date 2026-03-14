@@ -2,6 +2,7 @@
 #define _SIMMAPI_H
 
 #include <signal.h>
+#include <stdbool.h>
 
 #define SIMAPI_VERSION 1
 
