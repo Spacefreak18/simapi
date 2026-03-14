@@ -59,6 +59,10 @@ void map_outgauge_outsim_data(SimData* simdata, SimMap* simmap, SimulatorEXE sim
             float pos = *(float*) (char*) (a + offsetof(struct outsim, CurrentLapDist));
             float dist = *(float*) (char*) (a + offsetof(struct outsim, IndexedDistance));
             //fprintf(stderr, "pos x: %f %f\n", pos, dist);
+            for (int i = 0; i < 4; i++)
+            {
+                simdata->tyreslipratio[i] = *(float*) (char*) (a + offsetof(struct outsim, OSWheels) + (sizeof(OutSimWheel) * i) + offsetof(OutSimWheel, SlipRatio));
+            }
             return;
         }
     }
