@@ -1,6 +1,8 @@
 #ifndef _SIMMAPI_H
 #define _SIMMAPI_H
 
+#include <signal.h>
+
 #define SIMAPI_VERSION 1
 
 typedef void (*func_ptr_t)(char* message);
@@ -81,5 +83,21 @@ typedef enum
     UINT64        = 7,
 }
 SimDataType;
+
+typedef struct
+{
+    bool isSimOn;
+    bool SimUsesUDP;
+    bool SimSupportsBasicTelemetry;
+    bool SimSupportsTyreEffects;
+    bool SimSupportsRealtimeTelemetry;
+    bool SimSupportsAdvancedUI;
+    bool SimCalculatesSlipRatio;
+    SimulatorAPI mapapi;
+    SimulatorAPI simulatorapi;
+    SimulatorEXE simulatorexe;
+    pid_t pid;
+}
+SimInfo;
 
 #endif

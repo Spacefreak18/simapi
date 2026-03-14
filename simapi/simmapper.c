@@ -496,6 +496,7 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsTyreEffects = false;
             si->SimSupportsRealtimeTelemetry = false;
             si->SimSupportsAdvancedUI = false;
+            si->SimCalculatesSlipRatio = true;
             break;
         case SIMULATORAPI_DIRT_RALLY_2 :
             si->SimUsesUDP = true;
@@ -702,6 +703,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
     si.SimSupportsTyreEffects = false;
     si.SimSupportsRealtimeTelemetry = false;
     si.SimSupportsAdvancedUI = false;
+    si.SimCalculatesSlipRatio = false;
 
 
     if(simd == false)

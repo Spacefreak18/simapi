@@ -5,26 +5,10 @@
 //#include "rf2.h"
 //#include "pcars2.h"
 //#include "scs2.h"
-#include <signal.h>
 
 #include "simdata.h"
 #include "simapi.h"
 
-
-typedef struct
-{
-    bool isSimOn;
-    bool SimUsesUDP;
-    bool SimSupportsBasicTelemetry;
-    bool SimSupportsTyreEffects;
-    bool SimSupportsRealtimeTelemetry;
-    bool SimSupportsAdvancedUI;
-    SimulatorAPI mapapi;
-    SimulatorAPI simulatorapi;
-    SimulatorEXE simulatorexe;
-    pid_t pid;
-}
-SimInfo;
 
 
 //typedef struct
