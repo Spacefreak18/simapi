@@ -15,11 +15,11 @@ SIMD_BRIDGE_EXE=~/path/to/pcars2bridge.exe %command%
 ```
 note, it is highly recommended to temporarily backup your launch command and to use this minimal launch command first to get it working.
 
-then, to run simd run the command
+then, to run simd and test it out run the command
 ```
-simd --nodaemon --nomemmap -vv
+simd --nodaemon -vv
 ```
-or to use as a daemon, simply
+or to use as a daemon with normal log level, simply use
 ```
 simd
 ```
