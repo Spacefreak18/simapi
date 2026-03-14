@@ -92,8 +92,6 @@ else() # GCC/Clang warning option
     enable_cxx_compiler_flag_if_supported("-Wextra")
     # enable sign conversion warnings
     enable_cxx_compiler_flag_if_supported("-Wsign-conversion")
-    # enable warnings about mistakes in Doxygen documentation
-    enable_cxx_compiler_flag_if_supported("-Wdocumentation")
     # if tests are enabled, enable converting all warnings to errors too
     if (ENABLE_TESTS)
         enable_cxx_compiler_flag_if_supported("-Werror")
