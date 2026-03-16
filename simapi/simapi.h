@@ -103,4 +103,6 @@ typedef struct
 }
 SimInfo;
 
+void simapi_set_faux_siminfo(SimInfo* si);
+
 #endif
