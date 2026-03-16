@@ -710,6 +710,20 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
+void simapi_set_faux_siminfo(SimInfo* si)
+{
+    si->simulatorapi = 0;
+    si->mapapi = 0;
+    si->simulatorexe = 0;
+    si->isSimOn = true;
+    si->SimUsesUDP = true;
+    si->SimSupportsBasicTelemetry = true;
+    si->SimSupportsTyreEffects = true;
+    si->SimSupportsRealtimeTelemetry = true;
+    si->SimSupportsAdvancedUI = true;
+    si->SimCalculatesSlipRatio = true;
+    si->SimSupportsHapticEffects = true;
+}
 
 SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*setup_udp)(int), bool simd)
 {
