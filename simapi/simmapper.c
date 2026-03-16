@@ -87,7 +87,7 @@ bool simapi_does_sim_need_bridge(SimulatorEXE s)
         return true;
     }
 
-    if(s == SIMULATOREXE_AUTOMOBILISTA2)
+    if(s == SIMULATOREXE_AUTOMOBILISTA2 || s == SIMULATOREXE_AUTOMOBILISTA2_DEMO)
     {
         return true;
     }
@@ -125,6 +125,10 @@ int simapi_strtogame(const char* game)
     else if (sstrcicmp(game, "ams2") == 0)
     {
         sim = SIMULATOREXE_AUTOMOBILISTA2;
+    }
+    else if (sstrcicmp(game, "ams2demo") == 0)
+    {
+        sim = SIMULATOREXE_AUTOMOBILISTA2_DEMO;
     }
     else if (sstrcicmp(game, "et2") == 0)
     {
@@ -195,6 +199,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "lmu";
         case SIMULATOREXE_AUTOMOBILISTA2:
             return "ams2";
+        case SIMULATOREXE_AUTOMOBILISTA2_DEMO:
+            return "ams2demo";
         case SIMULATOREXE_AMERICANTRUCKS:
             return "at";
         case SIMULATOREXE_EUROTRUCKS2:
@@ -238,6 +244,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "LeMans Ultimate";
         case SIMULATOREXE_AUTOMOBILISTA2:
             return "Automobilista 2";
+        case SIMULATOREXE_AUTOMOBILISTA2_DEMO:
+            return "Automobilista 2 Demo";
         case SIMULATOREXE_AMERICANTRUCKS:
             return "American Truck Simulator";
         case SIMULATOREXE_EUROTRUCKS2:
@@ -620,6 +628,12 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
         si->pid = pid;
         return SIMULATOREXE_AUTOMOBILISTA2;
     }
+    pid = IsProcessRunning(AMS2_DEMO_EXE);
+    if(pid>0)
+    {
+        si->pid = pid;
+        return SIMULATOREXE_AUTOMOBILISTA2_DEMO;
+    }
     pid = IsProcessRunning(EUROTRUCKS2_EXE);
     if(pid>0)
     {
@@ -893,6 +907,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             break;
 
         case SIMULATOREXE_AUTOMOBILISTA2:
+        case SIMULATOREXE_AUTOMOBILISTA2_DEMO:
             if (force_udp == false)
             {
                 if (does_sim_file_exist("/dev/shm/$pcars2$"))

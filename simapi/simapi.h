@@ -46,6 +46,7 @@ typedef enum
     SIMULATOREXE_ASSETTO_CORSA                = 244210, //ac
     SIMULATOREXE_RFACTOR2                     = 365960, //rf2
     SIMULATOREXE_AUTOMOBILISTA2               = 1066890, //ams2
+    SIMULATOREXE_AUTOMOBILISTA2_DEMO          = 1786210, //ams2demo
     SIMULATOREXE_EUROTRUCKS2                  = 227300, //et2
     SIMULATOREXE_AMERICANTRUCKS               = 270880, //at
     SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE   = 805550, //acc

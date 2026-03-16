@@ -6,6 +6,7 @@
 #include "../include/ams2udpdata.h"
 
 #define AMS2_EXE "AMS2AVX.exe"
+#define AMS2_DEMO_EXE "AMS2DemoAVX.exe"
 
 #define PCARS2_FILE "$pcars2$"
 #define PCARS2_FILE_LINUX "$pcars2"
