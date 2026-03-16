@@ -479,6 +479,7 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
             si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = true;
             break;
         case SIMULATORAPI_RFACTOR2 :
@@ -486,12 +487,14 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
             si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = true;
             break;
         case SIMULATORAPI_PROJECTCARS2 :
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
             si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = true;
             break;
         case SIMULATORAPI_SCSTRUCKSIM2 :
@@ -504,6 +507,7 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsTyreEffects = false;
             si->SimSupportsRealtimeTelemetry = false;
             si->SimSupportsAdvancedUI = false;
+            si->SimSupportsHapticEffects = true;
             si->SimCalculatesSlipRatio = true;
             break;
         case SIMULATORAPI_DIRT_RALLY_2 :
@@ -511,12 +515,14 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
             si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = false;
             break;
         case SIMULATORAPI_F1_2018:
             si->SimUsesUDP = true;
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsRealtimeTelemetry = false;
             si->SimSupportsAdvancedUI = false;
             break;
@@ -524,7 +530,8 @@ static int set_sim_info(SimInfo* si)
             si->SimUsesUDP = true;
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
-            si->SimSupportsRealtimeTelemetry = true;
+            si->SimSupportsRealtimeTelemetry = false;
+            si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = false;
             break;
         default:
@@ -718,6 +725,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
     si.SimSupportsRealtimeTelemetry = false;
     si.SimSupportsAdvancedUI = false;
     si.SimCalculatesSlipRatio = false;
+    si.SimSupportsHapticEffects = false;
 
 
     if(simd == false)
