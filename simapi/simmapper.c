@@ -479,6 +479,7 @@ static int set_sim_info(SimInfo* si)
             si->SimSupportsBasicTelemetry = true;
             si->SimSupportsTyreEffects = true;
             si->SimSupportsRealtimeTelemetry = true;
+            si->SimCalculatesTyreDiameter = true;
             si->SimSupportsHapticEffects = true;
             si->SimSupportsAdvancedUI = true;
             break;
@@ -716,11 +717,12 @@ void simapi_set_faux_siminfo(SimInfo* si)
     si->mapapi = 0;
     si->simulatorexe = 0;
     si->isSimOn = true;
-    si->SimUsesUDP = true;
+    si->SimUsesUDP = false;
     si->SimSupportsBasicTelemetry = true;
     si->SimSupportsTyreEffects = true;
     si->SimSupportsRealtimeTelemetry = true;
     si->SimSupportsAdvancedUI = true;
+    si->SimCalculatesTyreDiameter = true;
     si->SimCalculatesSlipRatio = true;
     si->SimSupportsHapticEffects = true;
 }
@@ -738,6 +740,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
     si.SimSupportsTyreEffects = false;
     si.SimSupportsRealtimeTelemetry = false;
     si.SimSupportsAdvancedUI = false;
+    si.SimCalculatesTyreDiameter = false;
     si.SimCalculatesSlipRatio = false;
     si.SimSupportsHapticEffects = false;
 

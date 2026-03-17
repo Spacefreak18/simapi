@@ -94,6 +94,7 @@ typedef struct
     bool SimSupportsTyreEffects;
     bool SimSupportsRealtimeTelemetry;
     bool SimSupportsAdvancedUI;
+    bool SimCalculatesTyreDiameter;
     bool SimCalculatesSlipRatio;
     bool SimSupportsHapticEffects;
     SimulatorAPI mapapi;
