@@ -6,7 +6,7 @@ After=default.target
 [Service]
 Type=simple
 Environment="LD_LIBRARY_PATH=%h/.local/lib"
-ExecStart=%h/.local/bin/simd --nodaemon
+ExecStart=%h/.local/bin/simd
 Restart=on-failure
 RestartSec=5
 
