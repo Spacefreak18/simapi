@@ -24,7 +24,8 @@ install(FILES ${CMAKE_BINARY_DIR}/simapi.pc
 option(BUILD_SIMD "Build the simd tool" ON)
 if(BUILD_SIMD)
     add_subdirectory(simd)
+    add_executable(view_telemetry tests/view_telemetry.c)
+    target_link_libraries(view_telemetry simapi m)
 endif()
 
-add_executable(view_telemetry tests/view_telemetry.c)
-target_link_libraries(view_telemetry simapi m)
+
