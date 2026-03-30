@@ -9,6 +9,8 @@
 
 #include "../../include/acdata.h"
 
+#define NANOS_PER_SEC 1e9
+
 static LapTime ac_convert_to_simdata_laptime(int ac_laptime)
 {
     LapTime l;
@@ -138,6 +140,22 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simex
     simdata->suspension[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 1));
     simdata->suspension[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 2));
     simdata->suspension[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 3));
+    // Calculate suspension velocity as rate of change between frames
+    {
+        struct timespec curr_time;
+        clock_gettime(CLOCK_MONOTONIC, &curr_time);
+        double dt = (curr_time.tv_sec - simmap->ac.prev_time.tv_sec) +
+                    (curr_time.tv_nsec - simmap->ac.prev_time.tv_nsec) / NANOS_PER_SEC;
+        if (dt > 0 && (simmap->ac.prev_time.tv_sec != 0 || simmap->ac.prev_time.tv_nsec != 0)) {
+            for (int i = 0; i < 4; i++) {
+                simdata->suspvelocity[i] = (double)fabs((simdata->suspension[i] - simmap->ac.prev_suspension[i]) / dt);
+            }
+        }
+        for (int i = 0; i < 4; i++) {
+            simmap->ac.prev_suspension[i] = simdata->suspension[i];
+        }
+        simmap->ac.prev_time = curr_time;
+    }
 
 
     //advanced ui
