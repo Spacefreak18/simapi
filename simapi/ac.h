@@ -2,7 +2,6 @@
 #define _AC_H
 
 #include <stdbool.h>
-#include <time.h>
 #include "../include/acdata.h"
 
 #define AC_EXE "acs.exe"
@@ -37,8 +36,6 @@ typedef struct
     char driver[32];
     char track[32];
     char compound[32];
-    float prev_suspension[4];
-    struct timespec prev_time;
 }
 ACMap;
 

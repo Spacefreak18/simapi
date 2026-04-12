@@ -80,6 +80,24 @@ long long timeInMilliseconds(void)
     return (((long long)tv.tv_sec)*1000)+(tv.tv_usec/1000);
 }
 
+void map_suspension_velocity(SimData* simdata, double new_suspension[4])
+{
+    // Calculate suspension velocity as rate of change between frames
+    // Units: meters per second (m/s)
+    // Note: simdata->suspension contains previous frame's values at this point
+    if (simdata->prev_mtick > 0 && simdata->mtick > simdata->prev_mtick)
+    {
+        double dt = (double)(simdata->mtick - simdata->prev_mtick) / 1000.0; // Convert ms to seconds
+        if (dt > 0)
+        {
+            for (int i = 0; i < 4; i++)
+            {
+                simdata->suspvelocity[i] = fabs((new_suspension[i] - simdata->suspension[i]) / dt);
+            }
+        }
+    }
+}
+
 bool simapi_does_sim_need_bridge(SimulatorEXE s)
 {
     if(s == SIMULATOREXE_ASSETTO_CORSA || s == SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE || s == SIMULATOREXE_ASSETTO_CORSA_EVO || s == SIMULATOREXE_ASSETTO_CORSA_RALLY)
@@ -1156,6 +1174,7 @@ int simapi_datamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulatorapi, 
     char* c;
     char* d;
 
+    simdata->prev_mtick = simdata->mtick;
     simdata->mtick = timeInMilliseconds();
 
     switch ( simulatorapi )

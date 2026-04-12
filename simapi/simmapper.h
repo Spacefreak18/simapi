@@ -67,6 +67,8 @@ int simapi_compatmap_clear(SimCompatMap* compatmap);
 
 void simapi_set_proximity_data(SimData* simdata, int cars, int8_t lr_flip);
 
+void map_suspension_velocity(SimData* simdata, double new_suspension[4]);
+
 void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simexe);
 void map_rfactor2_data(SimData* simdata, SimMap* simmap);
 void map_project_cars2_data(SimData* simdata, SimMap* simmap, bool udp, char* base);
