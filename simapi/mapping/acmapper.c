@@ -134,10 +134,21 @@ void map_assetto_corsa_data(SimData* simdata, SimMap* simmap, SimulatorEXE simex
     simdata->worldZvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity) + (sizeof(float) * 1 ));
     simdata->worldYvelocity = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, velocity) + (sizeof(float) * 2 ));
 
-    simdata->suspension[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 0));
-    simdata->suspension[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 1));
-    simdata->suspension[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 2));
-    simdata->suspension[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 3));
+    // Read new suspension values
+    double new_suspension[4];
+    new_suspension[0] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 0));
+    new_suspension[1] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 1));
+    new_suspension[2] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 2));
+    new_suspension[3] = *(float*) (char*) (a + offsetof(struct SPageFilePhysics, suspensionTravel) + (sizeof(float) * 3));
+    
+    // Calculate suspension velocity using the common function (uses previous suspension values from simdata)
+    map_suspension_velocity(simdata, new_suspension);
+    
+    // Now update suspension with new values
+    simdata->suspension[0] = new_suspension[0];
+    simdata->suspension[1] = new_suspension[1];
+    simdata->suspension[2] = new_suspension[2];
+    simdata->suspension[3] = new_suspension[3];
 
 
     //advanced ui

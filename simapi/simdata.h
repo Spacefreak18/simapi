@@ -90,6 +90,7 @@ typedef struct //ProximityData
 typedef struct //SimData
 {
     uint64_t mtick;
+    uint64_t prev_mtick;
 
     uint32_t simstatus; // less than 1 is off or in menu, 2 is active
     uint32_t velocity;
