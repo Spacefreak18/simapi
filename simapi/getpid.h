@@ -5,6 +5,6 @@
 
 int is_pid_running(pid_t pid);
 
-int IsProcessRunning(char* pidstring);
+struct SimProcessInfo get_process_match(char* pidstrings[], int num);
 
 char* getEnvValueForPid(pid_t pid, const char* envName);

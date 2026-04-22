@@ -618,114 +618,53 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
 {
     int pid = 0;
 
-    pid = IsProcessRunning(AC_EXE);
-    if(pid>0)
+    char* processes[18];
+    processes[0] = AC_EXE;
+    processes[1] = ACC_EXE;
+    processes[2] = ACE_EXE;
+    processes[3] = ACR_EXE;
+    processes[4] = RFACTOR2_EXE;
+    processes[5] = AMS2_EXE;
+    processes[6] = AMS2_DEMO_EXE;
+    processes[7] = EUROTRUCKS2_EXE;
+    processes[8] = AMERICANTRUCKS_EXE;
+    processes[9] = LEMANS_ULTIMATE_EXE;
+    processes[10] = LIVE_FOR_SPEED_EXE;
+    processes[11] = BEAMNG_EXE;
+    processes[12] = DIRT_RALLY_2_EXE;
+    processes[13] = F1_2022_EXE;
+    processes[14] = WRECKFEST2_EXE;
+    processes[15] = RICHARD_BURNS_RALLY_EXE;
+    processes[16] = FORZA_HORIZON_5_EXE;
+    processes[17] = RACE_ROOM_EXE;
+
+    SimulatorEXE sim_exe[18];
+    sim_exe[0] = SIMULATOREXE_ASSETTO_CORSA;
+    sim_exe[1] = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
+    sim_exe[2] = SIMULATOREXE_ASSETTO_CORSA_EVO;
+    sim_exe[3] = SIMULATOREXE_ASSETTO_CORSA_RALLY;
+    sim_exe[4] = SIMULATOREXE_RFACTOR2;
+    sim_exe[5] = SIMULATOREXE_AUTOMOBILISTA2;
+    sim_exe[6] = SIMULATOREXE_AUTOMOBILISTA2_DEMO;
+    sim_exe[7] = SIMULATOREXE_EUROTRUCKS2;
+    sim_exe[8] = SIMULATOREXE_AMERICANTRUCKS;
+    sim_exe[9] = SIMULATOREXE_LEMANS_ULTIMATE;
+    sim_exe[10] = SIMULATOREXE_LIVE_FOR_SPEED;
+    sim_exe[11] = SIMULATOREXE_BEAMNG;
+    sim_exe[12] = SIMULATOREXE_DIRT_RALLY_2;
+    sim_exe[13] = SIMULATOREXE_F1_2022;
+    sim_exe[14] = SIMULATOREXE_WRECKFEST2;
+    sim_exe[15] = SIMULATOREXE_RICHARD_BURNS_RALLY;
+    sim_exe[16] = SIMULATOREXE_FORZA_HORIZON_5;
+    sim_exe[17] = SIMULATOREXE_RACE_ROOM;
+
+    struct SimProcessInfo r = get_process_match(processes, 18);
+
+    if(r.pid >= 0)
     {
-        si->pid = pid;
-        return SIMULATOREXE_ASSETTO_CORSA;
+        return(sim_exe[r.pos]);
     }
-    pid = IsProcessRunning(ACC_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
-    }
-    pid = IsProcessRunning(ACE_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_ASSETTO_CORSA_EVO;
-    }
-    pid = IsProcessRunning(ACR_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_ASSETTO_CORSA_RALLY;
-    }
-    pid = IsProcessRunning(RFACTOR2_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_RFACTOR2;
-    }
-    pid = IsProcessRunning(AMS2_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_AUTOMOBILISTA2;
-    }
-    pid = IsProcessRunning(AMS2_DEMO_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_AUTOMOBILISTA2_DEMO;
-    }
-    pid = IsProcessRunning(EUROTRUCKS2_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_EUROTRUCKS2;
-    }
-    pid = IsProcessRunning(AMERICANTRUCKS_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_AMERICANTRUCKS;
-    }
-    pid = IsProcessRunning(LEMANS_ULTIMATE_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_LEMANS_ULTIMATE;
-    }
-    pid = IsProcessRunning(LIVE_FOR_SPEED_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_LIVE_FOR_SPEED;
-    }
-    pid = IsProcessRunning(BEAMNG_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_BEAMNG;
-    }
-    pid = IsProcessRunning(DIRT_RALLY_2_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_DIRT_RALLY_2;
-    }
-    pid = IsProcessRunning(F1_2022_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_F1_2022;
-    }
-    pid = IsProcessRunning(WRECKFEST2_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_WRECKFEST2;
-    }
-    pid = IsProcessRunning(RICHARD_BURNS_RALLY_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_RICHARD_BURNS_RALLY;
-    }
-    pid = IsProcessRunning(FORZA_HORIZON_5_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_FORZA_HORIZON_5;
-    }
-    pid = IsProcessRunning(RACE_ROOM_EXE);
-    if(pid>0)
-    {
-        si->pid = pid;
-        return SIMULATOREXE_RACE_ROOM;
-    }
+
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
