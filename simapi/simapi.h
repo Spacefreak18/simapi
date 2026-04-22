@@ -104,6 +104,12 @@ typedef struct
 }
 SimInfo;
 
+struct SimProcessInfo
+{
+    int pid;
+    int pos;
+};
+
 void simapi_set_faux_siminfo(SimInfo* si);
 
 #endif

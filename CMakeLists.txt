@@ -13,6 +13,8 @@ set_target_properties(simapi PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR}
     PUBLIC_HEADER "${SIMAPI_PUBLIC_HEADERS}")
 
+target_link_libraries(simapi proc2)
+
 configure_file(simapi.pc.in simapi.pc @ONLY)
 target_include_directories(simapi PUBLIC include simapi)
 install(TARGETS simapi

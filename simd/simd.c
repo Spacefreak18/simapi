@@ -266,7 +266,7 @@ void shmdatamapcallback(uv_timer_t* handle)
     {
         releaseloop(f, simdata, simmap);
         y_log_message(Y_LOG_LEVEL_INFO, "Restarting Data Check Thread.");
-        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
+        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
     }
 }
 
@@ -422,12 +422,12 @@ void bridgeclosecallback(uv_timer_t* handle)
         if(simds.auto_bridge == true)
         {
             y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 1000);
+            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 5000);
         }
         else
         {
             y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Check Thread.");
-            uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
+            uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
         }
     }
 }
@@ -443,17 +443,22 @@ void gamefindcallback(uv_timer_t* handle)
     int i = 0;
     int gamepid = -1;
     int sim = 0;
+    char* pidstrings[f->compat_info_size];
+
     for(int i = 0; i < f->compat_info_size; i++)
     {
-        char* tmp_launch_exe = game_compat_info[i].LaunchExe;
-        gamepid = IsProcessRunning(tmp_launch_exe);
-        if(gamepid > 0)
-        {
-            sim = game_compat_info[i].GameId;
-            y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
-            break;
-        }
+        pidstrings[i] = game_compat_info[i].LaunchExe;
     }
+    
+    char* tmp_launch_exe = game_compat_info[i].LaunchExe;
+    struct SimProcessInfo pidinfo = get_process_match(pidstrings, f->compat_info_size);
+    if(pidinfo.pid > 0)
+    {
+        sim = game_compat_info[pidinfo.pos].GameId;
+        y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
+    }
+   
+    // try to find a sim if the game is not configured to have a bridge in the config file
     if(gamepid <= 0 && sim <= 0)
     {
         i = -1;
@@ -461,7 +466,6 @@ void gamefindcallback(uv_timer_t* handle)
         sim = simapi_get_sim_exe(&si);
         gamepid = si.pid;
     }
-
 
     int err = 0;
     if(sim > 0)
@@ -630,7 +634,7 @@ void gamefindcallback(uv_timer_t* handle)
         }
 
         // start a timer to check if this game stops so we can start looking for a running game again if it does
-        uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 5000);
+        uv_timer_start(&bridgeclosetimer, bridgeclosecallback, 5, 1000);
 
         if(err == 0)
         {
@@ -968,12 +972,12 @@ int main(int argc, char** argv)
     if(simds.auto_bridge == true)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 1000);
+        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 5000);
     }
     else
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Mapping Thread.");
-        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
+        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
     }
 
     if(simds.daemon == false && stdin_is_tty)
