@@ -13,6 +13,7 @@ mapped filed can be found at /dev/shm/SIMAPI.DAT.
 - simapi.so
 - libuv base event loop
 - argtable2
+- libproc2
 
 ## Building
 
