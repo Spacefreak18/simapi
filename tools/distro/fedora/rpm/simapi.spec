@@ -9,6 +9,7 @@ URL: https://spacefreak18.github.io/simapi
 Distribution: Fedora Linux
 Vendor: spacefreak18
 Packager: Paul Jones <paul@spacefreak18.xyz>
+Requires: argtable libconfig libuv libsimapi libyder procps-ng
 
 %description
 Racing Simulator Telemetry Libraries
