@@ -16,6 +16,10 @@
       nativeBuildInputs = [
         pkgs.cmake
       ];
+      
+      buildInputs = [
+        pkgs.procps-ng
+      ];
 
       cmakeFlags = [
         "-DBUILD_SIMD=OFF"
@@ -43,6 +47,7 @@
         pkgs.yder
         pkgs.libconfig
         pkgs.argtable
+        pkgs.procps-ng
       ];
 
       installPhase = ''
