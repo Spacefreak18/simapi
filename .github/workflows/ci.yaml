@@ -30,7 +30,7 @@ jobs:
     - name: Update apt
       run: sudo apt update
     - name: Install Dependencies
-      run: sudo apt install -y libuv1-dev libargtable2-dev libconfig-dev libyder-dev
+      run: sudo apt install -y libuv1-dev libargtable2-dev libconfig-dev libyder-dev libproc2-dev
 
     - name: Configure CMake
       run: >
