@@ -197,10 +197,17 @@ struct SimProcessInfo pidof (char* pname[], int num)
     }
 
     while ((stack = procps_pids_get(info, PIDS_FETCH_TASKS_ONLY)) != NULL) {
-
+#if defined(HAVE_LIBPROC2_POST_4_0_5_API)
         int pid = PIDS_VAL(rel_pid, s_int, stack);
         char* cm = PIDS_VAL(rel_cmd, str, stack);
         char** cmd = PIDS_VAL(rel_cmdline, strv, stack);
+#else
+        int pid = PIDS_VAL(rel_pid, s_int, stack, info);
+        char* cm = PIDS_VAL(rel_cmd, str, stack, info);
+        char** cmd = PIDS_VAL(rel_cmdline, strv, stack, info);
+#endif
+
+
 
         if (cm != NULL) {
             char* cmdline = *cmd;
