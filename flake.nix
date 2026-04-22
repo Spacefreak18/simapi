@@ -18,7 +18,7 @@
       ];
       
       buildInputs = [
-        pkgs.procps-ng
+        pkgs.procps
       ];
 
       cmakeFlags = [
@@ -47,7 +47,7 @@
         pkgs.yder
         pkgs.libconfig
         pkgs.argtable
-        pkgs.procps-ng
+        pkgs.procps
       ];
 
       installPhase = ''
