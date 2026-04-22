@@ -455,6 +455,7 @@ void gamefindcallback(uv_timer_t* handle)
     if(pidinfo.pid > 0)
     {
         sim = game_compat_info[pidinfo.pos].GameId;
+        gamepid = pidinfo.pid;
         y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
     }
    
