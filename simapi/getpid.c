@@ -199,13 +199,13 @@ struct SimProcessInfo pidof (char* pname[], int num)
     while ((stack = procps_pids_get(info, PIDS_FETCH_TASKS_ONLY)) != NULL) {
 
 #ifdef USE_OLD_PID_VAL
-        int pid = PIDS_VAL(rel_pid, s_int, stack);
-        char* cm = PIDS_VAL(rel_cmd, str, stack);
-        char** cmd = PIDS_VAL(rel_cmdline, strv, stack);
-#else
         int pid = PIDS_VAL(rel_pid, s_int, stack, info);
         char* cm = PIDS_VAL(rel_cmd, str, stack, info);
         char** cmd = PIDS_VAL(rel_cmdline, strv, stack, info);
+#else
+        int pid = PIDS_VAL(rel_pid, s_int, stack);
+        char* cm = PIDS_VAL(rel_cmd, str, stack);
+        char** cmd = PIDS_VAL(rel_cmdline, strv, stack);
 #endif
 
         if (cm != NULL) {
