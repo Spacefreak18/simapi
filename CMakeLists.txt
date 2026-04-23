@@ -13,6 +13,22 @@ set_target_properties(simapi PROPERTIES
     SOVERSION ${PROJECT_VERSION_MAJOR}
     PUBLIC_HEADER "${SIMAPI_PUBLIC_HEADERS}")
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LIBPROCPS libprocps)
+pkg_check_modules(LIBPROC2 libproc2)
+
+if (LIBPROCPS_FOUND)
+    add_compile_definitions(USE_OLD_PID_VAL=false)
+elseif (LIBPROC2_FOUND)
+    if (LIBPROC2_VERSION VERSION_GREATER_EQUAL "4.0.5")
+        add_compile_definitions(USE_OLD_PID_VAL=false)
+    endif()
+
+    add_compile_definitions(USE_OLD_PID_VAL=true)
+else()
+    message(FATAL_ERROR "Either libprocps or libproc2 is required")
+endif()
+
 target_link_libraries(simapi proc2)
 
 configure_file(simapi.pc.in simapi.pc @ONLY)
