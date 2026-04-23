@@ -5,6 +5,7 @@ pkgrel = 1
 url = https://github.com/spacefreak18/simapi/
 arch = x86_64
 license = GPL3
+depends = procps-ng
 makedepends = git
 makedepends = cmake
 source = git+https://github.com/spacefreak18/simapi.git
