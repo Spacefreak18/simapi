@@ -25,7 +25,6 @@
 #include "../simapi/test.h"
 #include "../simmap/basicmap.h"
 
-#include "../simapi/getpid.h"
 #include "loopdata.h"
 #include "parameters.h"
 #include "dirhelper.h"
