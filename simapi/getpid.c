@@ -12,7 +12,6 @@
 #include <libproc2/pids.h>
 
 #include "simapi.h"
-#include "getpid.h"
 
 static int isMatch(const char* possibleMatch, const char* checkAgainst)
 {
