@@ -661,9 +661,11 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
 
     if(r.pid >= 0)
     {
+        si->pid = r.pid;
         return(sim_exe[r.pos]);
     }
 
+    si->pid = -1;
     return SIMULATOREXE_SIMAPI_TEST_NONE;
 }
 
