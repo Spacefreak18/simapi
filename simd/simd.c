@@ -451,10 +451,10 @@ void gamefindcallback(uv_timer_t* handle)
     
     char* tmp_launch_exe = game_compat_info[i].LaunchExe;
     struct SimProcessInfo pidinfo = get_process_match(pidstrings, f->compat_info_size);
+    gamepid = pidinfo.pid;
     if(pidinfo.pid > 0)
     {
         sim = game_compat_info[pidinfo.pos].GameId;
-        gamepid = pidinfo.pid;
         y_log_message(Y_LOG_LEVEL_INFO, "found a specified launch process for gameid %i running at pid %i.", sim, gamepid);
     }
    
