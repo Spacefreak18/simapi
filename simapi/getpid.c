@@ -212,7 +212,7 @@ struct SimProcessInfo pidof (char* pname[], int num)
             for (int i = 0; pname[i] != NULL && i < num; i++) {
                 // in the future if we need to do the entire cmdline we can
                 // for now we will just do a 15 character match
-                if (strncmp(cm, pname[i], 15) == 0) {
+                if (strncasecmp(cm, pname[i], 15) == 0) {
                     struct SimProcessInfo p;
                     p.pid = pid;
                     p.pos = i;
