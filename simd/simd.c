@@ -421,7 +421,7 @@ void bridgeclosecallback(uv_timer_t* handle)
         if(simds.auto_bridge == true)
         {
             y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 5000);
+            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 2000);
         }
         else
         {
@@ -972,7 +972,7 @@ int main(int argc, char** argv)
     if(simds.auto_bridge == true)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 5000);
+        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 2000);
     }
     else
     {
