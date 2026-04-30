@@ -265,7 +265,7 @@ void shmdatamapcallback(uv_timer_t* handle)
     {
         releaseloop(f, simdata, simmap);
         y_log_message(Y_LOG_LEVEL_INFO, "Restarting Data Check Thread.");
-        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
+        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
     }
 }
 
@@ -421,12 +421,12 @@ void bridgeclosecallback(uv_timer_t* handle)
         if(simds.auto_bridge == true)
         {
             y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 2000);
+            uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 1000);
         }
         else
         {
             y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Check Thread.");
-            uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
+            uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
         }
     }
 }
@@ -972,12 +972,12 @@ int main(int argc, char** argv)
     if(simds.auto_bridge == true)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Bridge Polling Thread.");
-        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 2000);
+        uv_timer_start(&gamefindtimer, gamefindcallback, 1000, 1000);
     }
     else
     {
         y_log_message(Y_LOG_LEVEL_INFO, "Starting Data Mapping Thread.");
-        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 3000);
+        uv_timer_start(&datachecktimer, datacheckcallback, 1000, 1000);
     }
 
     if(simds.daemon == false && stdin_is_tty)
