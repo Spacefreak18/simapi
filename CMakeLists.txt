@@ -15,6 +15,7 @@ set_target_properties(simapi PROPERTIES
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBPROCPS libprocps)
+pkg_check_modules(LIBPROCPS procps)
 pkg_check_modules(LIBPROC2 libproc2)
 
 if (LIBPROCPS_FOUND)
