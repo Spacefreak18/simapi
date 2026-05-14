@@ -3,7 +3,7 @@ C header files for various simulator titles' shared memory api, specifically for
 This project includes a [daemon](https://github.com/spacefreak18/simapi/tree/master/simd) to handle all the telemetry mapping for external 
 applications in the background, and the shared library for the external applications to use. The external application can either map and
 open the memory mapped filed directly (SIMAPI.DAT) and use the header file simapi.h to enumerate the fields within the data structure, or 
-use the functions within simmapper.c to open and map the memory mapped file.
+use the functions within simmapper.c to open and map the memory mapped file. Other methods do exist with various pros and cons.
 
 
 ## Building
