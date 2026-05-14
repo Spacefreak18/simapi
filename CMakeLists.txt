@@ -15,7 +15,6 @@ set_target_properties(simapi PROPERTIES
 
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBPROCPS libprocps)
-pkg_check_modules(LIBPROCPS procps)
 pkg_check_modules(LIBPROC2 libproc2)
 
 if (LIBPROCPS_FOUND)
@@ -24,10 +23,10 @@ elseif (LIBPROC2_FOUND)
     if (LIBPROC2_VERSION VERSION_GREATER_EQUAL "4.0.5")
         #add_compile_definitions(USE_OLD_PID_VAL=0)
     else()
-        add_compile_definitions(USE_OLD_PID_VAL=1)
+        add_compile_definitions(USE_OLD_PID_VAL)
     endif()
 else()
-    message(FATAL_ERROR "Either libprocps or libproc2 is required")
+    remove_definitions(USE_OLD_PID_VAL)
 endif()
 
 target_link_libraries(simapi proc2)
