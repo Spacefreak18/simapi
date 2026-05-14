@@ -26,7 +26,7 @@ elseif (LIBPROC2_FOUND)
         add_compile_definitions(USE_OLD_PID_VAL)
     endif()
 else()
-    remove_definitions(USE_OLD_PID_VAL)
+    add_compile_definitions(USE_OLD_PID_VAL)
 endif()
 
 target_link_libraries(simapi proc2)
