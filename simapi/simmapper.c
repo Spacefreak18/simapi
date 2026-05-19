@@ -179,6 +179,10 @@ int simapi_strtogame(const char* game)
     {
         sim = SIMULATOREXE_FORZA_HORIZON_5;
     }
+    else if (sstrcicmp(game, "fh6") == 0)
+    {
+        sim = SIMULATOREXE_FORZA_HORIZON_6;
+    }
     else if (sstrcicmp(game, "r3e") == 0)
     {
         sim = SIMULATOREXE_RACE_ROOM;
@@ -232,6 +236,8 @@ char* simapi_gametostr(SimulatorEXE sim)
             return "f122";
         case SIMULATOREXE_FORZA_HORIZON_5:
             return "fh5";
+        case SIMULATOREXE_FORZA_HORIZON_6:
+            return "fh6";
         case SIMULATOREXE_RACE_ROOM:
             return "r3e";
         case SIMULATOREXE_WRECKFEST2:
@@ -277,6 +283,8 @@ char* simapi_gametofullstr(SimulatorEXE sim)
             return "F1 2022";
         case SIMULATOREXE_FORZA_HORIZON_5:
             return "Forza Horizon 5";
+        case SIMULATOREXE_FORZA_HORIZON_6:
+            return "Forza Horizon 6";
         case SIMULATOREXE_RACE_ROOM:
             return "Race Room";
         case SIMULATOREXE_WRECKFEST2:
@@ -617,7 +625,7 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
 {
     int pid = 0;
 
-    char* processes[18];
+    char* processes[19];
     processes[0] = AC_EXE;
     processes[1] = ACC_EXE;
     processes[2] = ACE_EXE;
@@ -635,9 +643,10 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
     processes[14] = WRECKFEST2_EXE;
     processes[15] = RICHARD_BURNS_RALLY_EXE;
     processes[16] = FORZA_HORIZON_5_EXE;
-    processes[17] = RACE_ROOM_EXE;
+    processes[17] = FORZA_HORIZON_6_EXE;
+    processes[18] = RACE_ROOM_EXE;
 
-    SimulatorEXE sim_exe[18];
+    SimulatorEXE sim_exe[19];
     sim_exe[0] = SIMULATOREXE_ASSETTO_CORSA;
     sim_exe[1] = SIMULATOREXE_ASSETTO_CORSA_COMPETIZIONE;
     sim_exe[2] = SIMULATOREXE_ASSETTO_CORSA_EVO;
@@ -655,7 +664,8 @@ SimulatorEXE simapi_get_sim_exe(SimInfo* si)
     sim_exe[14] = SIMULATOREXE_WRECKFEST2;
     sim_exe[15] = SIMULATOREXE_RICHARD_BURNS_RALLY;
     sim_exe[16] = SIMULATOREXE_FORZA_HORIZON_5;
-    sim_exe[17] = SIMULATOREXE_RACE_ROOM;
+    sim_exe[17] = SIMULATOREXE_FORZA_HORIZON_6;
+    sim_exe[18] = SIMULATOREXE_RACE_ROOM;
 
     struct SimProcessInfo r = get_process_match(processes, 18);
 
@@ -1074,6 +1084,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             }
             break;
         case SIMULATOREXE_FORZA_HORIZON_5:
+        case SIMULATOREXE_FORZA_HORIZON_6:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Forza");
             int forza_error = 0;
             if (*setup_udp != NULL)
