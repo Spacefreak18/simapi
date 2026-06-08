@@ -38,6 +38,12 @@ typedef struct
     int acgraphics_fd;
     void* acstatic_addr;
     int acstatic_fd;
+    void* acevophysics_addr;
+    int acevophysics_fd;
+    void* acevographics_addr;
+    int acevographics_fd;
+    void* acevostatic_addr;
+    int acevostatic_fd;
     void* accrew_addr;
     int accrew_fd;
     void* r3e_addr;
@@ -55,7 +61,7 @@ char* simapi_gametofullstr(SimulatorEXE sim);
 
 SimMap* simapi_simmap_create(void);
 
-int simapi_init(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
+int simapi_init(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, SimulatorEXE simexe);
 int simapi_initudp(SimData* simdata, SimMap* simmap, SimulatorAPI simulator);
 int simapi_datamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulator, bool udp, char* base);
 int simapi_sim_clear(SimData* simdata, SimMap* simmap, bool issimd);

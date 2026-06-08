@@ -14,6 +14,10 @@
 #define AC_GRAPHIC_FILE "acpmf_graphics"
 #define AC_CREWCHIEF_FILE "acpmf_crewchief"
 
+#define ACEVO_PHYSICS_FILE "acevo_pmf_physics"
+#define ACEVO_STATIC_FILE "acevo_pmf_static"
+#define ACEVO_GRAPHIC_FILE "acev_pmf_graphics"
+
 typedef struct
 {
     bool has_physics;
