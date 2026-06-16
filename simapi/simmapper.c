@@ -26,6 +26,7 @@
 #include "rbr.h"
 #include "forzadef.h"
 #include "r3edef.h"
+#include "lmudef.h"
 #include "simmap.h"
 
 #include <sys/stat.h>
@@ -1807,6 +1808,27 @@ int simapi_compatmap_open(SimCompatMap* compatmap)
     }
     compatmap->r3e_addr = addr;
 
+    compatmap->lmu_fd = shm_open(LMU_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
+    if (compatmap->lmu_fd == -1)
+    {
+        printf("open");
+        return 10;
+    }
+    res = ftruncate(compatmap->lmu_fd, R3E_SIZE);
+    if (res == -1)
+    {
+        printf("ftruncate");
+        return 20;
+    }
+
+    addr = mmap(NULL, LMU_SIZE, PROT_WRITE, MAP_SHARED, compatmap->lmu_fd, 0);
+    if (addr == MAP_FAILED)
+    {
+        printf("mmap");
+        return 30;
+    }
+    compatmap->lmu_addr = addr;
+
     compatmap->acphysics_fd = shm_open(AC_PHYSICS_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->acphysics_fd == -1)
     {
@@ -1965,8 +1987,9 @@ int simapi_compatmap_clear(SimCompatMap* compatmap)
     memset(compatmap->acevostatic_addr, 0, AC_STATIC_SIZE);
     memset(compatmap->acevographics_addr, 0, AC_GRAPHIC_SIZE);
     memset(compatmap->accrew_addr, 0, AC_CREWCHIEF_SIZE);
-    memset(compatmap->r3e_addr, 0, AC_CREWCHIEF_SIZE);
+    memset(compatmap->r3e_addr, 0, R3E_SIZE);
     memset(compatmap->pcars2_addr, 0, PCARS2_SIZE);
+    memset(compatmap->lmu_addr, 0, LMU_SIZE);
 
     return 0;
 }
@@ -2062,6 +2085,17 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(R3E_FILE);
+
+    if (close(compatmap->r3e_fd) == -1)
+    {
+        return 200;
+    }
+    
+    if (munmap(compatmap->r3e_addr, LMU_SIZE) == -1)
+    {
+        return 100;
+    }
+    shm_unlink(LMU_FILE);
 
     if (close(compatmap->r3e_fd) == -1)
     {

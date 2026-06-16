@@ -48,6 +48,8 @@ typedef struct
     int accrew_fd;
     void* r3e_addr;
     int r3e_fd;
+    void* lmu_addr;
+    int lmu_fd;
 }
 SimCompatMap;
 
