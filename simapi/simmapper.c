@@ -727,6 +727,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             //simapi_datamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
             if(simdata->simapiversion == SIMAPI_VERSION)
             {
+                si.mapapi = SIMULATORAPI_SIMAPI_TEST;
                 if (simdata->simon == 1)
                 {
                     simapi_log(SIMAPI_LOGLEVEL_TRACE, "status okay");
@@ -1814,7 +1815,7 @@ int simapi_compatmap_open(SimCompatMap* compatmap)
         printf("open");
         return 10;
     }
-    res = ftruncate(compatmap->lmu_fd, R3E_SIZE);
+    res = ftruncate(compatmap->lmu_fd, LMU_SIZE);
     if (res == -1)
     {
         printf("ftruncate");
@@ -2002,7 +2003,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_PHYSICS_FILE);
-
     if (close(compatmap->acphysics_fd) == -1)
     {
         return 200;
@@ -2013,7 +2013,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_STATIC_FILE);
-
     if (close(compatmap->acstatic_fd) == -1)
     {
         return 200;
@@ -2024,13 +2023,16 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_GRAPHIC_FILE);
+    if (close(compatmap->acevographics_fd) == -1)
+    {
+        return 200;
+    }
 
     if (munmap(compatmap->acevophysics_addr, AC_PHYSICS_SIZE) == -1)
     {
         return 100;
     }
     shm_unlink(ACEVO_PHYSICS_FILE);
-
     if (close(compatmap->acevophysics_fd) == -1)
     {
         return 200;
@@ -2041,7 +2043,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(ACEVO_STATIC_FILE);
-
     if (close(compatmap->acevostatic_fd) == -1)
     {
         return 200;
@@ -2052,7 +2053,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(ACEVO_GRAPHIC_FILE);
-
     if (close(compatmap->acevographics_fd) == -1)
     {
         return 200;
@@ -2063,7 +2063,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_CREWCHIEF_FILE);
-
     if (close(compatmap->accrew_fd) == -1)
     {
         return 200;
@@ -2074,7 +2073,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(PCARS2_FILE);
-
     if (close(compatmap->pcars2_fd) == -1)
     {
         return 200;
@@ -2085,19 +2083,17 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(R3E_FILE);
-
     if (close(compatmap->r3e_fd) == -1)
     {
         return 200;
     }
     
-    if (munmap(compatmap->r3e_addr, LMU_SIZE) == -1)
+    if (munmap(compatmap->lmu_addr, LMU_SIZE) == -1)
     {
         return 100;
     }
     shm_unlink(LMU_FILE);
-
-    if (close(compatmap->r3e_fd) == -1)
+    if (close(compatmap->lmu_fd) == -1)
     {
         return 200;
     }
