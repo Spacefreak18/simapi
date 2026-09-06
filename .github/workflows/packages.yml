@@ -334,6 +334,19 @@ jobs:
             build-dir io.github.spacefreak18.simd.yml
           flatpak build-bundle repo simd.flatpak io.github.spacefreak18.simd
 
+      # Install and run it. A Flatpak that builds is not a Flatpak that works:
+      # libuv and libconfig installed to /app/lib64, which is not on the
+      # runtime's library search path, so the bundle built and packaged
+      # cleanly and then died on startup with
+      #   simd: error while loading shared libraries: libuv.so.1
+      # Nothing in this job had ever executed the binary. --version is enough
+      # to prove every shared library resolves.
+      - name: Smoke-test the bundle
+        working-directory: tools/distro/flatpak
+        run: |
+          flatpak install -y --user --bundle simd.flatpak
+          flatpak run io.github.spacefreak18.simd --version
+
       - uses: actions/upload-artifact@v4
         with:
           name: simd.flatpak

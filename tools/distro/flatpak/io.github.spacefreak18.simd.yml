@@ -53,6 +53,11 @@ modules:
   - name: libconfig
     buildsystem: cmake-ninja
     config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
       - -DBUILD_TESTS=OFF
       # libconfig 1.7.3's CMakeLists.txt predates CMake 3.5's minimum
       # version policy; confirmed via a failed local build.
@@ -67,6 +72,11 @@ modules:
   - name: argtable2
     buildsystem: cmake-ninja
     config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
       # Same CMake-minimum-version issue as libconfig -- this one's
       # CMakeLists.txt is even older (2011).
       - -DCMAKE_POLICY_VERSION_MINIMUM=3.5
@@ -118,6 +128,11 @@ modules:
   - name: libuv
     buildsystem: cmake-ninja
     config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
       - -DBUILD_TESTING=OFF
     post-install:
       - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/libuv/$(basename "$f"); else echo "WARNING: no licence file found for libuv"; fi'
