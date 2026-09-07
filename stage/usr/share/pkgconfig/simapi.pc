@@ -1,0 +1,13 @@
+prefix=/usr
+exec_prefix=${prefix}
+
+libdir=/usr/lib
+includedir=/usr/include
+
+Name: simapi
+Description: Telemetry Mapping Library for Racing Sims
+Version: 1.0.1
+
+Requires:
+Libs: -L${libdir} -lmylib
+Cflags: -I${includedir}

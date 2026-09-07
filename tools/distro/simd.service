@@ -1,0 +1,28 @@
+[Unit]
+Description=SimAPI Daemon - Racing Simulator Telemetry Service
+Documentation=https://github.com/Spacefreak18/simapi
+After=default.target
+
+[Service]
+# -n (--nodaemon), not the default: simd double-forks on its own, and under
+# Type=simple systemd would take the parent's exit as the service dying and
+# report it failed while the real daemon carried on unsupervised. Letting
+# systemd own the process instead of the double fork also makes Restart=
+# and journald logging work as written.
+#
+# Type=forking with PIDFile=/tmp/simd.pid would be the alternative, but simd
+# writes that path unconditionally and a world-writable pidfile in /tmp is
+# not something to build a service around.
+ExecStart=/usr/bin/simd -n
+Restart=on-failure
+RestartSec=5
+
+# No LD_LIBRARY_PATH: libsimapi is installed to the system library path by
+# the package, unlike upstream's conf/simd.service which assumes a build
+# installed into ~/.local.
+
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=default.target

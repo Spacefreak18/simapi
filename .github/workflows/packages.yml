@@ -1,0 +1,359 @@
+# Builds simd and libsimapi as .deb, .rpm, AppImage and Flatpak, and attaches
+# them to a release when the run is for a tag.
+#
+# Built in containers on ordinary GitHub-hosted runners rather than against
+# self-hosted runner labels, so nothing queues waiting for a machine that may
+# not be online.
+name: Packages
+
+on:
+  push:
+    tags: [ "*" ]
+  pull_request:
+  workflow_dispatch: {}
+
+jobs:
+  debs:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            image: ubuntu:latest
+          - os: debian-latest
+            image: debian:testing
+          - os: debian-stable
+            image: debian:stable-slim
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    permissions:
+      contents: write
+    steps:
+      # Before checkout: these images ship no git, so actions/checkout would
+      # silently fall back to a tarball download.
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates git build-essential cmake pkg-config dpkg-dev \
+            libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
+            libxdg-basedir-dev libprocps-dev || \
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+            ca-certificates git build-essential cmake pkg-config dpkg-dev \
+            libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
+            libxdg-basedir-dev libproc2-dev
+
+      - uses: actions/checkout@v4
+
+      - name: Determine package version
+        id: pkgver
+        shell: bash
+        run: |
+          # The control files carry a hardcoded `Version: 1` that nobody
+          # maintains. A Debian version must start with a digit, so a branch
+          # build or a non-release tag falls back to 0.0.0 rather than making
+          # dpkg-deb fail outright.
+          v=""
+          [ "$GITHUB_REF_TYPE" = tag ] && v="${GITHUB_REF_NAME#v}"
+          case "$v" in [0-9]*) ;; *) v="0.0.0" ;; esac
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          echo "packaging as version $v"
+
+      - name: Build
+        run: |
+          # SYSTEMD_USER_UNIT_DIR and SIMD_CONFIG_DIR default under $ENV{HOME};
+          # a package must never write into a user's home. Both are already
+          # CACHE PATH variables upstream, so redirecting needs no patch.
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+            -DBUILD_SIMD=ON \
+            -DSYSTEMD_USER_UNIT_DIR=/usr/lib/systemd/user \
+            -DSIMD_CONFIG_DIR=/usr/share/simd
+          cmake --build build -j"$(nproc)"
+
+      - name: Assemble the two packages
+        shell: bash
+        run: |
+          set -eux
+          ver='${{ steps.pkgver.outputs.version }}'
+          ctl=tools/distro/debian/dpkg/${{ matrix.os }}
+
+          # libsimapi: the shared library and its headers. Kept a separate
+          # package because simd is not its only possible consumer.
+          rm -rf lib_root && mkdir -p lib_root/DEBIAN lib_root/usr/lib lib_root/usr/include lib_root/usr/share/pkgconfig
+          cp -P build/libsimapi.so* lib_root/usr/lib/
+          cp simapi/simmapper.h simapi/simapi.h simapi/simdata.h lib_root/usr/include/
+          cp build/simapi.pc lib_root/usr/share/pkgconfig/
+          sed "s/^Version:.*/Version: $ver/" "$ctl/simapi_control" > lib_root/DEBIAN/control
+          dpkg-deb --build lib_root "libsimapi-${{ matrix.os }}.deb"
+
+          # simd: the daemon, plus the packaged unit and an example config.
+          rm -rf simd_root && mkdir -p simd_root/DEBIAN simd_root/usr/bin
+          cp build/simd/simd simd_root/usr/bin/simd
+          install -Dm644 tools/distro/simd.service simd_root/usr/lib/systemd/user/simd.service
+          install -Dm644 simd/conf/simd.config simd_root/usr/share/simd/simd.config
+          sed "s/^Version:.*/Version: $ver/" "$ctl/simd_control" > simd_root/DEBIAN/control
+          dpkg-deb --build simd_root "simd-${{ matrix.os }}.deb"
+
+          echo "--- control as packaged ---"
+          dpkg-deb --field "simd-${{ matrix.os }}.deb" Package Version Depends
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: debs-${{ matrix.os }}
+          path: "*.deb"
+
+      - name: Release the packages
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.deb"
+
+  rpms:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [fedora-43, fedora-44]
+        include:
+          - os: fedora-43
+            image: fedora:43
+          - os: fedora-44
+            image: fedora:44
+    runs-on: ubuntu-latest
+    container:
+      image: ${{ matrix.image }}
+    permissions:
+      contents: write
+    steps:
+      - name: Install build dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            git rpm-build rpmdevtools gcc gcc-c++ cmake pkgconf-pkg-config \
+            libuv-devel argtable-devel libconfig-devel \
+            libxdg-basedir-devel procps-ng-devel
+
+      # yder, and orcania beneath it, are what simd logs through, and Fedora
+      # packages neither -- `dnf install yder-devel` fails outright with "No
+      # match for argument" on both 43 and 44, while Debian and Ubuntu ship
+      # libyder-dev. Built here as *static* libraries on purpose: linked into
+      # simd they leave the rpm with no runtime dependency Fedora cannot
+      # satisfy, so the spec's Requires: stays as upstream wrote it.
+      - name: Build vendored orcania and yder (static)
+        run: |
+          set -eux
+          # BUILD_SHARED=OFF as well as BUILD_STATIC=ON: both default to
+          # shared-only, and a libyder.so left in the prefix is picked over the
+          # archive, putting back a runtime dependency no Fedora repo can meet.
+          #
+          # -Wno-error via CMAKE_C_FLAGS_RELEASE, not CMAKE_C_FLAGS: both
+          # projects append their own -Wall -Werror to CMAKE_C_FLAGS, so
+          # setting it is overridden. The _RELEASE flags land after it, where
+          # the last of -Werror/-Wno-error wins. orcania 2.3.3 assigns the
+          # result of strstr() on a const pointer to a char*, which current
+          # GCC rejects as -Werror=discarded-qualifiers.
+          cflags='-O2 -DNDEBUG -Wno-error'
+
+          git clone --depth 1 --branch v2.3.3 https://github.com/babelouest/orcania /tmp/orcania
+          cmake -S /tmp/orcania -B /tmp/orcania/build \
+            -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="$cflags" \
+            -DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DBUILD_ORCANIA_TESTING=OFF
+          cmake --build /tmp/orcania/build --target install
+
+          git clone --depth 1 --branch v1.4.20 https://github.com/babelouest/yder /tmp/yder
+          # Journald would pull in systemd-devel for a backend simd never
+          # selects; its config offers file and syslog.
+          cmake -S /tmp/yder -B /tmp/yder/build \
+            -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_C_FLAGS_RELEASE="$cflags" \
+            -DBUILD_SHARED=OFF -DBUILD_STATIC=ON -DWITH_JOURNALD=OFF \
+            -DBUILD_YDER_TESTING=OFF
+          cmake --build /tmp/yder/build --target install
+
+          # Fail here rather than shipping a broken rpm: nothing later in this
+          # job would notice a dynamically linked simd.
+          test -f /usr/lib64/libyder.a || test -f /usr/lib/libyder.a
+
+      - uses: actions/checkout@v4
+
+      - name: Determine package version
+        id: pkgver
+        shell: bash
+        run: |
+          v=""
+          [ "$GITHUB_REF_TYPE" = tag ] && v="${GITHUB_REF_NAME#v}"
+          case "$v" in [0-9]*) ;; *) v="0.0.0" ;; esac
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Build both rpms
+        shell: bash
+        run: |
+          set -eux
+          rpmdev-setuptree
+          # Stage this checkout as the source, so an rpm's contents are the
+          # commit it was built from rather than whatever the default branch
+          # holds -- see the %prep comment in each spec.
+          rm -rf ~/rpmbuild/SOURCES/simapi
+          cp -r "$GITHUB_WORKSPACE" ~/rpmbuild/SOURCES/simapi
+          rm -rf ~/rpmbuild/SOURCES/simapi/.github
+
+          # The specs' hardcoded `Version: 0.0.5` is stale; stamped from the
+          # tag here so the file stays a working default for a local rpmbuild.
+          for spec in simapi simd; do
+            rpmbuild -ba --define "_version ${{ steps.pkgver.outputs.version }}" \
+              --define "version ${{ steps.pkgver.outputs.version }}" \
+              tools/distro/fedora/rpm/$spec.spec
+          done
+
+          # *-[0-9]*, not *: rpmbuild also emits debuginfo and debugsource.
+          cp ~/rpmbuild/RPMS/x86_64/simd-[0-9]*.rpm "simd-${{ matrix.os }}.rpm"
+          cp ~/rpmbuild/RPMS/x86_64/libsimapi-[0-9]*.rpm "libsimapi-${{ matrix.os }}.rpm"
+          rpm -qp --requires "simd-${{ matrix.os }}.rpm"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rpms-${{ matrix.os }}
+          path: "*.rpm"
+
+      - name: Release the packages
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "*.rpm"
+
+  appimage:
+    # Oldest base that actually builds this, since an AppImage is only as
+    # portable as the oldest glibc it links against. 22.04 does not: it ships
+    # libprocps rather than libproc2, so getpid.c fails on a missing
+    # <libproc2/pids.h>, and its GCC predates the C23 fixed-underlying-type
+    # enums in include/F12018/*.h ("expected identifier or '(' before ':'").
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential cmake pkg-config file wget \
+            libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
+            libxdg-basedir-dev libproc2-dev
+
+      - name: Determine version
+        id: pkgver
+        shell: bash
+        run: |
+          v=""
+          [ "$GITHUB_REF_TYPE" = tag ] && v="${GITHUB_REF_NAME#v}"
+          case "$v" in [0-9]*) ;; *) v="0.0.0" ;; esac
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - name: Build and stage an AppDir
+        run: |
+          set -eux
+          # CMAKE_INSTALL_LIBDIR pinned: GNUInstallDirs picks the multiarch
+          # triplet on Ubuntu, so the library landed in
+          # AppDir/usr/lib/x86_64-linux-gnu while everything downstream looked
+          # in AppDir/usr/lib.
+          cmake -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr \
+            -DBUILD_SIMD=ON -DCMAKE_INSTALL_LIBDIR=lib \
+            -DSYSTEMD_USER_UNIT_DIR=/usr/lib/systemd/user \
+            -DSIMD_CONFIG_DIR=/usr/share/simd
+          cmake --build build -j"$(nproc)"
+          DESTDIR="$PWD/AppDir" cmake --install build
+          # An AppImage cannot install a systemd unit onto the host, and the
+          # daemon is started directly rather than supervised, so it carries
+          # the example config but not the unit.
+          rm -f AppDir/usr/lib/systemd/user/simd.service
+          install -Dm644 tools/distro/flatpak/io.github.spacefreak18.simd.desktop \
+            AppDir/usr/share/applications/io.github.spacefreak18.simd.desktop
+          # linuxdeploy takes the icon's *name* from its filename and matches
+          # it against the desktop file's Icon= entry, so simd-128.png would
+          # be deployed as "simd-128" and the entry naming
+          # io.github.spacefreak18.simd finds nothing: "Could not find
+          # suitable icon for Icon entry".
+          cp tools/distro/simd-128.png io.github.spacefreak18.simd.png
+          install -Dm644 LICENSE.rst AppDir/usr/share/doc/simd/LICENSE.rst
+
+      - name: Package the AppImage
+        env:
+          # These tools are themselves AppImages and there is no FUSE on the
+          # runner to mount them with.
+          APPIMAGE_EXTRACT_AND_RUN: 1
+        run: |
+          set -eux
+          wget -q https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
+          chmod +x linuxdeploy-x86_64.AppImage
+          export OUTPUT="simd-${{ steps.pkgver.outputs.version }}-x86_64.AppImage"
+          # simd links libsimapi.so.1, which is inside the AppDir and nowhere
+          # on the system, so linuxdeploy's ldd-based resolution reported
+          # "Could not find dependency: libsimapi.so.1" and refused to deploy.
+          export LD_LIBRARY_PATH="$PWD/AppDir/usr/lib:${LD_LIBRARY_PATH:-}"
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir \
+            --desktop-file AppDir/usr/share/applications/io.github.spacefreak18.simd.desktop \
+            --icon-file io.github.spacefreak18.simd.png \
+            --output appimage
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: appimage
+          path: "simd-*-x86_64.AppImage"
+
+      - name: Release the AppImage
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: "simd-*-x86_64.AppImage"
+
+  flatpak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update
+          # Recommends left enabled deliberately: flatpak-builder shells out to
+          # tar's decompressors, eu-strip and patch, which Debian and Ubuntu
+          # list as Recommends rather than Depends. With --no-install-recommends
+          # it installs, builds several modules, then fails on whichever helper
+          # the next module needs.
+          sudo apt-get install -y flatpak flatpak-builder xz-utils bzip2 elfutils
+          flatpak remote-add --if-not-exists --user flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install -y --user --noninteractive flathub \
+            org.freedesktop.Platform//25.08 org.freedesktop.Sdk//25.08
+
+      - name: Build the bundle
+        working-directory: tools/distro/flatpak
+        run: |
+          flatpak-builder --user --disable-rofiles-fuse --force-clean --repo=repo \
+            build-dir io.github.spacefreak18.simd.yml
+          flatpak build-bundle repo simd.flatpak io.github.spacefreak18.simd
+
+      # Install and run it. A Flatpak that builds is not a Flatpak that works:
+      # libuv and libconfig installed to /app/lib64, which is not on the
+      # runtime's library search path, so the bundle built and packaged
+      # cleanly and then died on startup with
+      #   simd: error while loading shared libraries: libuv.so.1
+      # Nothing in this job had ever executed the binary. --version is enough
+      # to prove every shared library resolves.
+      - name: Smoke-test the bundle
+        working-directory: tools/distro/flatpak
+        run: |
+          flatpak install -y --user --bundle simd.flatpak
+          flatpak run io.github.spacefreak18.simd --version
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: simd.flatpak
+          path: tools/distro/flatpak/simd.flatpak
+
+      - name: Release the bundle
+        if: github.ref_type == 'tag'
+        uses: softprops/action-gh-release@v1
+        with:
+          files: tools/distro/flatpak/simd.flatpak

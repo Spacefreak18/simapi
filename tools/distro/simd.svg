@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Placeholder mark for simd. linuxdeploy requires an icon to build an
+     AppImage and this repository has none; replace it with real artwork
+     whenever there is some. Square by construction, because a non-square
+     icon is rejected by desktop-file/appstream validation. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <rect width="256" height="256" rx="36" fill="#1b1f24"/>
+  <!-- three telemetry traces, suggesting a stream of sampled values -->
+  <g fill="none" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M32 168 L72 168 L96 96 L120 200 L144 128 L168 152 L224 152" stroke="#e6483c"/>
+    <path d="M32 208 L96 208 L128 184 L160 208 L224 208" stroke="#5a6672"/>
+  </g>
+  <circle cx="128" cy="56" r="16" fill="#e6483c"/>
+</svg>

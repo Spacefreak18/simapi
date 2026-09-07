@@ -350,11 +350,34 @@ int startudp(int port)
     return err;
 }
 
+/* Paths handed to the bridge launch are the host's whenever this is a Flatpak
+ * build; everywhere else this is the ordinary local check. */
+static bool bridge_file_exists(const char* path)
+{
+    if (path == NULL)
+    {
+        return false;
+    }
+    if (simapi_in_flatpak())
+    {
+        return simapi_host_file_exists(path) ? true : false;
+    }
+    return does_file_exist(path);
+}
+
 int is_pid_running(pid_t pid)
 {
     if (pid <= 0)
     {
         return 0;
+    }
+
+    /* Sandboxed, the pids simd tracks belong to the host's namespace, where
+     * kill(2) cannot reach them. Shared with simapi so both halves agree on
+     * how the question is asked. */
+    if (simapi_in_flatpak())
+    {
+        return simapi_host_pid_alive(pid);
     }
 
     // send signal 0 (no actual signal)
@@ -395,7 +418,8 @@ void bridgeclosecallback(uv_timer_t* handle)
         if(simds.notify == true)
         {
             char cmd[512];
-            snprintf(cmd, sizeof(cmd), "notify-send -t 3000 \"%s\" \"game stopped\"", "simd");
+            snprintf(cmd, sizeof(cmd), "%snotify-send -t 3000 \"%s\" \"game stopped\"",
+                     simapi_in_flatpak() ? "flatpak-spawn --host " : "", "simd");
             system(cmd);
         }
 
@@ -519,7 +543,10 @@ void gamefindcallback(uv_timer_t* handle)
                 {
                     char* pathcheck1 = NULL;
                     asprintf(&pathcheck1, "%s/dist/bin/wine", token);
-                    if(does_file_exist(pathcheck1) == true)
+                    /* Proton lives on the host, so ask the host. Locally this
+                     * always answered false under Flatpak and the bridge was
+                     * never launched. */
+                    if(bridge_file_exists(pathcheck1) == true)
                     {
                         wineexe = strdup(pathcheck1);
                     }
@@ -531,7 +558,7 @@ void gamefindcallback(uv_timer_t* handle)
                     if(wineexe == NULL)
                     {
                         asprintf(&pathcheck1, "%s/files/bin/wine", token);
-                        if(does_file_exist(pathcheck1) == true)
+                        if(bridge_file_exists(pathcheck1) == true)
                         {
                             wineexe = strdup(pathcheck1);
                         }
@@ -598,13 +625,41 @@ void gamefindcallback(uv_timer_t* handle)
                         close(devnull);
                     }
 
-                    if(env_simd_wrap_exe == NULL)
+                    char* target = (env_simd_wrap_exe == NULL) ? wineexe : env_simd_wrap_exe;
+
+                    if(simapi_in_flatpak())
                     {
-                        ret = execve(wineexe, newargv, newenviron);
+                        /* Proton, its prefix and the bridge exe are all on the
+                         * host; execve here would look for them inside the
+                         * runtime. --env carries the environment across, since
+                         * flatpak-spawn does not pass this one through, and
+                         * --watch-bus ties the host process's lifetime to this
+                         * one so the existing SIGTERM teardown still ends it. */
+                        char* hostargv[16];
+                        char envopts[4][512];
+                        int n = 0;
+                        int e = 0;
+
+                        hostargv[n++] = "flatpak-spawn";
+                        hostargv[n++] = "--host";
+                        hostargv[n++] = "--watch-bus";
+                        for(int i = 0; newenviron[i] != NULL && e < 4; i++)
+                        {
+                            snprintf(envopts[e], sizeof(envopts[e]), "--env=%s", newenviron[i]);
+                            hostargv[n++] = envopts[e];
+                            e++;
+                        }
+                        for(int i = 0; newargv[i] != NULL && n < 15; i++)
+                        {
+                            hostargv[n++] = newargv[i];
+                        }
+                        hostargv[n] = NULL;
+
+                        ret = execvp("flatpak-spawn", hostargv);
                     }
                     else
                     {
-                        ret = execve(env_simd_wrap_exe, newargv, newenviron);
+                        ret = execve(target, newargv, newenviron);
                     }
                     _exit(127);
                 }
@@ -642,7 +697,8 @@ void gamefindcallback(uv_timer_t* handle)
             {
                 char cmd[512];
                 const char* gamename = simapi_gametofullstr(sim);
-                snprintf(cmd, sizeof(cmd), "notify-send -t 3000 \"%s\" \"Detected %s (%i)\"", "simd", gamename, sim);
+                snprintf(cmd, sizeof(cmd), "%snotify-send -t 3000 \"%s\" \"Detected %s (%i)\"",
+                        simapi_in_flatpak() ? "flatpak-spawn --host " : "", "simd", gamename, sim);
                 system(cmd);
             }
         }
