@@ -32,6 +32,19 @@ endif()
 add_executable(simd simd.c parameters.c confighelper.c dirhelper.c poke.c ../simmap/mapsimdata.c)
 target_link_libraries(simd m uv yder ${ARGTABLE_LIBS} config simapi)
 
+# yder calls into orcania -- o_malloc, o_free, o_strdup, o_strnullempty,
+# split_string. A shared libyder.so records that dependency and the linker
+# follows it, which is why this is not needed on Debian or Ubuntu. A static
+# libyder.a records nothing, so all of those come back undefined unless
+# orcania is named explicitly, and after yder, which is the order a static
+# link needs. Distributions without a yder package -- Fedora among them --
+# have to vendor it, and vendoring it static is what keeps the resulting
+# package free of a dependency those distributions cannot satisfy.
+find_library(ORCANIA_LIBRARY orcania)
+if(ORCANIA_LIBRARY)
+    target_link_libraries(simd ${ORCANIA_LIBRARY})
+endif()
+
 target_include_directories(simd PRIVATE ${ARGTABLE_INCLUDE_DIR})
 
 # User-level installation

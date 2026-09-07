@@ -20,9 +20,13 @@ pkg_check_modules(LIBPROC2 libproc2)
 if (LIBPROCPS_FOUND)
     #add_compile_definitions(USE_OLD_PID_VAL=0)
 elseif (LIBPROC2_FOUND)
-    if (LIBPROC2_VERSION VERSION_GREATER_EQUAL "4.0.5")
-        #add_compile_definitions(USE_OLD_PID_VAL=0)
-    else()
+    # Some distro packagings -- the freedesktop Flatpak SDK among them -- ship
+    # a libproc2.pc whose Version field is the literal string UNKNOWN. Compared
+    # against that, VERSION_GREATER_EQUAL is always false, so this fell through
+    # to the pre-4.0.5 four-argument PIDS_VAL API and failed to compile against
+    # a current libproc2 whose header has long since moved to three. Take the
+    # old-API branch only when the version really parses and really is old.
+    if (LIBPROC2_VERSION MATCHES "^[0-9]" AND LIBPROC2_VERSION VERSION_LESS "4.0.5")
         add_compile_definitions(USE_OLD_PID_VAL)
     endif()
 else()
