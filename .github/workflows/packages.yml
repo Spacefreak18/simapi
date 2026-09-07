@@ -200,7 +200,12 @@ jobs:
           # The specs' hardcoded `Version: 0.0.5` is stale; stamped from the
           # tag here so the file stays a working default for a local rpmbuild.
           for spec in simapi simd; do
-            rpmbuild -ba --define "_version ${{ steps.pkgver.outputs.version }}" \
+            # staged=1 tells %prep to use the tree copied into SOURCES above
+            # rather than cloning. Without it the spec clones the default
+            # branch, and the rpm's contents would track master rather than
+            # the tag being built.
+            rpmbuild -ba --define "staged 1" \
+              --define "_version ${{ steps.pkgver.outputs.version }}" \
               --define "version ${{ steps.pkgver.outputs.version }}" \
               tools/distro/fedora/rpm/$spec.spec
           done
