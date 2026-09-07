@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.spacefreak18.simd</id>
+  <name>SimAPI Daemon</name>
+  <summary>Racing simulator telemetry mapped to shared memory</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>LGPL-3.0-or-later</project_license>
+  <description>
+    <p>
+      SimAPI Daemon watches for a running racing simulator, maps its telemetry,
+      and republishes it as a universal shared memory map at
+      /dev/shm/SIMAPI.DAT for other applications to read.
+    </p>
+    <p>
+      This build can run commands on the host system. It has to: identifying a
+      running simulator means reading the host's process table, which a Flatpak
+      sandbox cannot otherwise see. Treat this package as unconfined software
+      delivered through Flatpak, not as a sandboxed application.
+    </p>
+  </description>
+  <developer id="io.github.spacefreak18">
+    <name>Paul Dino Jones</name>
+  </developer>
+  <launchable type="desktop-id">io.github.spacefreak18.simd.desktop</launchable>
+  <url type="homepage">https://github.com/Spacefreak18/simapi</url>
+  <content_rating type="oars-1.1" />
+</component>

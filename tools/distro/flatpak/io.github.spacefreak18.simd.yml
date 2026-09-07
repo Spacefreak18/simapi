@@ -1,0 +1,251 @@
+# Flatpak manifest for simd, the SimAPI telemetry daemon.
+#
+# simd is a background service, not an application: it watches for a running
+# racing simulator, maps its telemetry, and republishes it at
+# /dev/shm/SIMAPI.DAT for other applications to read. It is packaged as a
+# Flatpak so it can be installed on immutable distributions, where a .deb or
+# .rpm cannot be, and is started the way other Flatpak services are -- an
+# entry in ~/.config/autostart running `flatpak run`.
+#
+# READ THIS BEFORE INSTALLING: this app can run arbitrary commands on the
+# host, and its sandbox is therefore not a security boundary.
+#
+# That is not incidental, it is what the daemon does. simd identifies a
+# running sim by scanning /proc for known process names and reads
+# /proc/<pid>/environ for the Steam compat variables behind its auto-bridge.
+# Flatpak gives every sandbox its own PID namespace and offers no way to share
+# the host's -- measured 634 processes on the host against 4 inside a sandbox,
+# unchanged by --allow=devel or --filesystem=host, and /proc cannot be bound
+# in ("Path /proc is reserved by Flatpak"). The only mechanism that reaches
+# host processes is flatpak-spawn --host, which is general-purpose by nature:
+# an app that can run one host command can run any of them.
+#
+# So --talk-name=org.freedesktop.Flatpak below is doing real work and is also
+# the reason this bundle isolates nothing. Flatpak here is a delivery
+# mechanism for immutable systems, not a confinement story. Anyone reviewing
+# this for a public repository should weigh it on those terms.
+app-id: io.github.spacefreak18.simd
+runtime: org.freedesktop.Platform
+runtime-version: '25.08'
+sdk: org.freedesktop.Sdk
+command: simd
+finish-args:
+  # How simd reaches the host process table, the environ reads behind the
+  # auto-bridge, notify-send, and the Proton bridge exec. See the header.
+  - --talk-name=org.freedesktop.Flatpak
+  # Where simd publishes telemetry, as POSIX shared memory
+  # (/dev/shm/SIMAPI.DAT). shm is its own device option and is NOT implied by
+  # --device=all -- measured: `ls /dev/shm` inside a sandbox without it
+  # returned 0 entries against 18 on the host. Without this the map simd
+  # writes is invisible to every reader outside the sandbox, which is the
+  # entire point of running it.
+  - --device=shm
+  # simd builds its config path from getpwuid() rather than $HOME or
+  # XDG_CONFIG_HOME (simd.c), so it wants the host's real directory. Without
+  # it simd runs on but logs "Disabling Automatic Bridge Mode" and never
+  # launches the Windows bridge under Proton.
+  - --filesystem=xdg-config/simd:create
+  # Sim telemetry under Proton lives in the game's wine prefix.
+  - --filesystem=home
+  - --share=network
+
+modules:
+  - name: libconfig
+    buildsystem: cmake-ninja
+    config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DBUILD_TESTS=OFF
+      # libconfig 1.7.3's CMakeLists.txt predates CMake 3.5's minimum
+      # version policy; confirmed via a failed local build.
+      - -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+    post-install:
+      - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/libconfig/$(basename "$f"); else echo "WARNING: no licence file found for libconfig"; fi'
+    sources:
+      - type: archive
+        url: https://github.com/hyperrealm/libconfig/archive/refs/tags/v1.7.3.tar.gz
+        sha256: 68757e37c567fd026330c8a8449aa5f9cac08a642f213f2687186b903bd7e94e
+
+  - name: argtable2
+    buildsystem: cmake-ninja
+    config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      # Same CMake-minimum-version issue as libconfig -- this one's
+      # CMakeLists.txt is even older (2011).
+      - -DCMAKE_POLICY_VERSION_MINIMUM=3.5
+      # 2011-era code missing <ctype.h>/<strings.h> includes for
+      # isspace/toupper/bzero; GCC 14+ made implicit-function-declaration a
+      # hard error by default where it used to just warn. Confirmed via a
+      # failed local build.
+      - -DCMAKE_C_FLAGS=-Wno-error=implicit-function-declaration
+      # add_library(argtable2 ...) has no explicit STATIC/SHARED, so it
+      # defaults to CMake's global BUILD_SHARED_LIBS (off by default -> a
+      # static .a). monocoque's own target_link_libraries() lists argtable2
+      # before helper (which needs its symbols, e.g. arg_end/arg_parse in
+      # parameters.c) -- fine for a shared library (all symbols always
+      # available regardless of link-line position, which is what real
+      # distro packages of this ship), but a static archive only pulls
+      # symbols already needed by things linked *before* it, so helper's
+      # later reference to argtable2's symbols never resolves. Confirmed
+      # via a failed local build ("undefined reference to arg_end" etc.
+      # from helper's parameters.c, even though libargtable2.a genuinely
+      # contained those symbols). Building shared instead matches how this
+      # dependency normally ships and avoids the link-order sensitivity
+      # entirely, rather than reordering every target_link_libraries() call
+      # in CMakeLists.txt.
+      - -DBUILD_SHARED_LIBS=ON
+    # This CMake port has no install() rules at all (confirmed: no
+    # CMakeLists.txt in the tree calls install()), so the default
+    # cmake-ninja `ninja install` step silently does nothing -- monocoque's
+    # own build then fails on a missing argtable2.h. build-commands here
+    # replace the default install step: `ninja` still does the real
+    # compile, then copy the header and whatever library form actually got
+    # built (glob rather than a fixed versioned filename, since the exact
+    # .so version suffix isn't predictable without a build).
+    build-commands:
+      - ninja
+      - install -Dm644 src/argtable2.h /app/include/argtable2.h
+      - |
+        for f in src/libargtable2.so* src/libargtable2.a; do
+          if [ -e "$f" ]; then cp -P "$f" /app/lib/; fi
+        done
+        true
+    post-install:
+      - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/argtable2/$(basename "$f"); else echo "WARNING: no licence file found for argtable2"; fi'
+    sources:
+      - type: archive
+        url: https://sourceforge.net/projects/argtable/files/argtable/argtable-2.13/argtable2-13.tar.gz/download
+        sha256: 8f77e8a7ced5301af6e22f47302fdbc3b1ff41f2b83c43c77ae5ca041771ddbf
+        dest-filename: argtable2-13.tar.gz
+
+  - name: libuv
+    buildsystem: cmake-ninja
+    config-opts:
+      # /app/lib for every module, not the lib64 CMake picks by default:
+      # only /app/lib is on the runtime's library search path, so anything
+      # landing in lib64 builds and bundles fine and then fails at startup
+      # with "cannot open shared object file".
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DBUILD_TESTING=OFF
+    post-install:
+      - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/libuv/$(basename "$f"); else echo "WARNING: no licence file found for libuv"; fi'
+    sources:
+      - type: archive
+        url: https://github.com/libuv/libuv/archive/refs/tags/v1.49.2.tar.gz
+        sha256: 388ffcf3370d4cf7c4b3a3205504eea06c4be5f9e80d2ab32d19f8235accc1cf
+
+  # orcania and yder are what simd logs through. Neither is in the freedesktop
+  # runtime and neither is packaged for Fedora either (the rpm legs vendor both
+  # as static libraries); here they are ordinary /app/lib shared libraries that
+  # ship inside the bundle.
+  #
+  # CMAKE_C_FLAGS_RELEASE carries -Wno-error because both projects append their
+  # own `-Wall -Werror` to CMAKE_C_FLAGS -- setting that variable would be
+  # overridden, while the _RELEASE flags land after it where the last of
+  # -Werror/-Wno-error wins. orcania 2.3.3 assigns strstr() on a const pointer
+  # to a char*, which newer compilers reject outright.
+
+  # orcania and yder are what simd logs through. Neither is in the freedesktop
+  # runtime and neither is packaged for Fedora either (the rpm legs vendor both
+  # as static libraries); here they are ordinary /app/lib shared libraries that
+  # ship inside the bundle.
+  #
+  # CMAKE_C_FLAGS_RELEASE carries -Wno-error because both projects append their
+  # own `-Wall -Werror` to CMAKE_C_FLAGS -- setting that variable would be
+  # overridden, while the _RELEASE flags land after it where the last of
+  # -Werror/-Wno-error wins. orcania 2.3.3 assigns strstr() on a const pointer
+  # to a char*, which newer compilers reject outright.
+  - name: orcania
+    buildsystem: cmake-ninja
+    config-opts:
+      # Everything into /app/lib, not the lib64 CMake picks by default here:
+      # orcania and yder both landed in /app/lib64, so when yder configured,
+      # pkg-config did not find liborcania.pc under /app/lib/pkgconfig and
+      # yder linked without it. The failure surfaced much later and looked
+      # unrelated -- simd failed to link with undefined references to
+      # o_malloc/o_free/o_strdup/split_string coming out of libyder.so.
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -Wno-error
+      - -DBUILD_ORCANIA_TESTING=OFF
+    post-install:
+      - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/orcania/$(basename "$f"); else echo "WARNING: no licence file found for orcania"; fi'
+    sources:
+      - type: git
+        url: https://github.com/babelouest/orcania
+        commit: ffc8b55d09a3488f4f6be38034b33bc64bf8b0ce
+
+  - name: yder
+    buildsystem: cmake-ninja
+    config-opts:
+      # Everything into /app/lib, not the lib64 CMake picks by default here:
+      # orcania and yder both landed in /app/lib64, so when yder configured,
+      # pkg-config did not find liborcania.pc under /app/lib/pkgconfig and
+      # yder linked without it. The failure surfaced much later and looked
+      # unrelated -- simd failed to link with undefined references to
+      # o_malloc/o_free/o_strdup/split_string coming out of libyder.so.
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_C_FLAGS_RELEASE=-O2 -DNDEBUG -Wno-error
+      # Journald would need systemd-devel for a backend simd never selects;
+      # its config offers file and syslog.
+      - -DWITH_JOURNALD=OFF
+      - -DBUILD_YDER_TESTING=OFF
+    post-install:
+      - sh -c 'f=$(ls -1 COPYING COPYING.txt COPYING.LIB LICENSE LICENSE.txt LICENSE.md LICENCE licence.txt 2>/dev/null | head -1); if [ -n "$f" ]; then install -Dm644 "$f" /app/share/licenses/yder/$(basename "$f"); else echo "WARNING: no licence file found for yder"; fi'
+    sources:
+      - type: git
+        url: https://github.com/babelouest/yder
+        commit: dffe82c0483bb95d0d518ba1e36c568e63a24628
+
+  # simapi built through its *own* CMakeLists, unlike the monocoque module
+  # below which compiles the same sources into a static library of its own.
+  # That is what produces libsimapi.so and, with BUILD_SIMD, the simd binary --
+  # pinned to the exact commit monocoque's submodule tracks, so the daemon and
+  # the app in this bundle agree on the SimData layout they map.
+
+  - name: simd
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SIMD=ON
+      # Both default ON and install into $ENV{HOME} -- a systemd user unit and
+      # a config file -- which during a flatpak-builder run would land in the
+      # build user's home rather than the prefix. The unit is meaningless in a
+      # Flatpak anyway; autostart is a ~/.config/autostart entry instead.
+      - -DINSTALL_SYSTEMD_SERVICE=off
+      - -DSIMD_CONFIG_DIR=/app/share/simd
+      # Pinned rather than left to GNUInstallDirs, which picks lib64 here and
+      # the multiarch triplet on Debian. Every consumer of this prefix then
+      # has to guess which, and both guesses have already been wrong once.
+      - -DCMAKE_INSTALL_LIBDIR=lib
+    build-options:
+      env:
+        LIBRARY_PATH: /app/lib
+    post-install:
+      - install -Dm644 LICENSE.rst /app/share/licenses/simd/LICENSE.rst
+      - install -Dm644 tools/distro/flatpak/io.github.spacefreak18.simd.desktop /app/share/applications/io.github.spacefreak18.simd.desktop
+      - install -Dm644 tools/distro/flatpak/io.github.spacefreak18.simd.metainfo.xml /app/share/metainfo/io.github.spacefreak18.simd.metainfo.xml
+      # PNG only, deliberately. Installing the SVG as well fails the build:
+      # appstreamcli in the freedesktop SDK cannot decode it at all and
+      # aborts compose with "Unrecognized image file format", which surfaces
+      # only as "appstreamcli compose failed". Reproduced and confirmed fixed
+      # by running compose against a staged prefix.
+      - install -Dm644 tools/distro/simd-128.png /app/share/icons/hicolor/128x128/apps/io.github.spacefreak18.simd.png
+    sources:
+      - type: dir
+        path: ../../..
+        # Local build trees are not part of the source. Without these a
+        # developer's build/ and stage/ get copied into the sandbox, where a
+        # stale CMakeCache.txt pointing at host paths breaks the configure
+        # step in ways that look nothing like their cause.
+        skip:
+          - build
+          - stage

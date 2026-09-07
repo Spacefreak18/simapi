@@ -113,6 +113,10 @@ struct SimProcessInfo
 
 void simapi_set_faux_siminfo(SimInfo* si);
 
+int simapi_in_flatpak(void);
+char* simapi_host_capture(const char* hostcmd, size_t* out_len);
+int simapi_host_pid_alive(pid_t pid);
+int simapi_host_file_exists(const char* path);
 int is_pid_running(pid_t pid);
 struct SimProcessInfo get_process_match(char* pidstrings[], int num);
 char* getEnvValueForPid(pid_t pid, const char* envName);
