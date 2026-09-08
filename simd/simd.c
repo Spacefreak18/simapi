@@ -365,45 +365,6 @@ static bool bridge_file_exists(const char* path)
     return does_file_exist(path);
 }
 
-int is_pid_running(pid_t pid)
-{
-    if (pid <= 0)
-    {
-        return 0;
-    }
-
-    /* Sandboxed, the pids simd tracks belong to the host's namespace, where
-     * kill(2) cannot reach them. Shared with simapi so both halves agree on
-     * how the question is asked. */
-    if (simapi_in_flatpak())
-    {
-        return simapi_host_pid_alive(pid);
-    }
-
-    // send signal 0 (no actual signal)
-    if (kill(pid, 0) == 0)
-    {
-        return 1;
-    }
-    else
-    {
-        if (errno == ESRCH)
-        {
-            return 0;
-        }
-        else
-            if (errno == EPERM)
-            {
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
-        return 0;
-    }
-}
-
 void bridgeclosecallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
