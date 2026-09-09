@@ -39,14 +39,18 @@ static int isMatch(const char* possibleMatch, const char* checkAgainst)
 
 int is_pid_running(pid_t pid)
 {
-    if (simapi_in_flatpak())
-    {
-        return simapi_host_pid_alive(pid);
-    }
-
     if (pid <= 0)
     {
         return 0;
+    }
+
+    /* Sandboxed, the pids being tracked belong to the host's namespace, where
+     * kill(2) cannot reach them. This is the single definition: simd calls it
+     * through simapi.h rather than carrying its own copy, so both halves ask
+     * the question the same way and a change here reaches both. */
+    if (simapi_in_flatpak())
+    {
+        return simapi_host_pid_alive(pid);
     }
 
     // send signal 0 (no actual signal)
