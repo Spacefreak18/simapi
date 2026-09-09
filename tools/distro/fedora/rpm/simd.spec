@@ -23,7 +23,12 @@ Racing Simulator Telemetry Libraries
 # CI stages the checked-out tree; a bare `rpmbuild -ba` still works as before.
 %prep
 rm -rf $RPM_BUILD_DIR/simapi
-if [ ! -d $RPM_SOURCE_DIR/simapi ]; then
+# Staging a tree is opt-in, via --define "staged 1". Without it this always
+# starts from a fresh clone, including removing any previous $RPM_SOURCE_DIR
+# checkout: on a self-hosted runner that directory persists between builds, so
+# reusing whatever happens to be there silently builds a stale tree.
+if [ "%{?staged}" != "1" ]; then
+    rm -rf $RPM_SOURCE_DIR/simapi
     cd $RPM_SOURCE_DIR
     git clone https://github.com/spacefreak18/simapi
 fi
