@@ -1,4 +1,7 @@
 /build
+/stage
 tests/setsimdata
 simd/build
 .cache
+a.out
+*.bin
