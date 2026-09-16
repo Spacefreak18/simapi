@@ -33,7 +33,7 @@ else()
     add_compile_definitions(USE_OLD_PID_VAL)
 endif()
 
-target_link_libraries(simapi proc2)
+target_link_libraries(simapi proc2 m)
 
 configure_file(simapi.pc.in simapi.pc @ONLY)
 target_include_directories(simapi PUBLIC include simapi)
