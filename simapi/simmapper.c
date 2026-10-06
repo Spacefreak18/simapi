@@ -110,6 +110,11 @@ bool simapi_does_sim_need_bridge(SimulatorEXE s)
         return true;
     }
 
+    if (s == SIMULATOREXE_LEMANS_ULTIMATE)
+    {
+        return true;
+    }
+
     if(s == SIMULATOREXE_RACE_ROOM)
     {
         return true;
