@@ -208,7 +208,7 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         f->releasing = true;
         appstate = 1;
         uv_timer_stop(&datamaptimer);
-        y_log_message(Y_LOG_LEVEL_INFO, "stopped data mapping, please wait");
+        y_log_message(Y_LOG_LEVEL_INFO, "Stopped data mapping, please wait");
         f->uion = false;
 
         // help things spin down
