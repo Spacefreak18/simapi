@@ -701,14 +701,9 @@ void datacheckcallback(uv_timer_t* handle)
         {
             appstate++;
 
-            //simdata->tyrediameter[0] = -1;
-            //simdata->tyrediameter[1] = -1;
-            //simdata->tyrediameter[2] = -1;
-            //simdata->tyrediameter[3] = -1;
-
             if(f->use_udp == true)
             {
-                y_log_message(Y_LOG_LEVEL_INFO, "using udp for this sim title");
+                y_log_message(Y_LOG_LEVEL_INFO, "udp detected for this sim title");
                 udpstart(f, simdata, simmap);
                 uv_udp_recv_start(&recv_socket, on_alloc, on_udp_recv);
             }
@@ -722,7 +717,7 @@ void datacheckcallback(uv_timer_t* handle)
 
     if (appstate == 0)
     {
-        y_log_message(Y_LOG_LEVEL_INFO, "stopping checking for data");
+        y_log_message(Y_LOG_LEVEL_INFO, "stopped checking for data");
         uv_timer_stop(handle);
     }
 }
