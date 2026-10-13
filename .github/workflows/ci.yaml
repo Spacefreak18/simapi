@@ -107,16 +107,15 @@ jobs:
           echo "--- control as packaged ---"
           dpkg-deb --field "simd-${{ matrix.os }}.deb" Package Version Depends
 
-      - uses: actions/upload-artifact@v4
-        with:
-          name: debs-${{ matrix.os }}
-          path: "*.deb"
-
       - name: Release the packages
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.deb"
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          files: |
+            simd-*.deb
+            libsimapi-*.deb
+          generate_release_notes: ${{ inputs.release_tag == '' }}
 
   rpms:
     strategy:
@@ -230,10 +229,14 @@ jobs:
           path: "*.rpm"
 
       - name: Release the packages
-        if: github.ref_type == 'tag'
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: "*.rpm"
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          files: |
+            simd-*.rpm
+            libsimapi-*.rpm
+          generate_release_notes: ${{ inputs.release_tag == '' }}
 
   appimage:
     # Oldest base that actually builds this, since an AppImage is only as
@@ -312,14 +315,22 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: appimage
+          name: simd-x86_64.AppImage
           path: "simd-*-x86_64.AppImage"
 
-      - name: Release the AppImage
-        if: github.ref_type == 'tag'
+      - name: Release the Package
+        # Only a tag can publish a release; without this a workflow_dispatch run
+        # builds everything correctly and then reports failure on a step that
+        # cannot work, which makes a green build look broken.
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v1
         with:
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
           files: "simd-*-x86_64.AppImage"
+          # release-please writes the release body from the changelog it just
+          # generated. Letting this action generate its own notes as well would
+          # overwrite them, so it only does so for a hand-pushed tag.
+          generate_release_notes: ${{ inputs.release_tag == '' }}
 
   flatpak:
     runs-on: ubuntu-latest
@@ -366,11 +377,16 @@ jobs:
           name: simd.flatpak
           path: tools/distro/flatpak/simd.flatpak
 
-      - name: Release the bundle
-        if: github.ref_type == 'tag'
+      - name: Release the Package
+        if: github.ref_type == 'tag' || inputs.release_tag != ''
         uses: softprops/action-gh-release@v1
         with:
-          files: tools/distro/flatpak/simd.flatpak
+          tag_name: ${{ inputs.release_tag || github.ref_name }}
+          files: flatpak/simd.flatpak
+          # release-please writes the release body from the changelog it just
+          # generated. Letting this action generate its own notes as well would
+          # overwrite them, so it only does so for a hand-pushed tag.
+          generate_release_notes: ${{ inputs.release_tag == '' }}
 
   #build-simapi-nix:
   #  runs-on: ubuntu-latest
