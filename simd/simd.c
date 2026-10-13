@@ -838,7 +838,7 @@ int main(int argc, char** argv)
 
         loadconfig(simds, compat_info_size, game_compat_info);
 
-        y_log_message(Y_LOG_LEVEL_INFO, "Successfullly loaded configuration file");
+        y_log_message(Y_LOG_LEVEL_INFO, "Successfully simd loaded configuration file");
     }
 
     struct termios newsettings;
