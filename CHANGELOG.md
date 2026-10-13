@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/Spacefreak18/simapi/compare/0.2.1...0.2.2) (2026-10-13)
+
+
+### Bug Fixes
+
+* fix flatpak release ([a622882](https://github.com/Spacefreak18/simapi/commit/a62288239bd15c2b6e70f539102d19656bf37e25))
+
 ## [0.2.1](https://github.com/Spacefreak18/simapi/compare/0.2.0...0.2.1) (2026-10-13)
 
 
