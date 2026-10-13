@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.2.1](https://github.com/Spacefreak18/simapi/compare/0.2.0...0.2.1) (2026-10-13)
+
+
+### Bug Fixes
+
+* fix log message spelling ([80e7798](https://github.com/Spacefreak18/simapi/commit/80e7798aa5a0beb68c00afb115f77064a416adb2))
+* log message spelling ([1c54c8c](https://github.com/Spacefreak18/simapi/commit/1c54c8cf790ba71f7462f749609ff02a1ae14292))
+
 ## [0.2.0](https://github.com/Spacefreak18/simapi/compare/0.1.25...0.2.0) (2026-10-13)
 
 
