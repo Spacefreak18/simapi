@@ -1,0 +1,24 @@
+name: PR Build & Test
+
+on:
+  pull_request:
+  push:
+    branches: [ "master" ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+      - name: Update apt
+        run: sudo apt update
+      - name: Install dependencies
+        run: sudo apt install -y --no-install-recommends ca-certificates git build-essential cmake pkg-config dpkg-dev libuv1-dev libargtable2-dev libconfig-dev libyder-dev libxdg-basedir-dev libproc2-dev
+      - name: Configure CMake
+        run: cmake -B build -DENABLE_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+      - name: Build
+        run: cmake --build build --config Debug
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
