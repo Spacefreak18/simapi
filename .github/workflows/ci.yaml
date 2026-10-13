@@ -382,7 +382,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ inputs.release_tag || github.ref_name }}
-          files: flatpak/simd.flatpak
+          files: tools/distro/flatpak/simd.flatpak
           # release-please writes the release body from the changelog it just
           # generated. Letting this action generate its own notes as well would
           # overwrite them, so it only does so for a hand-pushed tag.
