@@ -1185,6 +1185,15 @@ int simapi_datamap(SimData* simdata, SimMap* simmap, SimulatorAPI simulatorapi, 
     char* c;
     char* d;
 
+    // this will get overwritten by sim mappers
+    simdata->car[0] = 'D';
+    simdata->car[1] = 'E';
+    simdata->car[2] = 'F';
+    simdata->car[3] = 'A';
+    simdata->car[4] = 'U';
+    simdata->car[5] = 'L';
+    simdata->car[6] = 'T';
+    simdata->car[7] = '\0';
     simdata->prev_mtick = simdata->mtick;
     simdata->mtick = timeInMilliseconds();
 
