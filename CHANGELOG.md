@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.3.0](https://github.com/Spacefreak18/simapi/compare/0.2.2...0.3.0) (2026-11-09)
+
+
+### Features
+
+* mqtt capabilities ([85d5212](https://github.com/Spacefreak18/simapi/commit/85d5212031a6f942b04552b1e317f5c47a117192))
+
+
+### Bug Fixes
+
+* set a car on each iteration so one is definitely set to avoid crashes. But can be overwritten by sim later ([14e5349](https://github.com/Spacefreak18/simapi/commit/14e534989df48fe40cf414a6ba1f56bbd7215699))
+
 ## [0.2.2](https://github.com/Spacefreak18/simapi/compare/0.2.1...0.2.2) (2026-10-13)
 
 
