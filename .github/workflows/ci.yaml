@@ -47,11 +47,11 @@ jobs:
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates git build-essential cmake pkg-config dpkg-dev \
             libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
-            libxdg-basedir-dev libprocps-dev || \
+            libxdg-basedir-dev libprocps-dev libmosquitto-dev libjson-c-dev || \
           DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
             ca-certificates git build-essential cmake pkg-config dpkg-dev \
             libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
-            libxdg-basedir-dev libproc2-dev
+            libxdg-basedir-dev libproc2-dev libmosquitto-dev libjson-c-dev
 
       - uses: actions/checkout@v4
 
@@ -138,7 +138,7 @@ jobs:
           dnf install -y --setopt=install_weak_deps=False \
             git rpm-build rpmdevtools gcc gcc-c++ cmake pkgconf-pkg-config \
             libuv-devel argtable-devel libconfig-devel \
-            libxdg-basedir-devel procps-ng-devel
+            libxdg-basedir-devel procps-ng-devel mosquitto-devel json-c-devel
 
       # yder, and orcania beneath it, are what simd logs through, and Fedora
       # packages neither -- `dnf install yder-devel` fails outright with "No
@@ -256,7 +256,7 @@ jobs:
           sudo apt-get install -y --no-install-recommends \
             build-essential cmake pkg-config file wget \
             libuv1-dev libargtable2-dev libconfig-dev libyder-dev \
-            libxdg-basedir-dev libproc2-dev
+            libxdg-basedir-dev libproc2-dev libmosquitto-dev libjson-c-dev
 
       - name: Determine version
         id: pkgver

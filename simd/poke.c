@@ -55,18 +55,18 @@ int poke(SimdSettings simds)
     {
         switch(sdt)
         {
-            case UINT8:
+            case SIMAPI_UINT8:
                 uint8_t new_uint8_value = strtoul(simds.targetvalue, NULL, 0);
                 memcpy(addr, &new_uint8_value, sizeof(new_uint8_value));
                 break;
-            case UINT32:
+            case SIMAPI_UINT32:
                 uint32_t new_uint32_value = strtoul(simds.targetvalue, NULL, 0);
                 memcpy(addr, &new_uint32_value, sizeof(new_uint32_value));
                 break;
-            case DOUBLE:
+            case SIMAPI_DOUBLE:
                 double new_double_value = strtod(simds.targetvalue, NULL);
                 memcpy(addr, &new_double_value, sizeof(new_double_value));
-            case BOOLEAN:
+            case SIMAPI_BOOLEAN:
                 bool val = false;
                 if(strcmp(simds.targetvalue, "1") == 0)
                 {

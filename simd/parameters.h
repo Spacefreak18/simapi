@@ -13,8 +13,10 @@ typedef struct
     bool udp;
     bool poke;
     bool targetval;
+    bool mqtt;
 
     bool daemon_count;
+    bool mqtt_count;
     bool memmap_count;
     bool notify_count;
     bool bridge_count;

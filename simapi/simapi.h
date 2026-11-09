@@ -1,8 +1,15 @@
 #ifndef _SIMMAPI_H
 #define _SIMMAPI_H
 
-#include <signal.h>
 #include <stdbool.h>
+#include <stddef.h>
+#if defined(_WIN32)
+typedef unsigned long simapi_pid_t;
+#else
+#include <signal.h>
+#include <sys/types.h>
+typedef pid_t simapi_pid_t;
+#endif
 
 #define SIMAPI_VERSION 1
 
@@ -76,14 +83,14 @@ SimAPIError;
 
 typedef enum
 {
-    INTEGER       = 0,
-    DOUBLE        = 1,
-    FLOAT         = 2,
-    CHAR          = 3,
-    BOOLEAN       = 4,
-    UINT8         = 5,
-    UINT32        = 6,
-    UINT64        = 7,
+    SIMAPI_INTEGER       = 0,
+    SIMAPI_DOUBLE        = 1,
+    SIMAPI_FLOAT         = 2,
+    SIMAPI_CHAR          = 3,
+    SIMAPI_BOOLEAN       = 4,
+    SIMAPI_UINT8         = 5,
+    SIMAPI_UINT32        = 6,
+    SIMAPI_UINT64        = 7,
 }
 SimDataType;
 
@@ -101,7 +108,7 @@ typedef struct
     SimulatorAPI mapapi;
     SimulatorAPI simulatorapi;
     SimulatorEXE simulatorexe;
-    pid_t pid;
+    simapi_pid_t pid;
 }
 SimInfo;
 
@@ -115,10 +122,10 @@ void simapi_set_faux_siminfo(SimInfo* si);
 
 int simapi_in_flatpak(void);
 char* simapi_host_capture(const char* hostcmd, size_t* out_len);
-int simapi_host_pid_alive(pid_t pid);
+int simapi_host_pid_alive(simapi_pid_t pid);
 int simapi_host_file_exists(const char* path);
-int is_pid_running(pid_t pid);
+int is_pid_running(simapi_pid_t pid);
 struct SimProcessInfo get_process_match(char* pidstrings[], int num);
-char* getEnvValueForPid(pid_t pid, const char* envName);
+char* getEnvValueForPid(simapi_pid_t pid, const char* envName);
 
 #endif

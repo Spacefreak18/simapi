@@ -4,6 +4,7 @@
 #include <uv.h>
 #include <simdata.h>
 #include <simmapper.h>
+#include <simapi_mqtt.h>
 
 typedef struct
 {
@@ -23,6 +24,7 @@ typedef struct
     bool force_udp;
     bool auto_memmap;
     bool auto_bridge;
+    bool mqtt;
     bool daemon;
     bool notify;
     bool bridge_path_set;
@@ -42,6 +44,7 @@ typedef struct
     bool uion;
     bool releasing;
     SimdSettings simds;
+    MQTTContext* mqtt_ctx;
     int compat_info_size;
     pid_t bridge_pid;
     pid_t game_pid;

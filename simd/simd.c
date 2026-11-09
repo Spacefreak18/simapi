@@ -21,9 +21,11 @@
 #include <simapi.h>
 #include <simdata.h>
 #include <simmapper.h>
+#include <simapi_mqtt.h>
 #include "../simapi/simmap.h"
 #include "../simapi/test.h"
 #include "../simmap/basicmap.h"
+
 
 #include "loopdata.h"
 #include "parameters.h"
@@ -50,6 +52,7 @@ uv_poll_t pollt;
 uv_timer_t gamefindtimer;
 uv_timer_t datachecktimer;
 uv_timer_t datamaptimer;
+uv_timer_t mqtttimer;
 uv_timer_t bridgeclosetimer;
 uv_udp_t recv_socket;
 bool recv_socket_initialized = false;
@@ -60,6 +63,7 @@ int compat_info_size = 0;
 int gamepid = 0;
 
 void shmdatamapcallback(uv_timer_t* handle);
+void mqttcallback(uv_timer_t* handle);
 void datacheckcallback(uv_timer_t* handle);
 void gamefindcallback(uv_timer_t* handle);
 void bridgeclosecallback(uv_timer_t* handle);
@@ -105,6 +109,7 @@ int set_settings(Parameters* p, SimdSettings* simds)
         simds->notify = p->notify;
     }
 
+    simds->mqtt = p->mqtt;
     simds->auto_bridge = p->bridge;
 
     simds->poke = false;
@@ -208,8 +213,21 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         f->releasing = true;
         appstate = 1;
         uv_timer_stop(&datamaptimer);
+        uv_timer_stop(&mqtttimer);
         y_log_message(Y_LOG_LEVEL_INFO, "Stopped data mapping, please wait");
         f->uion = false;
+
+        if(simds.mqtt == true)
+        {
+            if(f->mqtt_ctx != NULL)
+            {
+                if(mqtt_is_connected(f->mqtt_ctx) == true)
+                {
+
+                    mqtt_close(f->mqtt_ctx);
+                }
+            }
+        }
 
         // help things spin down
         simdata->simstatus = 0;
@@ -247,6 +265,25 @@ void releaseloop(LoopData* f, SimData* simdata, SimMap* simmap)
         }
     }
 
+}
+
+void mqttcallback(uv_timer_t* handle)
+{
+    void* b = uv_handle_get_data((uv_handle_t*) handle);
+    LoopData* f = (LoopData*) b;
+    SimData* simdata = f->simdata;
+    SimdSettings simds = f->simds;
+    if (appstate == 2)
+    {
+        mqtt_poll(f->mqtt_ctx);
+        
+        if (mqtt_is_connected(f->mqtt_ctx))
+        {
+            mqtt_publish_packet(f->mqtt_ctx, simdata);
+        }
+        
+        mqtt_poll(f->mqtt_ctx);
+    }
 }
 
 void shmdatamapcallback(uv_timer_t* handle)
@@ -686,6 +723,7 @@ void datacheckcallback(uv_timer_t* handle)
     void* b = uv_handle_get_data((uv_handle_t*) handle);
     LoopData* f = (LoopData*) b;
     SimData* simdata = f->simdata;
+    SimdSettings simds = f->simds;
 
     if ( appstate == 1 )
     {
@@ -710,6 +748,44 @@ void datacheckcallback(uv_timer_t* handle)
             else
             {
                 uv_timer_start(&datamaptimer, shmdatamapcallback, 2000, 16);
+            }
+            if(simds.mqtt == true)
+            {
+                y_log_message(Y_LOG_LEVEL_INFO, "starting mqtt thread");
+                const char *home = getenv("HOME");
+                if (home)
+                {
+                    char path[512];
+                    snprintf(path, sizeof(path), "%s/.config/simd/mqtt.config", home);
+                    
+                    config_t cfg;
+                    config_init(&cfg);
+                    
+                    bool config_valid = true;
+                    if (!config_read_file(&cfg, path))
+                    {
+                        y_log_message(Y_LOG_LEVEL_ERROR, "MQTT config error: %s:%d - %s", config_error_file(&cfg), config_error_line(&cfg),
+                            config_error_text(&cfg));
+                        config_destroy(&cfg);
+                        config_valid = false;
+                    }
+               
+                    if(config_valid == true)
+                    {
+                        f->mqtt_ctx = mqtt_open(&cfg, "simd-client");
+                        
+                        config_destroy(&cfg);
+
+                        if (!f->mqtt_ctx)
+                        {
+                            y_log_message(Y_LOG_LEVEL_WARNING, "Failed to initialize MQTT");
+                        }
+                        else
+                        {
+                            uv_timer_start(&mqtttimer, mqttcallback, 2000, 16); 
+                        }
+                    }
+                }
             }
             uv_timer_stop(handle);
         }
@@ -742,6 +818,7 @@ void cb(uv_poll_t* handle, int status, int events)
     {
         y_log_message(Y_LOG_LEVEL_INFO, "simd is exiting...");
         uv_timer_stop(&datachecktimer);
+        uv_timer_stop(&mqtttimer);
         if (recv_socket_initialized)
         {
             uv_udp_recv_stop(&recv_socket);
@@ -952,8 +1029,6 @@ int main(int argc, char** argv)
         simapi_compatmap_open(compatmap);
     }
 
-
-
     baton = (LoopData*) malloc(sizeof(LoopData));
     baton->simdata = simdata;
     baton->simstate = false;
@@ -963,6 +1038,7 @@ int main(int argc, char** argv)
     baton->bridge_pid = 0;
     baton->game_pid = 0;
     baton->simds = simds;
+    baton->mqtt_ctx = NULL;
     baton->compat_info_size = compat_info_size;
     baton->game_compat_info = game_compat_info;
     baton->req.data = (void*) baton;
@@ -974,11 +1050,13 @@ int main(int argc, char** argv)
     uv_timer_init(uv_default_loop(), &bridgeclosetimer);
     uv_timer_init(uv_default_loop(), &datachecktimer);
     uv_timer_init(uv_default_loop(), &datamaptimer);
+    uv_timer_init(uv_default_loop(), &mqtttimer);
 
     uv_handle_set_data((uv_handle_t*) &gamefindtimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &bridgeclosetimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &datachecktimer, (void*) baton);
     uv_handle_set_data((uv_handle_t*) &datamaptimer, (void*) baton);
+    uv_handle_set_data((uv_handle_t*) &mqtttimer, (void*) baton);
 
     y_log_message(Y_LOG_LEVEL_INFO, "Searching for sim data... Press q to quit...\n");
     if(simds.auto_bridge == true)
