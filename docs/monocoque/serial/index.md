@@ -4,4 +4,4 @@
 
 ## Arduino SimWind
 
-## [Custom Serial](/monocoque/serial/serial_custom)
+## [Custom Serial](/simapi/monocoque/serial/serial_custom)
