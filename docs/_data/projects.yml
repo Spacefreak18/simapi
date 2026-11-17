@@ -1,0 +1,26 @@
+
+monocoque:
+  title: Monocoque
+  pages:
+    - title: Overview
+      url: /monocoque/
+    - title: Installation
+      url: /simapisimapi/monocoque/installation/
+    - title: Configuration
+      url: /simapi/monocoque/configuration/
+
+simd:
+  title: simd
+  pages:
+    - title: Overview
+      url: /simd/
+    - title: MQTT Setup
+      url: /simd/mqtt/
+
+simmonitor:
+  title: simmonitor
+  pages:
+    - title: Overview
+      url: /simmonitor/
+    - title: Dashboard
+      url: /simmonitor/dashboard/

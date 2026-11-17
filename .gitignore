@@ -5,3 +5,10 @@ simd/build
 .cache
 a.out
 *.bin
+
+# Jekyll
+/docs/_site/
+/docs/.jekyll-cache/
+/docs/.jekyll-metadata
+/docs/.bundle/
+/docs/vendor/

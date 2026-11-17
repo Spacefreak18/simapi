@@ -1,0 +1,47 @@
+
+{% assign path_parts = page.path | split: '/' %}
+{% assign project_name = path_parts | first %}
+{% assign project = site.data.projects[project_name] %}
+
+<nav class="project-nav" aria-label="Site navigation">
+  <ul>
+    <li>
+      <a href="{{ '/' | relative_url }}"
+         {% if page.url == '/' %}aria-current="page"{% endif %}>
+        Home
+      </a>
+    </li>
+
+    {% if project %}
+      <li class="project-label">
+        {{ project.title | escape }}
+      </li>
+
+      {% for item in project.pages %}
+        <li>
+          <a href="{{ item.url | relative_url }}"
+             {% if page.url == item.url %}aria-current="page"{% endif %}>
+            {{ item.title | escape }}
+          </a>
+        </li>
+      {% endfor %}
+    {% endif %}
+
+    {% if site.show_downloads %}
+      <li class="nav-download">
+        <a href="{{ site.github.zip_url }}">ZIP</a>
+      </li>
+      <li class="nav-download">
+        <a href="{{ site.github.tar_url }}">TAR</a>
+      </li>
+    {% endif %}
+
+    {% if site.github.repository_url %}
+      <li class="nav-github">
+        <a href="{{ site.github.repository_url }}">
+          GitHub
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>

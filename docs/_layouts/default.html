@@ -1,0 +1,226 @@
+
+<!doctype html>
+<html lang="{{ site.lang | default: 'en-US' }}">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1">
+
+  {% seo %}
+
+  <link rel="stylesheet"
+        href="{{ '/assets/css/style.css?v=' | append: site.github.build_revision | relative_url }}">
+
+  <script src="https://code.jquery.com/jquery-1.12.4.min.js"
+          integrity="sha256-ZosEbRLbNQzLpnKIkEdrPv7lOy9C27hHQ+Xp8a4MxAQ="
+          crossorigin="anonymous"></script>
+
+  <script src="{{ '/assets/js/respond.js' | relative_url }}"></script>
+
+  {% include head-custom.html %}
+
+  <style>
+    /* Header navigation */
+    #header {
+      margin-top: 0;
+    }
+
+    #header nav.project-nav {
+      display: block;
+      height: 60px;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 15px;
+      background: transparent;
+      overflow-x: auto;
+      white-space: nowrap;
+      scrollbar-width: thin;
+    }
+
+    #header nav.project-nav ul {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      width: max-content;
+      min-width: 100%;
+      height: 60px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    #header nav.project-nav li {
+      display: block;
+      float: none;
+      flex-shrink: 0;
+      line-height: normal;
+    }
+
+    #header nav.project-nav a {
+      display: inline-block;
+      padding: 8px 0;
+      margin: 0;
+      color: #f0e7d5;
+      background: none;
+      border: 0;
+      border-radius: 0;
+      box-shadow: none;
+      text-shadow: none;
+      font-size: 14px;
+      line-height: 20px;
+    }
+
+    #header nav.project-nav a:hover,
+    #header nav.project-nav a[aria-current="page"] {
+      color: #ffcc00;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+
+    #header nav.project-nav .project-label {
+      color: #e8e8e8;
+      font-weight: bold;
+      padding-left: 16px;
+      border-left: 1px solid #666;
+    }
+
+    #header nav.project-nav .nav-github {
+      margin-left: auto;
+    }
+
+    /* Breadcrumb navigation */
+    .breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 24px;
+      font-size: 12px;
+      color: #999;
+    }
+
+    .breadcrumbs a {
+      color: #ffcc00;
+    }
+
+    .breadcrumbs a:hover {
+      text-decoration: underline;
+    }
+
+    .breadcrumbs [aria-current="page"] {
+      color: #d7cfbe;
+    }
+
+    /* Keep Midnight navigation visible on mobile */
+    @media screen and (max-width: 480px) {
+      #header {
+        margin-top: 0;
+      }
+
+      #header nav.project-nav {
+        display: block;
+      }
+
+      section {
+        margin-top: 70px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="header">
+    {% include project-nav.html %}
+  </div>
+
+  <div class="wrapper">
+    <section>
+      <div id="title">
+        <h1>
+          {{ site.title | default: site.github.repository_name }}
+        </h1>
+
+        <p>
+          {{ site.tagline | default: site.description | default: site.github.project_tagline }}
+        </p>
+
+        <hr>
+
+        <span class="credits left">
+          Project maintained by
+          <a href="{{ site.github.owner_url }}">
+            {{ site.github.owner_name }}
+          </a>
+        </span>
+
+        <span class="credits right">
+          Hosted on GitHub Pages &mdash;
+          Theme by
+          <a href="https://twitter.com/mattgraham">
+            mattgraham
+          </a>
+        </span>
+      </div>
+
+      {% assign path_parts = page.path | split: '/' %}
+      {% assign project_name = path_parts | first %}
+      {% assign project = site.data.projects[project_name] %}
+      
+      {% if project %}
+        {% assign crumb_url = '/' | append: project_name | append: '/' %}
+        {% assign project_index = crumb_url | append: 'index.html' %}
+      
+        <nav class="breadcrumbs" aria-label="Breadcrumb">
+          <a href="{{ '/' | relative_url }}">Home</a>
+          <span>/</span>
+      
+          {% if page.url == crumb_url or page.url == project_index %}
+            <span aria-current="page">{{ project.title | escape }}</span>
+          {% else %}
+            <a href="{{ crumb_url | relative_url }}">
+              {{ project.title | escape }}
+            </a>
+      
+            {% assign folder_count = path_parts.size | minus: 2 %}
+      
+            {% for folder in path_parts offset:1 %}
+              {% if forloop.index0 < folder_count %}
+                {% assign crumb_url = crumb_url | append: folder | append: '/' %}
+                {% assign folder_page = site.pages | where: 'url', crumb_url | first %}
+      
+                <span>/</span>
+      
+                {% if page.url == crumb_url %}
+                  <span aria-current="page">
+                    {{ page.title | default: folder | escape }}
+                  </span>
+                {% elsif folder_page %}
+                  <a href="{{ crumb_url | relative_url }}">
+                    {{ folder_page.title | default: folder | escape }}
+                  </a>
+                {% else %}
+                  <span>
+                    {{ folder | replace: '-', ' ' | replace: '_', ' ' | capitalize | escape }}
+                  </span>
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+      
+            {% unless page.url == crumb_url %}
+              <span>/</span>
+              <span aria-current="page">
+                {{ page.title | default: page.name | escape }}
+              </span>
+            {% endunless %}
+          {% endif %}
+        </nav>
+      {% endif %}
+
+      {{ content }}
+
+    </section>
+  </div>
+</body>
+</html>
