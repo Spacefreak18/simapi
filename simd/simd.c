@@ -68,19 +68,19 @@ void datacheckcallback(uv_timer_t* handle);
 void gamefindcallback(uv_timer_t* handle);
 void bridgeclosecallback(uv_timer_t* handle);
 
-void simapilib_loginfo(char* message)
+void simapilib_loginfo(char* format, ...)
 {
-    y_log_message(Y_LOG_LEVEL_INFO, message);
+    y_log_message(Y_LOG_LEVEL_INFO, format);
 }
 
-void simapilib_logdebug(char* message)
+void simapilib_logdebug(char* format, ...)
 {
-    y_log_message(Y_LOG_LEVEL_DEBUG, message);
+    y_log_message(Y_LOG_LEVEL_DEBUG, format);
 }
 
-void simapilib_logtrace(char* message)
+void simapilib_logtrace(char* format, ...)
 {
-    y_log_message(Y_LOG_LEVEL_DEBUG, message);
+    y_log_message(Y_LOG_LEVEL_DEBUG, format);
 }
 
 int set_settings(Parameters* p, SimdSettings* simds)

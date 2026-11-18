@@ -330,7 +330,7 @@ void simapi_set_log_trace(func_ptr_t func)
     logtrace = func;
 }
 
-void simapi_log(SIMAPI_LOGLEVEL sll, char* message)
+void simapi_log(SIMAPI_LOGLEVEL sll, char* message, ...)
 {
     if(message != NULL)
     {
@@ -487,6 +487,34 @@ static bool does_sim_file_exist(const char* file)
     }
     return false;
 #endif
+}
+
+static bool does_sim_file_have_data(const char *filename) {
+    struct stat st; 
+
+    if (stat(filename, &st) == 0)
+    {
+        if(st.st_size > 0)
+        {
+            return true;
+        }
+    }
+    return false; 
+}
+
+
+static int check_sim_file(const char* file)
+{
+    if(!does_sim_file_exist(file))
+    {
+        return 0;
+    }
+    if(!does_sim_file_have_data(file))
+    {
+        return -1;
+    }
+
+    return 1;
 }
 
 
@@ -721,7 +749,8 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
     if(simd == false)
     {
-        if (does_sim_file_exist("/dev/shm/SIMAPI.DAT"))
+        int simfile = check_sim_file("/dev/shm/SIMAPI.DAT");
+        if (simfile > 0)
         {
             int e = simapi_init(simdata, simmap, SIMULATORAPI_SIMAPI_TEST, SIMULATOREXE_SIMAPI_TEST_NONE);
             simapi_datamap(simdata, simmap, SIMULATORAPI_SIMAPI_TEST, false, NULL);
@@ -748,15 +777,12 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             }
             else
             {
-                char* temp;
-                asprintf(&temp, "skipping sim api daemon due to version mismatch. Daemon Version: %i. App Version: %i", simdata->simapiversion, SIMAPI_VERSION);
-                simapi_log(SIMAPI_LOGLEVEL_INFO, temp);
-                free(temp);
+                simapi_log(SIMAPI_LOGLEVEL_INFO, "skipping sim api daemon due to version mismatch. Daemon Version: %i. App Version: %i", simdata->simapiversion, SIMAPI_VERSION);
             }
         }
         else
         {
-            simapi_log(SIMAPI_LOGLEVEL_TRACE, "looking for running simulators");
+            simapi_log(SIMAPI_LOGLEVEL_TRACE, "Looking for running simulators. Sim File Error: %i", simfile);
         }
     }
 
@@ -769,9 +795,11 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
         case SIMULATOREXE_ASSETTO_CORSA_RALLY:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa");
-            if (does_sim_file_exist("/dev/shm/acpmf_physics"))
+            int ac_physics_sim_file = check_sim_file("/dev/shm/acpmf_physics");
+            if (ac_physics_sim_file > 0)
             {
-                if (does_sim_file_exist("/dev/shm/acpmf_static"))
+                int ac_static_sim_file = check_sim_file("/dev/shm/acpmf_static");
+                if (ac_static_sim_file > 0)
                 {
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                     si.simulatorapi = SIMULATORAPI_ASSETTO_CORSA;
@@ -811,20 +839,23 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
                 }
                 else
                 {
-                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find static shared memory file");
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find static shared memory file. Err %i", ac_static_sim_file);
                 }
             }
             else
             {
-                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file");
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file. Err %i", ac_physics_sim_file);
             }
             break;
 
         case SIMULATOREXE_ASSETTO_CORSA_EVO:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for Assetto Corsa EVO");
-            if (does_sim_file_exist("/dev/shm/acevo_pmf_physics"))
+
+            int evo_physics_sim_file = check_sim_file("/dev/shm/acevo_pmf_physics");
+            if (evo_physics_sim_file > 0)
             {
-                if (does_sim_file_exist("/dev/shm/acevo_pmf_static"))
+                int evo_static_sim_file = check_sim_file("/dev/shm/acevo_pmf_static");
+                if (evo_static_sim_file > 0)
                 {
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                     si.simulatorapi = SIMULATORAPI_ASSETTO_CORSA;
@@ -864,12 +895,12 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
                 }
                 else
                 {
-                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find static shared memory file");
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find static shared memory file. Err %i", evo_static_sim_file);
                 }
             }
             else
             {
-                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file");
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find physics shared memory file. Err %i", evo_physics_sim_file);
             }
             break;
 
@@ -934,7 +965,8 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
         case SIMULATOREXE_RFACTOR2:
         case SIMULATOREXE_LEMANS_ULTIMATE:
-            if (does_sim_file_exist("/dev/shm/$rFactor2SMMP_Telemetry$"))
+            int rf_telemetry_file = check_sim_file("/dev/shm/$rFactor2SMMP_Telemetry$");
+            if (rf_telemetry_file > 0)
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "RFactor2 telemetry file found");
                 si.simulatorapi = SIMULATORAPI_RFACTOR2;
@@ -957,13 +989,18 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
                     return si;
                 }
             }
+            else
+            {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find rf telemetry shared memory file. Err %i", rf_telemetry_file);
+            }
             break;
 
         case SIMULATOREXE_AUTOMOBILISTA2:
         case SIMULATOREXE_AUTOMOBILISTA2_DEMO:
             if (force_udp == false)
             {
-                if (does_sim_file_exist("/dev/shm/$pcars2$"))
+                int pcars_sim_file = check_sim_file("/dev/shm/$pcars2$");
+                if (pcars_sim_file > 0)
                 {
                     si.simulatorapi = SIMULATORAPI_PROJECTCARS2;
                     int error = simapi_init(simdata, simmap, SIMULATORAPI_PROJECTCARS2, simexe);
@@ -982,6 +1019,10 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
                         return si;
                     }
+                }
+                else
+                {
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find pcars telemetry shared memory file. Err %i", pcars_sim_file);
                 }
             }
             else
@@ -1012,7 +1053,8 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             break;
         case SIMULATOREXE_EUROTRUCKS2:
         case SIMULATOREXE_AMERICANTRUCKS:
-            if (does_sim_file_exist("/dev/shm/SCS/SCSTelemetry"))
+            int trucks_sim_file = check_sim_file("/dev/shm/SCS/SCSTelemetry");
+            if (trucks_sim_file > 0)
             {
                 si.simulatorapi = SIMULATORAPI_SCSTRUCKSIM2;
                 int error = simapi_init(simdata, simmap, SIMULATORAPI_SCSTRUCKSIM2, simexe);
@@ -1031,6 +1073,10 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
                     return si;
                 }
+            }
+            else
+            {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find scstrucks telemetry shared memory file. Err %i", trucks_sim_file);
             }
             break;
         case SIMULATOREXE_DIRT_RALLY_2:
@@ -1121,7 +1167,8 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
             break;
         case SIMULATOREXE_RACE_ROOM:
             simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found running process for RaceRoom Racing Experience");
-            if (does_sim_file_exist("/dev/shm/$R3E"))
+            int r3e_sim_file = check_sim_file("/dev/shm/$R3E");
+            if (r3e_sim_file > 0)
             {
                 simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Found shared memory file for RaceRoom Racing Experience");
                 si.simulatorapi = SIMULATORAPI_RACE_ROOM;
@@ -1141,6 +1188,10 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
 
                     return si;
                 }
+            }
+            else
+            {
+                simapi_log(SIMAPI_LOGLEVEL_DEBUG, "Could not find r3e telemetry shared memory file. Err %i", r3e_sim_file);
             }
             break;
         case SIMULATOREXE_FORZA_HORIZON_5:

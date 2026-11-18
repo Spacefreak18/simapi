@@ -13,7 +13,7 @@ typedef pid_t simapi_pid_t;
 
 #define SIMAPI_VERSION 1
 
-typedef void (*func_ptr_t)(char* message);
+typedef void (*func_ptr_t)(char* format, ...);
 //func_ptr_t logfunc;
 
 void simapi_set_log_info(func_ptr_t logfunc);
