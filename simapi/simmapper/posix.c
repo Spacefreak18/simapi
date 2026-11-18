@@ -1832,6 +1832,8 @@ int simapi_universalmap_open(SimMap* simmap, SimData* simdata)
 
 int simapi_compatmap_open(SimCompatMap* compatmap)
 {
+    simapi_log(SIMAPI_LOGLEVEL_INFO, "Attempting to open compatibility shared memory files");
+
     compatmap->pcars2_fd = shm_open(PCARS2_FILE, O_RDWR | O_CREAT, S_IRUSR | S_IWUSR);
     if (compatmap->pcars2_fd == -1)
     {
@@ -2046,6 +2048,8 @@ int simapi_compatmap_open(SimCompatMap* compatmap)
 
 int simapi_compatmap_clear(SimCompatMap* compatmap)
 {
+    simapi_log(SIMAPI_LOGLEVEL_INFO, "Clearing compatibility shared memory files");
+
     memset(compatmap->acphysics_addr, 0, AC_PHYSICS_SIZE);
     memset(compatmap->acstatic_addr, 0, AC_STATIC_SIZE);
     memset(compatmap->acgraphics_addr, 0, AC_GRAPHIC_SIZE);
@@ -2063,6 +2067,9 @@ int simapi_compatmap_clear(SimCompatMap* compatmap)
 
 int simapi_compatmap_free(SimCompatMap* compatmap)
 {
+    simapi_log(SIMAPI_LOGLEVEL_INFO, "Closing compatibility shared memory files");
+
+    //AC
     if (munmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1)
     {
         return 100;
@@ -2088,11 +2095,12 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 100;
     }
     shm_unlink(AC_GRAPHIC_FILE);
-    if (close(compatmap->acevographics_fd) == -1)
+    if (close(compatmap->acgraphics_fd) == -1)
     {
         return 200;
     }
 
+    //ACEVO
     if (munmap(compatmap->acevophysics_addr, AC_PHYSICS_SIZE) == -1)
     {
         return 100;
@@ -2133,6 +2141,7 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 200;
     }
 
+    // Project Cars
     if (munmap(compatmap->pcars2_addr, PCARS2_SIZE) == -1)
     {
         return 100;
@@ -2143,6 +2152,7 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 200;
     }
 
+    // R3E
     if (munmap(compatmap->r3e_addr, R3E_SIZE) == -1)
     {
         return 100;
@@ -2153,6 +2163,7 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
         return 200;
     }
 
+    // LMU
     if (munmap(compatmap->lmu_addr, LMU_SIZE) == -1)
     {
         return 100;
