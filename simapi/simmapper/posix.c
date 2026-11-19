@@ -754,21 +754,16 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
         {
             int e = simapi_init(simdata, simmap, SIMULATORAPI_SIMAPI_TEST, SIMULATOREXE_SIMAPI_TEST_NONE);
             simapi_datamap(simdata, simmap, SIMULATORAPI_SIMAPI_TEST, false, NULL);
-            char* temp;
-            asprintf(&temp, "found running simapi daemon simint error %i", e);
-            simapi_log(SIMAPI_LOGLEVEL_TRACE, temp);
-            free(temp);
-            //simapi_datamap(simdata, simmap, NULL, SIMULATORAPI_SIMAPI_TEST, false, NULL);
+            simapi_log(SIMAPI_LOGLEVEL_TRACE, "found running simapi daemon siminit error %i", e);
+
             if(simdata->simapiversion == SIMAPI_VERSION)
             {
+                simapi_log(SIMAPI_LOGLEVEL_TRACE, "status okay");
                 si.mapapi = SIMULATORAPI_SIMAPI_TEST;
                 if (simdata->simon == 1)
                 {
-                    simapi_log(SIMAPI_LOGLEVEL_TRACE, "status okay");
                     si.isSimOn = true;
                     si.simulatorapi = simdata->simapi;
-                    si.simulatorexe = simdata->simexe;
-                    si.mapapi = SIMULATORAPI_SIMAPI_TEST;
                     si.simulatorexe = simdata->simexe;
                     set_sim_info(&si);
                     si.SimUsesUDP = false;
