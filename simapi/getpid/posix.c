@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <libproc2/pids.h>
 
-#include "simapi.h"
+#include "../simapi.h"
 
 static int isMatch(const char* possibleMatch, const char* checkAgainst)
 {
