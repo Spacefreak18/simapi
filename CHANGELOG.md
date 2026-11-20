@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/Spacefreak18/simapi/compare/0.3.0...0.3.1) (2026-11-20)
+
+
+### Bug Fixes
+
+* uninitialized SimMap state causing crashes with simd ([#43](https://github.com/Spacefreak18/simapi/issues/43)) ([afb06ff](https://github.com/Spacefreak18/simapi/commit/afb06ff175b3c076f8b3bef57fb3fe0201ecd969))
+
 ## [0.3.0](https://github.com/Spacefreak18/simapi/compare/0.2.2...0.3.0) (2026-11-20)
 
 
