@@ -806,10 +806,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                     si.simulatorapi = SIMULATORAPI_ASSETTO_CORSA;
                     int error = simapi_init(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA, simexe);
-                    char* temp;
-                    asprintf(&temp, "simapi_init error %i", error);
-                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, temp);
-                    free(temp);
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "simapi init error %i", error);
                     if (error != SIMAPI_ERROR_NONE)
                     {
                         break;
@@ -866,10 +863,7 @@ SimInfo simapi_get_sim(SimData* simdata, SimMap* simmap, bool force_udp, int (*s
                     simapi_log(SIMAPI_LOGLEVEL_DEBUG, "static and physics files found");
                     si.simulatorapi = SIMULATORAPI_ASSETTO_CORSA;
                     int error = simapi_init(simdata, simmap, SIMULATORAPI_ASSETTO_CORSA, simexe);
-                    char* temp;
-                    asprintf(&temp, "simapi_init error %i", error);
-                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, temp);
-                    free(temp);
+                    simapi_log(SIMAPI_LOGLEVEL_DEBUG, "simapi init error %i", error);
                     if (error != SIMAPI_ERROR_NONE)
                     {
                         break;
