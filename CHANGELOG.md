@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/Spacefreak18/simapi/compare/0.3.1...0.3.2) (2026-11-20)
+
+
+### Bug Fixes
+
+* update include directory after moving code ([3fc9d39](https://github.com/Spacefreak18/simapi/commit/3fc9d396fcd30b1f7dcad34a322e79ec24c863fd))
+
 ## [0.3.1](https://github.com/Spacefreak18/simapi/compare/0.3.0...0.3.1) (2026-11-20)
 
 
