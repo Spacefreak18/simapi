@@ -205,6 +205,48 @@ modules:
         url: https://github.com/babelouest/yder
         commit: dffe82c0483bb95d0d518ba1e36c568e63a24628
 
+  - name: json-c
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DBUILD_SHARED_LIBS=ON
+      - -DBUILD_STATIC_LIBS=OFF
+      - -DBUILD_TESTING=OFF
+      - -DBUILD_APPS=OFF
+      - -DDISABLE_WERROR=ON
+    post-install:
+      - install -Dm644 COPYING /app/share/licenses/json-c/COPYING
+    sources:
+      - type: git
+        url: https://github.com/json-c/json-c
+        commit: aa716cd8d663c976b99b0f30f102ee1d8ef63146
+
+  - name: mosquitto
+    buildsystem: cmake-ninja
+    config-opts:
+      - -DCMAKE_INSTALL_LIBDIR=lib
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DWITH_BROKER=OFF
+      - -DWITH_CLIENTS=OFF
+      - -DWITH_APPS=OFF
+      - -DWITH_PLUGINS=OFF
+      - -DWITH_LIB_CPP=OFF
+      - -DWITH_CJSON=OFF
+      - -DDOCUMENTATION=OFF
+      - -DWITH_STATIC_LIBRARIES=OFF
+      - -DWITH_TLS=ON
+      - -DWITH_THREADING=ON
+      - -DWITH_SRV=OFF
+    post-install:
+      - install -Dm644 epl-v20 /app/share/licenses/libmosquitto/epl-v20
+      - install -Dm644 edl-v10 /app/share/licenses/libmosquitto/edl-v10
+    sources:
+      - type: archive
+        url: https://mosquitto.org/files/source/mosquitto-2.0.23.tar.gz
+        sha256: dc815cbd9f27db2fa7fcb06390f7ec1d65b5300827f4c1c7402e62ce9cfd5660
+
+
   # simapi built through its *own* CMakeLists, unlike the monocoque module
   # below which compiles the same sources into a static library of its own.
   # That is what produces libsimapi.so and, with BUILD_SIMD, the simd binary --
