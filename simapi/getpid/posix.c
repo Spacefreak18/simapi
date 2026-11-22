@@ -472,17 +472,18 @@ struct SimProcessInfo pidof (char* pname[], int num)
         char** cmd = PIDS_VAL(rel_cmdline, strv, stack);
 #endif
 
-        if (cm != NULL) {
+        // Keep the first match but finish the scan: libproc2 holds the
+        // current process's /proc directory open until it moves past it.
+        if (cm != NULL && p.pid == -1) {
             char* cmdline = *cmd;
             for (int i = 0; pname[i] != NULL && i < num; i++) {
                 // in the future if we need to do the entire cmdline we can
                 // for now we will just do a 15 character match
                 //fprintf(stderr, "cmdline is %s, process is %s", cmdline, pname[i]);
                 if (strcasestr(cmdline, pname[i]) > 0 || strcasestr(cm, pname[i]) > 0) {
-                    struct SimProcessInfo p;
                     p.pid = pid;
                     p.pos = i;
-                    return p;
+                    break;
                 }
             }
         }
