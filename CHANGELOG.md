@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.4.0](https://github.com/Spacefreak18/simapi/compare/0.3.1...0.4.0) (2026-11-23)
+
+
+### Features
+
+* **simd:** keep bridged telemetry across a restart  ([#49](https://github.com/Spacefreak18/simapi/issues/49)) ([f5d462e](https://github.com/Spacefreak18/simapi/commit/f5d462e6bde049da42f0b295120fbe8505f11582))
+
+
+### Bug Fixes
+
+* stop pidof() leaking /proc handles on every match ([#48](https://github.com/Spacefreak18/simapi/issues/48)) ([58ef123](https://github.com/Spacefreak18/simapi/commit/58ef1234a9fe0167f99417f9afb9595d9426438d))
+* update include directory after moving code ([3fc9d39](https://github.com/Spacefreak18/simapi/commit/3fc9d396fcd30b1f7dcad34a322e79ec24c863fd))
+
 ## [0.3.1](https://github.com/Spacefreak18/simapi/compare/0.3.0...0.3.1) (2026-11-20)
 
 
