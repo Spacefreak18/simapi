@@ -71,6 +71,7 @@ int simapi_universalmap_open(SimMap* simmap, SimData* simdata);
 int simapi_universalmap_free(SimMap* simmap);
 int simapi_compatmap_open(SimCompatMap* compatmap);
 int simapi_compatmap_free(SimCompatMap* compatmap);
+int simapi_compatmap_close(SimCompatMap* compatmap);
 int simapi_compatmap_clear(SimCompatMap* compatmap);
 
 void simapi_set_proximity_data(SimData* simdata, int cars, int8_t lr_flip);

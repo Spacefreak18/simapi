@@ -2014,13 +2014,14 @@ int simapi_compatmap_clear(SimCompatMap* compatmap)
 }
 
 
-int simapi_compatmap_free(SimCompatMap* compatmap)
+// Windows sections have no unlink (see simapi_platform_shm_unlink), so close
+// and free behave the same here; both exist to match the POSIX API.
+int simapi_compatmap_close(SimCompatMap* compatmap)
 {
     if (simapi_platform_shm_unmap(compatmap->acphysics_addr, AC_PHYSICS_SIZE) == -1)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(AC_PHYSICS_FILE);
     if (simapi_platform_shm_close(compatmap->acphysics_fd) == -1)
     {
         return 200;
@@ -2030,7 +2031,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(AC_STATIC_FILE);
     if (simapi_platform_shm_close(compatmap->acstatic_fd) == -1)
     {
         return 200;
@@ -2040,7 +2040,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(AC_GRAPHIC_FILE);
     if (simapi_platform_shm_close(compatmap->acevographics_fd) == -1)
     {
         return 200;
@@ -2050,7 +2049,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(ACEVO_PHYSICS_FILE);
     if (simapi_platform_shm_close(compatmap->acevophysics_fd) == -1)
     {
         return 200;
@@ -2060,7 +2058,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(ACEVO_STATIC_FILE);
     if (simapi_platform_shm_close(compatmap->acevostatic_fd) == -1)
     {
         return 200;
@@ -2070,7 +2067,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(ACEVO_GRAPHIC_FILE);
     if (simapi_platform_shm_close(compatmap->acevographics_fd) == -1)
     {
         return 200;
@@ -2080,7 +2076,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(AC_CREWCHIEF_FILE);
     if (simapi_platform_shm_close(compatmap->accrew_fd) == -1)
     {
         return 200;
@@ -2090,7 +2085,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(PCARS2_FILE);
     if (simapi_platform_shm_close(compatmap->pcars2_fd) == -1)
     {
         return 200;
@@ -2100,7 +2094,6 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(R3E_FILE);
     if (simapi_platform_shm_close(compatmap->r3e_fd) == -1)
     {
         return 200;
@@ -2110,13 +2103,28 @@ int simapi_compatmap_free(SimCompatMap* compatmap)
     {
         return 100;
     }
-    simapi_platform_shm_unlink(LMU_FILE);
     if (simapi_platform_shm_close(compatmap->lmu_fd) == -1)
     {
         return 200;
     }
 
     return 0;
+}
+
+int simapi_compatmap_free(SimCompatMap* compatmap)
+{
+    int error = simapi_compatmap_close(compatmap);
+    simapi_platform_shm_unlink(AC_PHYSICS_FILE);
+    simapi_platform_shm_unlink(AC_STATIC_FILE);
+    simapi_platform_shm_unlink(AC_GRAPHIC_FILE);
+    simapi_platform_shm_unlink(ACEVO_PHYSICS_FILE);
+    simapi_platform_shm_unlink(ACEVO_STATIC_FILE);
+    simapi_platform_shm_unlink(ACEVO_GRAPHIC_FILE);
+    simapi_platform_shm_unlink(AC_CREWCHIEF_FILE);
+    simapi_platform_shm_unlink(PCARS2_FILE);
+    simapi_platform_shm_unlink(R3E_FILE);
+    simapi_platform_shm_unlink(LMU_FILE);
+    return error;
 }
 
 /* Windows shared-memory and time support. */

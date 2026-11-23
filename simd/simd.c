@@ -139,6 +139,24 @@ static void close_walk_cb(uv_handle_t* handle, void* arg)
     }
 }
 #define ASSERT(expr) expr
+
+static bool configured_game_running(GameCompatInfo* games, int numgames)
+{
+    // A launcher can exit while its game runs on, as AC's does.
+    char* names[2 * numgames + 1];
+    int n = 0;
+    for (int i = 0; i < numgames; i++)
+    {
+        if (games[i].LaunchExe != NULL)
+            names[n++] = games[i].LaunchExe;
+        if (games[i].LiveExe != NULL)
+            names[n++] = games[i].LiveExe;
+    }
+    names[n] = NULL;
+
+    return n > 0 && get_process_match(names, n).pid > 0;
+}
+
 void release()
 {
     y_log_message(Y_LOG_LEVEL_INFO, "calling release method");
@@ -157,7 +175,18 @@ void release()
 
     if(compatmemmap == true)
     {
-        simapi_compatmap_free(compatmap);
+        // Keep the files while a game or bridge still uses them, so a restarted
+        // simd maps the same ones; otherwise nothing else would remove them.
+        pid_t bridge = (baton != NULL) ? baton->bridge_pid : 0;
+        if (configured_game_running(game_compat_info, compat_info_size) || is_pid_running(bridge))
+        {
+            y_log_message(Y_LOG_LEVEL_INFO, "A game or its bridge is still running, keeping its bridged memory");
+            simapi_compatmap_close(compatmap);
+        }
+        else
+        {
+            simapi_compatmap_free(compatmap);
+        }
         free(compatmap);
     }
 
@@ -453,6 +482,48 @@ void bridgeclosecallback(uv_timer_t* handle)
     }
 }
 
+static bool same_dir(const char* a, const char* b)
+{
+    size_t la = strlen(a);
+    size_t lb = strlen(b);
+    while (la > 1 && a[la - 1] == '/')
+        la--;
+    while (lb > 1 && b[lb - 1] == '/')
+        lb--;
+    return la == lb && strncmp(a, b, la) == 0;
+}
+
+// A bridge left running by an earlier simd still serves the game; starting
+// another would leave one of them orphaned in the prefix when the game exits.
+static pid_t running_bridge(const char* bridge_exe, const char* wineprefix)
+{
+    const char* name = strrchr(bridge_exe, '/');
+    name = (name != NULL) ? name + 1 : bridge_exe;
+    char* names[] = { (char*) name, NULL };
+    struct SimProcessInfo p = get_process_match(names, 1);
+    if (p.pid <= 0)
+    {
+        return 0;
+    }
+
+    char* prefix = getEnvValueForPid(p.pid, "WINEPREFIX");
+    bool same = prefix != NULL && same_dir(prefix, wineprefix);
+    free(prefix);
+    return same ? p.pid : 0;
+}
+
+// Files kept from an earlier run are stale unless a game is still writing
+// them, and some, such as AC's static data, are written only once.
+static void clear_if_no_game(SimCompatMap* compatmap, GameCompatInfo* games, int numgames)
+{
+    if (configured_game_running(games, numgames))
+    {
+        y_log_message(Y_LOG_LEVEL_INFO, "A configured game is running, keeping its bridged memory");
+        return;
+    }
+    simapi_compatmap_clear(compatmap);
+}
+
 void gamefindcallback(uv_timer_t* handle)
 {
     void* b = uv_handle_get_data((uv_handle_t*) handle);
@@ -576,7 +647,23 @@ void gamefindcallback(uv_timer_t* handle)
             }
 
 
+            pid_t bridge = 0;
             if(err == 0)
+            {
+                bridge = running_bridge(env_simd_bridge_exe, wineprefix + strlen("WINEPREFIX="));
+            }
+            if(bridge > 0)
+            {
+                y_log_message(Y_LOG_LEVEL_INFO, "Reusing bridge pid %i already running in the game's prefix", bridge);
+                f->bridge_pid = bridge;
+                free(wineexe);
+                free(wineprefix);
+                free(env_simd_bridge_exe);
+                free(env_simd_wrap_exe);
+                uv_timer_start(&datachecktimer, datacheckcallback, 5, 1000);
+                uv_timer_stop(handle);
+            }
+            else if(err == 0)
             {
                 y_log_message(Y_LOG_LEVEL_DEBUG, "No errors found, will attempt to fork a process like this WINEFSYNC=1 %s %s %s", wineprefix, wineexe, env_simd_bridge_exe);
 
@@ -1027,6 +1114,7 @@ int main(int argc, char** argv)
         compatmemmap = true;
         compatmap = malloc(sizeof(SimCompatMap));
         simapi_compatmap_open(compatmap);
+        clear_if_no_game(compatmap, game_compat_info, compat_info_size);
     }
 
     baton = (LoopData*) malloc(sizeof(LoopData));
